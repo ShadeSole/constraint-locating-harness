@@ -1,0 +1,17 @@
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "constraint-locating-harness"
+version = "0.1.0"
+description = "Constraint-aware combinatorial test generation and interaction fault localization"
+requires-python = ">=3.10"
+
+[project.scripts]
+cla-harness = "cla_harness.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cla_harness*"]

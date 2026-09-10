@@ -1,0 +1,5 @@
+Metadata-Version: 2.4
+Name: constraint-locating-harness
+Version: 0.1.0
+Summary: Constraint-aware combinatorial test generation and interaction fault localization
+Requires-Python: >=3.10

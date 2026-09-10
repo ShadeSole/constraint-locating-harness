@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.vscode/
+.idea/
+
+suite.csv
+covering_suite.csv
+locating_suite.csv
+
+.DS_Store
+Thumbs.db

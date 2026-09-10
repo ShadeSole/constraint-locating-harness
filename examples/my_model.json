@@ -1,0 +1,16 @@
+{
+    "parameters": {
+        "Protocol": ["TCP", "UDP"],
+        "Encryption": ["None", "TLS"],
+        "Authentication": ["Password", "Certificate"],
+        "Network": ["LAN", "WAN"],
+        "Compression": ["On", "Off"]
+    },
+
+    "forbidden": [
+        {
+            "Protocol": "UDP",
+            "Encryption": "TLS"
+        }
+    ]
+}

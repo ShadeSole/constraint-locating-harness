@@ -1,0 +1,14 @@
+README.md
+pyproject.toml
+cla_harness/__init__.py
+cla_harness/cli.py
+cla_harness/core.py
+cla_harness/generator.py
+cla_harness/io.py
+cla_harness/localizer.py
+constraint_locating_harness.egg-info/PKG-INFO
+constraint_locating_harness.egg-info/SOURCES.txt
+constraint_locating_harness.egg-info/dependency_links.txt
+constraint_locating_harness.egg-info/entry_points.txt
+constraint_locating_harness.egg-info/top_level.txt
+tests/test_harness.py
