@@ -79,6 +79,32 @@ def main():
     cover_rate = cover_correct / total
     print("Covering localization rate:",f"{cover_rate:.2%}")
 
+    locate_suite = greedy_locating_suite(
+            configs,
+            interactions,
+            strength=2
+    )
+
+    locate_correct, total = evaluate_suite(
+        locate_suite,
+        interactions
+    )
+
+    locate_rate = locate_correct / total
+
+    print()
+    print("LOCATING SUITE")
+    print("Tests:", len(locate_suite))
+    print(
+        "Localized:",
+        locate_correct,
+        "/",
+        total
+    )
+    print(
+        "Localization rate:",
+        f"{locate_rate:.2%}"
+    )
     
 if __name__ == "__main__":
     main()
