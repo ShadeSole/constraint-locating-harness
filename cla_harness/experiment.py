@@ -56,5 +56,29 @@ def main():
     print("Valid configurations:", len(configs))
     print("Feasible interactions:", len(interactions))
 
+    cover_suite = greedy_covering_suite(
+            configs,
+            interactions,
+            strength=2
+    )
+
+    print("Covering suite tests:", len(cover_suite))
+
+    cover_correct, total = evaluate_suite(
+        cover_suite,
+        interactions
+    )
+
+    print(
+        "Covering suite localized:",
+        cover_correct,
+        "/",
+        total
+    )
+
+    cover_rate = cover_correct / total
+    print("Covering localization rate:",f"{cover_rate:.2%}")
+
+    
 if __name__ == "__main__":
     main()
