@@ -102,6 +102,7 @@ def run_method(model, method, generator, configs, interactions, strength):
     result["generation_seconds"] = generation_seconds
     result["model"] = model
     result["strength"] = strength
+    result["valid_configs"] = len(configs)
     return result
 
 def print_report(title, result):
@@ -145,7 +146,6 @@ def run_model(model_path, strength):
             interactions,
             strength=strength
         )
-        result["valid_configs"] = len(configs)
         print_report(title, result)
         results.append(result)
 
