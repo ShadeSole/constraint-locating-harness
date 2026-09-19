@@ -17,7 +17,27 @@ from .localizer import (
     localize_exact
 )
 
-from .io import load_model
+from .io import load_model, write_results_csv
+
+MODEL_PATH = "examples/model.json"
+RESULTS_PATH = "results/v0_2_results.csv"
+STRENGTH = 2
+
+RESULT_COLUMNS = [
+    "model",
+    "strength",
+    "method",
+    "tests",
+    "interactions",
+    "covered",
+    "coverage_rate",
+    "ambiguous_pairs",
+    "localized",
+    "total",
+    "localization_rate",
+    "generation_seconds",
+    "evaluation_seconds",
+]
 
 def evaluate_suite(suite, interactions):
 
@@ -68,7 +88,7 @@ def evaluate_method(method, suite, interactions):
         "evaluation_seconds": evaluation_seconds,
     }
 
-def run_method(method, generator, configs, interactions, strength):
+def run_method(model, method, generator, configs, interactions, strength):
     """Generate a suite (timed), then evaluate it (timed inside evaluate_method)."""
     start = time.perf_counter()
     suite = generator(configs, interactions, strength=strength)
@@ -76,6 +96,8 @@ def run_method(method, generator, configs, interactions, strength):
 
     result = evaluate_method(method, suite, interactions)
     result["generation_seconds"] = generation_seconds
+    result["model"] = model
+    result["strength"] = strength
     return result
 
 def print_report(title, result):
@@ -96,7 +118,7 @@ def print_report(title, result):
 def main():
 
     parameters, forbidden = load_model(
-        "examples/model.json"
+        MODEL_PATH
     )
 
     configs = valid_configurations(
@@ -106,29 +128,39 @@ def main():
 
     interactions = feasible_interactions(
         configs,
-        strength=2
+        strength=STRENGTH
     )
 
     print("Valid configurations:", len(configs))
     print("Feasible interactions:", len(interactions))
 
     cover_result = run_method(
+        MODEL_PATH,
         "cover",
         greedy_covering_suite,
         configs,
         interactions,
-        strength=2
+        strength=STRENGTH
     )
     print_report("COVERING SUITE", cover_result)
 
     locate_result = run_method(
+        MODEL_PATH,
         "locate",
         greedy_locating_suite,
         configs,
         interactions,
-        strength=2
+        strength=STRENGTH
     )
     print_report("LOCATING SUITE", locate_result)
+
+    write_results_csv(
+        RESULTS_PATH,
+        [cover_result, locate_result],
+        RESULT_COLUMNS
+    )
+    print()
+    print("Wrote results:", RESULTS_PATH)
 
 if __name__ == "__main__":
     main()

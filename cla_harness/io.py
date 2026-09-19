@@ -27,3 +27,11 @@ def write_suite_csv(path: str, suite: List[Config]) -> None:
         w = csv.DictWriter(f, fieldnames=list(suite[0].keys()))
         w.writeheader()
         w.writerows(suite)
+        
+def write_results_csv(path: str, rows: List[dict], fieldnames: List[str]) -> None:
+    """Write one row per experiment result. Creates the parent folder if needed."""
+    Path(path).parent.mkdir(parents=True, exist_ok=True)
+    with open(path, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fieldnames)
+        w.writeheader()
+        w.writerows(rows)
