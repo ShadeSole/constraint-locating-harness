@@ -19,13 +19,17 @@ from .localizer import (
 
 from .io import load_model, write_results_csv
 
-MODEL_PATH = "examples/model.json"
+MODEL_PATHS = [
+    "examples/model.json",
+    "examples/my_model.json",
+]
 RESULTS_PATH = "results/v0_2_results.csv"
 STRENGTH = 2
 
 RESULT_COLUMNS = [
     "model",
     "strength",
+    "valid_configs",
     "method",
     "tests",
     "interactions",
@@ -115,48 +119,61 @@ def print_report(title, result):
     print("Generation time:", f"{result['generation_seconds']:.4f} s")
     print("Evaluation time:", f"{result['evaluation_seconds']:.4f} s")
 
-def main():
+def run_model(model_path, strength):
+    """Run both methods on one model and return their two result records."""
+    parameters, forbidden = load_model(model_path)
+    configs = valid_configurations(parameters, forbidden)
+    interactions = feasible_interactions(configs, strength=strength)
 
-    parameters, forbidden = load_model(
-        MODEL_PATH
-    )
-
-    configs = valid_configurations(
-        parameters,
-        forbidden
-    )
-
-    interactions = feasible_interactions(
-        configs,
-        strength=STRENGTH
-    )
-
+    print()
+    print("=" * 60)
+    print("MODEL:", model_path)
     print("Valid configurations:", len(configs))
     print("Feasible interactions:", len(interactions))
 
-    cover_result = run_method(
-        MODEL_PATH,
-        "cover",
-        greedy_covering_suite,
-        configs,
-        interactions,
-        strength=STRENGTH
-    )
-    print_report("COVERING SUITE", cover_result)
+    results = []
+    methods = [
+        ("cover", "COVERING SUITE", greedy_covering_suite),
+        ("locate", "LOCATING SUITE", greedy_locating_suite),
+    ]
+    for method, title, generator in methods:
+        result = run_method(
+            model_path,
+            method,
+            generator,
+            configs,
+            interactions,
+            strength=strength
+        )
+        result["valid_configs"] = len(configs)
+        print_report(title, result)
+        results.append(result)
 
-    locate_result = run_method(
-        MODEL_PATH,
-        "locate",
-        greedy_locating_suite,
-        configs,
-        interactions,
-        strength=STRENGTH
-    )
-    print_report("LOCATING SUITE", locate_result)
+    return results
+
+def print_summary(rows):
+    print()
+    print("=" * 60)
+    print("SUMMARY")
+    print(f"{'model':<28}{'method':<8}{'tests':>6}{'amb.pairs':>11}{'localized':>12}")
+    for r in rows:
+        localized = f"{r['localized']}/{r['total']}"
+        print(
+            f"{r['model']:<28}{r['method']:<8}{r['tests']:>6}"
+            f"{r['ambiguous_pairs']:>11}{localized:>12}"
+        )
+
+def main():
+
+    rows = []
+    for model_path in MODEL_PATHS:
+        rows.extend(run_model(model_path, STRENGTH))
+
+    print_summary(rows)
 
     write_results_csv(
         RESULTS_PATH,
-        [cover_result, locate_result],
+        rows,
         RESULT_COLUMNS
     )
     print()
