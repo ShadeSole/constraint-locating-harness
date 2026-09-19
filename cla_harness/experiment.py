@@ -1,11 +1,13 @@
 from .core import (
     valid_configurations,
-    feasible_interactions
+    feasible_interactions,
+    contains_interaction
 )
 
 from .generator import (
     greedy_covering_suite,
-    greedy_locating_suite
+    greedy_locating_suite,
+    ambiguous_pairs
 )
 
 from .localizer import (
@@ -36,6 +38,42 @@ def evaluate_suite(suite, interactions):
             correctly_localized += 1
 
     return correctly_localized, total
+def coverage_of(suite, interactions):
+    """Count feasible interactions appearing in at least one test of the suite."""
+    covered = 0
+    for interaction in interactions:
+        if any(contains_interaction(test, interaction) for test in suite):
+            covered += 1
+    return covered, len(interactions)
+
+def evaluate_method(method, suite, interactions):
+    """Collect all V0.2 metrics for one suite into a single record."""
+    covered, feasible = coverage_of(suite, interactions)
+    localized, total = evaluate_suite(suite, interactions)
+    return {
+        "method": method,
+        "tests": len(suite),
+        "interactions": feasible,
+        "covered": covered,
+        "coverage_rate": covered / feasible,
+        "ambiguous_pairs": len(ambiguous_pairs(suite, interactions)),
+        "localized": localized,
+        "total": total,
+        "localization_rate": localized / total,
+    }
+
+def print_report(title, result):
+    print()
+    print(title)
+    print("Tests:", result["tests"])
+    print(
+        "Coverage:",
+        result["covered"], "/", result["interactions"],
+        f"({result['coverage_rate']:.2%})"
+    )
+    print("Ambiguous pairs:", result["ambiguous_pairs"])
+    print("Localized:", result["localized"], "/", result["total"])
+    print("Localization rate:", f"{result['localization_rate']:.2%}")
 
 def main():
 
@@ -44,8 +82,8 @@ def main():
     )
 
     configs = valid_configurations(
-    parameters,
-    forbidden
+        parameters,
+        forbidden
     )
 
     interactions = feasible_interactions(
@@ -57,54 +95,20 @@ def main():
     print("Feasible interactions:", len(interactions))
 
     cover_suite = greedy_covering_suite(
-            configs,
-            interactions,
-            strength=2
+        configs,
+        interactions,
+        strength=2
     )
-
-    print("Covering suite tests:", len(cover_suite))
-
-    cover_correct, total = evaluate_suite(
-        cover_suite,
-        interactions
-    )
-
-    print(
-        "Covering suite localized:",
-        cover_correct,
-        "/",
-        total
-    )
-
-    cover_rate = cover_correct / total
-    print("Covering localization rate:",f"{cover_rate:.2%}")
+    cover_result = evaluate_method("cover", cover_suite, interactions)
+    print_report("COVERING SUITE", cover_result)
 
     locate_suite = greedy_locating_suite(
-            configs,
-            interactions,
-            strength=2
+        configs,
+        interactions,
+        strength=2
     )
+    locate_result = evaluate_method("locate", locate_suite, interactions)
+    print_report("LOCATING SUITE", locate_result)
 
-    locate_correct, total = evaluate_suite(
-        locate_suite,
-        interactions
-    )
-
-    locate_rate = locate_correct / total
-
-    print()
-    print("LOCATING SUITE")
-    print("Tests:", len(locate_suite))
-    print(
-        "Localized:",
-        locate_correct,
-        "/",
-        total
-    )
-    print(
-        "Localization rate:",
-        f"{locate_rate:.2%}"
-    )
-    
 if __name__ == "__main__":
     main()
