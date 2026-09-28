@@ -22,6 +22,7 @@ from .io import load_model, write_results_csv
 MODEL_PATHS = [
     "examples/model.json",
     "examples/my_model.json",
+    "examples/model_6param.json",
 ]
 RESULTS_PATH = "results/v0_2_results.csv"
 STRENGTH = 2

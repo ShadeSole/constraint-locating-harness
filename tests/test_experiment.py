@@ -13,7 +13,7 @@ from cla_harness.experiment import (
 )
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
-MODEL_FILES = ["model.json", "my_model.json"]
+MODEL_FILES = ["model.json", "my_model.json", "model_6param.json"]
 
 
 def run_both_methods(model_file, strength=2):
@@ -61,6 +61,15 @@ class ExperimentInvariants(unittest.TestCase):
         valid, feasible, _ = run_both_methods("model.json")
         self.assertEqual(valid, 18)
         self.assertEqual(feasible, 38)
+
+    def test_model_level_counts_for_6param_model(self):
+        # model_6param.json = model.json plus one unconstrained binary parameter.
+        # Valid configurations double: 18 * 2 = 36.
+        # Pairs involving the new parameter: 5 other parameters * (2 * 2 values) = 20,
+        # all feasible, so 38 + 20 = 58.
+        valid, feasible, _ = run_both_methods("model_6param.json")
+        self.assertEqual(valid, 36)
+        self.assertEqual(feasible, 58)
 
     def test_both_methods_cover_every_feasible_interaction(self):
         for model_file in MODEL_FILES:
