@@ -23,6 +23,7 @@ MODEL_PATHS = [
     "examples/model.json",
     "examples/my_model.json",
     "examples/model_6param.json",
+    "examples/model_8param.json",
 ]
 RESULTS_PATH = "results/v0_2_results.csv"
 STRENGTH = 2

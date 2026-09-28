@@ -13,7 +13,7 @@ from cla_harness.experiment import (
 )
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
-MODEL_FILES = ["model.json", "my_model.json", "model_6param.json"]
+MODEL_FILES = ["model.json", "my_model.json", "model_6param.json", "model_8param.json"]
 
 
 def run_both_methods(model_file, strength=2):
@@ -70,6 +70,25 @@ class ExperimentInvariants(unittest.TestCase):
         valid, feasible, _ = run_both_methods("model_6param.json")
         self.assertEqual(valid, 36)
         self.assertEqual(feasible, 58)
+
+    def test_model_level_counts_for_8param_model(self):
+        # model_8param.json = model.json's 5 constrained parameters plus 3 more
+        # unconstrained binary parameters (Compression, Caching, Backup), none of
+        # which appear in any forbidden rule.
+        #
+        # Valid configurations: the 5 constrained parameters still allow 18 valid
+        # combinations (as in model.json); each is extended freely by the 3 new
+        # parameters: 18 * 2^3 = 144.
+        #
+        # Feasible pairwise interactions, by category of parameter pair:
+        #   - among the 5 original parameters: 38 (as in model.json)
+        #   - one original parameter x one new parameter: 5 * 3 pairs * 4 values = 60
+        #     (always feasible, since the new parameters are unconstrained)
+        #   - among the 3 new parameters: 3 pairs * 4 values = 12
+        # Total: 38 + 60 + 12 = 110.
+        valid, feasible, _ = run_both_methods("model_8param.json")
+        self.assertEqual(valid, 144)
+        self.assertEqual(feasible, 110)
 
     def test_both_methods_cover_every_feasible_interaction(self):
         for model_file in MODEL_FILES:
