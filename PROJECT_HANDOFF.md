@@ -7,6 +7,79 @@
 **Primary language:** Python  
 **Research area:** constrained combinatorial interaction testing (CIT), locating arrays, and fault localization
 
+## 0. Status as of 2026-09-28 (read this first)
+
+Current HEAD on `v0.2-experiments`: `215da32` "Add 8-parameter benchmark
+model" (pushed to GitHub, verified against origin).
+
+Done since this handoff was originally written:
+- `cla_harness/experiment.py` was rebuilt around `evaluate_method` /
+  `run_method` / `run_model`, producing one metrics record per (model,
+  method): tests, coverage, ambiguous pairs, localized/total, localization
+  rate, and separate generation/evaluation timings.
+- Coverage is verified independently (`coverage_of` in `experiment.py`), not
+  just assumed from the generator succeeding.
+- Results are written to `results/v0_2_results.csv` via `write_results_csv`
+  in `io.py`. That file is gitignored and not committed; it regenerates on
+  every run.
+- Four benchmark models now run end to end: `examples/model.json`,
+  `examples/my_model.json`, `examples/model_6param.json`,
+  `examples/model_8param.json`. Real, already-measured results for all four
+  are recorded in `docs/PROJECT_NOTES.md` under "Benchmark results" --
+  read that before re-running anything; the numbers are already known and
+  should not be re-derived from scratch or guessed at.
+- 13 automated tests exist (`tests/test_experiment.py`, 10 tests, plus the
+  original 3 in `tests/test_harness.py`), covering: the coverage invariant,
+  the zero-ambiguity-iff-full-localization property, CSV round-tripping,
+  hand-derived valid-config/interaction counts for three of the four models,
+  and a labeled regression snapshot of the greedy heuristics' current
+  behavior on `model.json` (expected to change only if the heuristics are
+  deliberately improved).
+
+Known open issues, not yet fixed:
+- The test suite is slow (~8s for 13 tests) because several tests loop over
+  every model in `MODEL_FILES` and regenerate both suites from scratch each
+  time. This gets worse as more models are added. Needs a decision: cache
+  each model's generated suites once per test run instead of recomputing
+  them per test.
+- Most tracked files show as modified in `git status` due to a CRLF/LF
+  line-ending mismatch between the environments this project has been
+  edited from. This is cosmetic (diffs are empty with
+  `--ignore-space-at-eol`), but should eventually be fixed with a
+  `.gitattributes` file. Do not `git add .` until this is resolved, or you
+  will commit whitespace-only churn across unrelated files.
+- `constraint_locating_harness.egg-info/` is tracked in git; it is a
+  generated build artifact and should be added to `.gitignore` and removed
+  from tracking.
+- `README.md` and the rest of this handoff still describe the V0.1
+  single-model workflow; neither reflects the current multi-model
+  experiment runner yet.
+
+Recommended immediate next step: pick one of the two remaining
+benchmark-model categories from Section 14 (multi-value parameters, or
+constraint density), design it the same way the 6- and 8-parameter models
+were designed, changing exactly one variable relative to an existing model
+so the cause of any change in the results is unambiguous. Add it to
+`MODEL_PATHS` (in `experiment.py`) and `MODEL_FILES` (in
+`tests/test_experiment.py`), add a hand-derived count test, run it, compare
+the results against the existing benchmarks, record the result in
+`docs/PROJECT_NOTES.md` under "Benchmark results", then commit. Do not add
+more than one new model at a time; changing one variable at a time is what
+has made the results interpretable so far.
+
+Also worth doing soon, though it does not have to come first: fix the slow
+test suite described above, since it will only get more painful as models
+grow.
+
+A promising direction for V0.3, not to start yet, is recorded at the end of
+`docs/PROJECT_NOTES.md` under "Future work: metaheuristic locating-aware
+objective": giving simulated annealing or a genetic algorithm a fitness
+function that penalizes ambiguous interaction pairs directly, rather than
+optimizing only for coverage/size as existing metaheuristic covering-array
+literature does. This is motivated by a measured finding, also documented
+there, that the greedy locating heuristic's search cost grows much faster
+than the models themselves do.
+
 ## 1. Read This First
 This project is already under development. **Do not redesign or rebuild it from scratch unless explicitly asked.** Inspect the repository first, preserve the existing architecture where reasonable, determine what is already implemented, and make incremental testable changes. Do not present illustrative numbers as experimental results. Preserve the distinction between established research concepts and this project's implementation/experimental contribution.
 
@@ -288,18 +361,20 @@ Independent variables can include parameter count, values per parameter, interac
 
 ## 15. Definition of V0.2 Complete
 ```text
-[ ] Automatically inject every feasible single t-way fault
-[ ] Evaluate ordinary covering suite
-[ ] Evaluate locating-oriented suite
-[ ] Calculate unique localization rate
-[ ] Verify interaction coverage
-[ ] Calculate ambiguous interaction pairs
-[ ] Measure runtime
-[ ] Save reproducible CSV results
-[ ] Run multiple benchmark models
-[ ] Add/extend automated tests
+[x] Automatically inject every feasible single t-way fault
+[x] Evaluate ordinary covering suite
+[x] Evaluate locating-oriented suite
+[x] Calculate unique localization rate
+[x] Verify interaction coverage
+[x] Calculate ambiguous interaction pairs
+[x] Measure runtime
+[x] Save reproducible CSV results
+[x] Run multiple benchmark models (4 so far: model.json, my_model.json,
+    model_6param.json, model_8param.json -- multi-value and low/high
+    constraint-density models from Section 14 still planned)
+[x] Add/extend automated tests (13 tests total; see Section 0)
 [ ] Update README/documentation
-[ ] Commit/push completed work
+[ ] Commit/push completed work (ongoing per-commit habit, not a one-time item)
 [ ] Merge v0.2-experiments into main after verification
 [ ] Tag/release v0.2.0
 ```
