@@ -13,8 +13,7 @@ from cla_harness.experiment import (
 )
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
-MODEL_FILES = ["model.json", "my_model.json", "model_6param.json", "model_8param.json"]
-
+MODEL_FILES = ["model.json", "my_model.json", "model_6param.json", "model_8param.json", "model_multivalue.json"]
 
 def run_both_methods(model_file, strength=2):
     """Build the model and return (num_valid_configs, num_interactions, [cover, locate])."""
@@ -89,7 +88,28 @@ class ExperimentInvariants(unittest.TestCase):
         valid, feasible, _ = run_both_methods("model_8param.json")
         self.assertEqual(valid, 144)
         self.assertEqual(feasible, 110)
-
+    def test_model_level_counts_for_multivalue_model(self):
+        # model_multivalue.json = model.json with Network expanded from 2 values
+        # (WiFi, Ethernet) to 3 (WiFi, Ethernet, Cellular). Everything else,
+        # including both forbidden rules, is unchanged.
+        #
+        # Valid configurations, by inclusion-exclusion on the 2 forbidden rules
+        # over the raw 2*3*2*2*2=48 configurations:
+        #   rule1 (Auth=CAC, Encryption=Off) violated by: 1*3*1*2*2 = 12
+        #   rule2 (Database=Remote, Network=WiFi) violated by: 2*1*2*2*1 = 8
+        #   both violated (overlap): 1*1*1*2*1 = 2
+        #   invalid = 12 + 8 - 2 = 18; valid = 48 - 18 = 30
+        #
+        # Feasible pairwise interactions: of the 10 parameter pairs, only two
+        # contain an infeasible term-combination (exactly the two forbidden
+        # rules themselves, since every other parameter pair can always be
+        # extended to a valid configuration independently). Total possible
+        # term-pairs = 48 (sum of values(A)*values(B) over the 10 pairs);
+        # subtract the 2 infeasible ones (the forbidden rules) = 46.
+        valid, feasible, _ = run_both_methods("model_multivalue.json")
+        self.assertEqual(valid, 30)
+        self.assertEqual(feasible, 46)
+        
     def test_both_methods_cover_every_feasible_interaction(self):
         for model_file in MODEL_FILES:
             _, _, records = run_both_methods(model_file)
