@@ -240,15 +240,30 @@ the greedy heuristic always reaches full localization; they may reflect
 milder constraint structure, which these experiments have not separated
 from heuristic quality.
 
-**Implications for the framework (candidates, not yet done):**
-1. Report an *achievable ceiling* alongside the localization rate: group
-   interactions by their signature over the full set of valid configurations
-   (no suite generation needed); the ceiling is the fraction of interactions
-   that are alone in their group. Then "localized / ceiling" separates
-   heuristic quality from model structure.
+**Implications for the framework:**
+1. *Achievable ceiling -- implemented (commit 9996811).* `ceiling_of` in
+   `experiment.py` groups interactions by their signature over the full set
+   of valid configurations (no suite generation needed); the ceiling is the
+   number of interactions alone in their group. Adding tests only splits
+   signature groups, never merges them, so no suite can localize more. Each
+   result row now carries `ceiling` and `ceiling_gap` (ceiling minus
+   localized), so "localized / ceiling" separates heuristic quality from
+   model structure. Tests check it against hand-derived tiny cases and
+   against `evaluate_suite` run with every valid configuration as the suite.
 2. Constraint structure, not just rule count, is what matters: the 4-rule
    model's ceiling comes from rules sharing parameters and chaining. Worth
-   characterizing which constraint graphs produce collapse.
+   characterizing which constraint graphs produce collapse (not yet done).
+
+**Measured ceiling results (t=2, from running the harness):** the ceiling
+equals the number of feasible interactions on six of the seven models
+(model.json 38, my_model.json 39, model_6param.json 58, model_8param.json
+110, model_multivalue.json 46, model_low_constraints.json 40), and the
+locating suite reaches it on all six (gap 0). On model_high_constraints.json
+the ceiling is 28 of 35; the locating suite reaches it (gap 0) and the
+covering suite is 14 below it (14/35 localized). Covering-suite gaps on the
+others are large (for example 95 of 110 on model_8param.json), which
+restates the original coverage-versus-localization tradeoff relative to what
+was achievable.
 
 **Caveats.** One model. Pairwise only. Deterministic single-fault outcomes
 only; richer fault models (multiple faults, noise) change what is

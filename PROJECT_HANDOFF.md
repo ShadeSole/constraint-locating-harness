@@ -9,9 +9,9 @@
 
 ## 0. Status as of 2026-10-04 (read this first)
 
-Current HEAD on `v0.2-experiments`: `f2ca363` "Add high-constraint-density
-benchmark model" (pushed to GitHub, verified against origin), plus a
-documentation commit that records this status.
+Current HEAD on `v0.2-experiments`: `9996811` "Add achievable-ceiling metric
+(ceiling, ceiling_gap) with tests" (pushed to GitHub, verified against
+origin), plus a documentation commit that records this status.
 
 Done since this handoff was originally written:
 - `cla_harness/experiment.py` was rebuilt around `evaluate_method` /
@@ -28,8 +28,13 @@ Done since this handoff was originally written:
   results for all of them are in `docs/PROJECT_NOTES.md` under "Benchmark
   results" -- read that before re-running anything; do not re-derive or guess
   the numbers.
-- 16 automated tests (13 in `tests/test_experiment.py`, 3 in
-  `tests/test_harness.py`): coverage invariant, zero-ambiguity-iff-full-
+- Achievable-ceiling metric (`ceiling_of`; CSV columns `ceiling` and
+  `ceiling_gap`): the most interactions any suite could localize, from
+  signatures over all valid configurations. Six models have ceiling = total;
+  model_high_constraints has ceiling 28/35 and the locating suite reaches it.
+- 21 automated tests (18 in `tests/test_experiment.py`, 3 in
+  `tests/test_harness.py`): coverage invariant, ceiling hand-checks and
+  invariants, zero-ambiguity-iff-full-
   localization, CSV round-trip, hand-derived valid-config and feasible-
   interaction counts for six of the seven models, and a labeled regression
   snapshot of the greedy heuristics on `model.json`.
@@ -60,22 +65,19 @@ Known open issues, not yet fixed:
   `git add .` until a `.gitattributes` file resolves it.
 - `constraint_locating_harness.egg-info/` is tracked in git; it is a
   generated artifact and should be gitignored and untracked.
-- The summary table printed by `print_summary` has fixed-width columns that
-  are too narrow for the longer model filenames (cosmetic).
+- The summary table's model column was widened to 36 characters; very long
+  model names would still run together (cosmetic).
 - `README.md` and the rest of this handoff still describe the V0.1
   single-model workflow.
 
 Remaining V0.2 checklist items (Section 15): update README/documentation;
 then merge `v0.2-experiments` into `main` and tag `v0.2.0`. Suggested order
-of small steps, one at a time: (1) add an "achievable ceiling" metric to
-`experiment.py` (see PROJECT_NOTES.md; small, makes every localization rate
-interpretable, and is the natural follow-up to the finding above -- decide
-whether it belongs in V0.2 or V0.3); (2) fix the slow test suite; (3) repo
-hygiene (`.gitattributes`, untrack egg-info, widen summary columns);
-(4) README/docs update; (5) merge and tag. The metaheuristic direction
+of small steps, one at a time: (1) repo hygiene (`.gitattributes`, untrack
+egg-info); (2) fix the slow test suite; (3) README/docs update; (4) merge and
+tag. The achievable-ceiling metric is done. The metaheuristic direction
 (SA/GA with a locating-aware objective) stays a V0.3 idea, recorded at the
-end of PROJECT_NOTES.md; the ceiling finding sharpens it, since a better
-search can only improve results up to the ceiling.
+end of PROJECT_NOTES.md; the ceiling now gives it a concrete target, since a
+better search can only improve results up to the ceiling.
 
 ## 1. Read This First
 This project is already under development. **Do not redesign or rebuild it from scratch unless explicitly asked.** Inspect the repository first, preserve the existing architecture where reasonable, determine what is already implemented, and make incremental testable changes. Do not present illustrative numbers as experimental results. Preserve the distinction between established research concepts and this project's implementation/experimental contribution.
@@ -370,7 +372,7 @@ Independent variables can include parameter count, values per parameter, interac
     model_6param.json, model_8param.json, model_multivalue.json,
     model_low_constraints.json, model_high_constraints.json -- all models
     planned in Section 14 now exist)
-[x] Add/extend automated tests (16 tests total; see Section 0)
+[x] Add/extend automated tests (21 tests total; see Section 0)
 [ ] Update README/documentation
 [ ] Commit/push completed work (ongoing per-commit habit, not a one-time item)
 [ ] Merge v0.2-experiments into main after verification
