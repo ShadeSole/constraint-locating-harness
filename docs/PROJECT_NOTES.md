@@ -198,6 +198,46 @@ is still future work (see V0.2 checklist).
   only after repeating runs on one machine.
 - Runs only with `python -m cla_harness.experiment --include-slow`.
 
+## Simulated annealing, preliminary results (V0.3 step 2, commit ae9fcc1)
+
+Method: `anneal_suite` in `cla_harness/annealing.py`. The search keeps a suite of
+exactly N valid configurations; one move replaces a random test with a random
+valid configuration; a move that raises the cost by delta is kept with
+probability exp(-delta/T), T starting at 2.0 and multiplied by 0.999 per move;
+20,000 moves maximum, best suite returned. Cost = weight * (feasible
+interactions in no test) + (pairs of covered interactions with identical test
+sets that some valid test could separate). Cost 0 means the suite covers every
+feasible interaction and localizes as many interactions as any suite could (the
+ceiling). Cost form follows Konishi et al. (arXiv 1909.13090); under
+constraints the collision term ignores pairs no suite can separate.
+
+Results reproduced exactly on the user's machine (seeds 0-4; steps to reach
+cost 0):
+- model.json, N = 9 (greedy locating needs 11): solved 5 of 5, steps
+  2875, 922, 1153, 1746, 812; every suite covers 38/38 and localizes 38/38
+  by the separate evaluator.
+- model_high_constraints.json, N = 9 (greedy locating selected all 11 valid
+  configurations): solved 5 of 5, steps 140, 145, 215, 266, 351; every suite
+  covers 35/35 and localizes 28/35, the ceiling.
+
+Sandbox runs only (not yet reproduced by the user): at the greedy size every
+seed solved on model.json, my_model.json, model_6param.json and
+model_high_constraints.json; at two tests below the greedy size, model.json and
+model_high_constraints.json were still solved (5 of 5); my_model.json and
+model_6param.json were not solved within 20,000 moves (0 of 5), as was
+anything four tests below greedy.
+
+What this supports: on two of the small models the simplest SA move finds a
+suite two tests smaller than the greedy locating heuristic's, which is
+consistent with the project's standing statement that greedy is not optimal.
+In particular the greedy suite on model_high_constraints.json contained all 11
+valid configurations although 9 suffice for the same localization.
+
+What it does not support: any general claim that SA beats greedy. Five seeds,
+untuned temperature, small models, one move type. An unsolved run means "not
+found in 20,000 moves", not "impossible". Runs also take seconds because the
+cost is recomputed from scratch on every move.
+
 ## Observations worth carrying into the paper
 
 **Localization cost in tests stays small, but the covering-suite localization
