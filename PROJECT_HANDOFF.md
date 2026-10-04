@@ -78,7 +78,7 @@ metaheuristic for CONSTRAINED locating arrays, evaluated against the ceiling.
 The checks were done on rendered full text; wording should be verified against
 the PDFs before quoting.
 
-V0.3 progress on branch `v0.3-development` (code pushed through `519a6c8`):
+V0.3 progress on branch `v0.3-development` (code pushed through `0984942`):
 - `docs/BENCHMARKS.md`: where standard instances are (CCAG repository, 35
   CASA-format models, kept outside this repository in a sibling `external/`
   folder), the file format, sizes, and why enumeration cannot reach them.
@@ -89,21 +89,24 @@ V0.3 progress on branch `v0.3-development` (code pushed through `519a6c8`):
   interactions, ceiling 229). Greedy locating reaches the ceiling with 32 tests
   but takes minutes (about 192 s in the sandbox); results are in
   `docs/PROJECT_NOTES.md`. Runs only with `--include-slow`.
-- Simulated annealing in `cla_harness/annealing.py` (steps 1-3, pushed through
-  `519a6c8`): constraint-aware cost (uncovered + avoidable collisions, zero
+- Simulated annealing in `cla_harness/annealing.py` (steps 1-4, pushed through
+  `0984942`): constraint-aware cost (uncovered + avoidable collisions, zero
   means ceiling reached), `anneal_suite` for a fixed suite size with random or
   targeted moves, `exact_minimum_suite_size` for small models, and a runner
   (`python -m cla_harness.annealing MODEL N --neighbor targeted --exact`).
   Results and caveats in `docs/PROJECT_NOTES.md`: SA reaches the proven
   optimum (9, 8, 9 tests) on three small models where greedy needs 11, 9, 11;
   on the spins core it matches greedy's 32 tests in about 7 s on 2 of 3 seeds.
-- 79 tests (about 11 s; the exact-search tests are the slowest, a known issue).
+- Step 4 (`find_small_suite`, `--shrink` runner): shrinks the size while a fixed
+  budget of restarts x moves succeeds, with cooling spanning the budget. Sandbox
+  only so far: 30 tests on the spins core vs greedy's 32 (one seed), proven
+  minima reached on the three small models. User has not yet reproduced the
+  --shrink runs.
+- 90 tests (about 15 s; the exact-search tests are the slowest, a known issue).
 
-Next, one step at a time: (a) SA step 4: search over the suite size
-automatically (start at a known-feasible size, shrink while runs succeed) with a
-slower cooling schedule and restarts, since unsolved runs freeze early; (b) run
-it on the spins core and the small models and compare size and time against the
-greedy heuristic; (c) targeted search for post-2023 work and the Garvin et al.
+Next, one step at a time: (a) reproduce the step 4 --shrink runs locally and
+try more seeds / a warm start (begin size n-1 from the solved size-n suite minus
+one test); (b) compare size and time against greedy on one machine; (c) targeted search for post-2023 work and the Garvin et al.
 metaheuristic paper; (d) Z3 and a solver-based pipeline so the real CCAG
 instances (all out of reach of enumeration) can be used; (e) compare against
 published CLA sizes on shared benchmarks. Multiple faults, noise, test-runner

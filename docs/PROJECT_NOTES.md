@@ -303,6 +303,43 @@ greedy heuristic's 32, in one of three runs; no 28-test suite was found.
 - Small models, few seeds, one real-benchmark-derived model. No ranking of
   methods is justified yet.
 
+## Simulated annealing, suite-size search (V0.3 step 4, commit 0984942)
+
+`find_small_suite` starts at a given size and shrinks by one while the search
+succeeds. At each size it makes up to `restarts` independent annealing runs of
+`steps_per_restart` moves; "failure at size n" means all of them ended with cost
+above zero, i.e. a fixed budget of restarts x moves, not wall-clock time. The
+cooling rate is derived so the temperature falls from 2.0 to 0.05 over exactly the
+per-run budget (replacing the fixed 0.999 that froze after about 5000 moves).
+A failed size is NOT a proof of impossibility; only `exact_minimum_suite_size`
+proves a minimum, and only on small models. Runner:
+`python -m cla_harness.annealing MODEL START --shrink --neighbor targeted --steps S --restarts R`
+(the runner's default is still random moves, so pass `--neighbor targeted`).
+
+**Verified by tests (90 tests pass in the sandbox, 3 gated skips):** on the three
+small models, starting two tests above the proven minimum, the search ends at
+exactly 9, 9 and 8 tests with localization equal to the ceiling (3 restarts,
+2000 moves, targeted). Six deliberate breaks of the shrinking loop were each
+caught by the new tests. The user pushed this commit but has not yet pasted
+output from the --shrink runs, so the numbers below are sandbox-only.
+
+**Sandbox only (not reproduced by the user), runs seeded, so move counts should
+reproduce exactly; times are machine-dependent:**
+- Small models, random moves, 3 restarts x 3000 moves, start 11: model.json ends
+  at 9 (10,372 total moves), model_high_constraints.json at 9 (9,293),
+  my_model.json at 8 (10,443). These equal the proven minima.
+- model_spins_core.json, targeted moves, 5 restarts x 6000 moves, start 32,
+  one run (seed 0): size 32 solved on run 1 (2,743 moves); size 31 on run 1
+  (3,865); size 30 on run 4 (23,948 moves, so 3 failed runs first); size 29
+  failed all 5 runs (30,000 moves). Smallest found: 30 tests, covered 239/239,
+  localized 229/239 (the ceiling). Total 60,556 moves, 225.65 s on a two-core
+  sandbox. The greedy locating heuristic needed 32 tests on this model.
+
+**Caveats:** one seed, one real-benchmark-derived model, schedule untuned. Whether
+29 is impossible is unknown (a larger budget or warm-starting from the 30-test
+suite might find it). Greedy and SA times were not measured on one machine.
+Do not call SA "better" than greedy from this; it is a single indicative run.
+
 ## Observations worth carrying into the paper
 
 **Localization cost in tests stays small, but the covering-suite localization
