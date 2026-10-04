@@ -54,7 +54,13 @@ have 2 to 5 literals, so they forbid combinations larger than pairs. A clause
 that names two values of the same parameter can never be violated and should
 be handled explicitly by a loader.
 
-All 35 files parse completely with this reading.
+All 35 files parse completely with this reading. Evidence that the reading is
+right, from `spins` only: the loader's rules give 2,002,944 valid
+configurations out of 8,388,608 raw, matching a count made directly from the
+raw files by two independent methods (pruned depth-first search and
+inclusion-exclusion over the 13 clauses). One file is good support, not proof
+for all 35; the same check should be repeated on `bugzilla` or a numbered
+instance with a solver once Z3 is in place.
 
 ## Sizes (computed from the files)
 
@@ -83,9 +89,12 @@ The harness enumerates every valid configuration. Raw configuration counts:
 | bugzilla | 2.7e16 |
 | gcc | 4.6e61 |
 
-Only `spins` is anywhere near enumerable, and even there the `ceiling` function
-(signatures over all valid configurations) would need 8 million columns per
-interaction. Every other instance is far out of reach. Running on these
+Only `spins` is anywhere near enumerable, and it is still out of reach for the
+current pipeline: it has 2,002,944 valid configurations, and the harness
+stores every valid configuration as a Python dictionary (about two million
+dictionaries of 18 entries), then repeatedly scans them in the greedy
+heuristic and in the `ceiling` computation. Every other instance is far out of
+reach. Running on these
 benchmarks therefore requires replacing enumeration with a constraint solver:
 
 - feasibility of a t-way interaction: is there a valid configuration
