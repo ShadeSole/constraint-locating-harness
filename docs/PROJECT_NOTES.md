@@ -320,25 +320,66 @@ proves a minimum, and only on small models. Runner:
 small models, starting two tests above the proven minimum, the search ends at
 exactly 9, 9 and 8 tests with localization equal to the ceiling (3 restarts,
 2000 moves, targeted). Six deliberate breaks of the shrinking loop were each
-caught by the new tests. The user pushed this commit but has not yet pasted
-output from the --shrink runs, so the numbers below are sandbox-only.
+caught by the new tests.
 
-**Sandbox only (not reproduced by the user), runs seeded, so move counts should
-reproduce exactly; times are machine-dependent:**
-- Small models, random moves, 3 restarts x 3000 moves, start 11: model.json ends
+**Reproduced by the user (Windows, Git Bash): 90 tests OK, and the spins-core run
+below matched the sandbox move for move; only the time differed (180.79 s on the
+user's machine versus 225.65 s in the sandbox).** The small-model runs were not
+reproduced by the user.
+- Small models (sandbox only), random moves, 3 restarts x 3000 moves, start 11: model.json ends
   at 9 (10,372 total moves), model_high_constraints.json at 9 (9,293),
   my_model.json at 8 (10,443). These equal the proven minima.
 - model_spins_core.json, targeted moves, 5 restarts x 6000 moves, start 32,
-  one run (seed 0): size 32 solved on run 1 (2,743 moves); size 31 on run 1
+  one run (seed 0, reproduced by the user): size 32 solved on run 1 (2,743 moves); size 31 on run 1
   (3,865); size 30 on run 4 (23,948 moves, so 3 failed runs first); size 29
   failed all 5 runs (30,000 moves). Smallest found: 30 tests, covered 239/239,
-  localized 229/239 (the ceiling). Total 60,556 moves, 225.65 s on a two-core
-  sandbox. The greedy locating heuristic needed 32 tests on this model.
+  localized 229/239 (the ceiling). Total 60,556 moves, 180.79 s on the user's
+  machine (225.65 s on a two-core sandbox). The greedy locating heuristic needed 32 tests on this model.
 
 **Caveats:** one seed, one real-benchmark-derived model, schedule untuned. Whether
 29 is impossible is unknown (a larger budget or warm-starting from the 30-test
 suite might find it). Greedy and SA times were not measured on one machine.
 Do not call SA "better" than greedy from this; it is a single indicative run.
+
+## Simulated annealing, warm start and a larger budget (V0.3 step 5)
+
+Step 5 adds `initial` to `anneal_suite` (start from a given suite instead of a
+random one), `drop_least_useful_test`, and `warm_start=True` in `find_small_suite`:
+the first run at each size below the start size begins from the previously solved
+suite minus the one test whose removal costs least, at a lower temperature
+(`warm_start_temp`, default 0.3). It replaces restart 0, so the failure budget at
+each size is unchanged. Runner flags: `--warm-start`, `--warm-temp`, `--seed`.
+102 tests pass in the sandbox (12 new, 7 deliberate breaks each caught).
+
+**Sandbox only (not reproduced by the user; model_spins_core.json, targeted
+moves, seed 0, 5 restarts per size; runs seeded, so move counts should reproduce):**
+
+| Setting | Sizes tried | Smallest found | Total moves |
+|---|---|---|---|
+| cold, 6000 moves/run, start 32 (user-reproduced) | 32, 31, 30 solved; 29 failed | 30 | 60,556 |
+| warm (T 0.3 or 0.1, same result), 6000 moves/run, start 32 | 32, 31 (warm, 187 moves), 30 solved; 29 failed | 30 | 56,878 |
+| warm, 20,000 moves/run, start 31 | 31, 30 solved; 29 failed (100,000 moves) | 30 | 183,875 |
+| cold, 20,000 moves/run, start 31 | 31, 30, 29 solved; 28 failed (100,000 moves) | 29 | 200,251 |
+
+Every suite found covers 239/239 and localizes 229/239 (the ceiling).
+
+**What this shows, and does not:**
+- Warm start saved moves on an easy step (size 31: 187 moves instead of 3,865) but
+  did not help below that. At size 30 the warm run failed in both budgets and a
+  cold run solved it.
+- At 20,000 moves/run, the cold search found a 29-test suite in its FIRST run at
+  size 29 (16,376 moves). In the warm search that first run was the warm run,
+  which failed, and the four cold runs after it (different seeds) also failed.
+  So warm start, as built, cost the one lucky restart. One seed, so this may be
+  luck rather than a systematic effect.
+- A bigger move budget mattered more than warm start: 6000 moves/run reached 30,
+  20,000 moves/run reached 29 in one search. No suite of 28 was found in 100,000
+  moves. The true minimum is unknown, so none of these sizes is shown optimal.
+- Greedy locating needed 32 tests on this model, so SA found a smaller suite
+  (29 to 30 vs 32), but only on one derived model with one seed, and the times
+  were not compared on one machine. Not a general ranking.
+- Warm temperatures 0.3 and 0.1 gave identical move counts here; the temperature
+  is untuned and this test could not separate them.
 
 ## Observations worth carrying into the paper
 

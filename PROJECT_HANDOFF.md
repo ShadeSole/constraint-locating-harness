@@ -78,7 +78,7 @@ metaheuristic for CONSTRAINED locating arrays, evaluated against the ceiling.
 The checks were done on rendered full text; wording should be verified against
 the PDFs before quoting.
 
-V0.3 progress on branch `v0.3-development` (code pushed through `0984942`):
+V0.3 progress on branch `v0.3-development` (code pushed through `0984942`; step 5 in progress):
 - `docs/BENCHMARKS.md`: where standard instances are (CCAG repository, 35
   CASA-format models, kept outside this repository in a sibling `external/`
   folder), the file format, sizes, and why enumeration cannot reach them.
@@ -98,14 +98,17 @@ V0.3 progress on branch `v0.3-development` (code pushed through `0984942`):
   optimum (9, 8, 9 tests) on three small models where greedy needs 11, 9, 11;
   on the spins core it matches greedy's 32 tests in about 7 s on 2 of 3 seeds.
 - Step 4 (`find_small_suite`, `--shrink` runner): shrinks the size while a fixed
-  budget of restarts x moves succeeds, with cooling spanning the budget. Sandbox
-  only so far: 30 tests on the spins core vs greedy's 32 (one seed), proven
-  minima reached on the three small models. User has not yet reproduced the
-  --shrink runs.
-- 90 tests (about 15 s; the exact-search tests are the slowest, a known issue).
+  budget of restarts x moves succeeds, with cooling spanning the budget. On the
+  spins core it found 30 tests vs greedy's 32 (one seed; reproduced by the user,
+  move counts identical, 180.79 s); proven minima reached on the three small
+  models (sandbox).
+- Step 5 (warm start, `--warm-start`): saves moves on easy sizes but did not help
+  below 30 in sandbox runs; a larger move budget (20,000/run) found 29 on the
+  spins core in one cold search (sandbox only, one seed). See PROJECT_NOTES.md.
+- 102 tests (about 19 s; the exact-search tests are the slowest, a known issue).
 
-Next, one step at a time: (a) reproduce the step 4 --shrink runs locally and
-try more seeds / a warm start (begin size n-1 from the solved size-n suite minus
+Next, one step at a time: (a) more seeds and budgets (does 29 repeat? is 28 reachable?), and a warm run
+that is EXTRA rather than replacing restart 0 (begin size n-1 from the solved size-n suite minus
 one test); (b) compare size and time against greedy on one machine; (c) targeted search for post-2023 work and the Garvin et al.
 metaheuristic paper; (d) Z3 and a solver-based pipeline so the real CCAG
 instances (all out of reach of enumeration) can be used; (e) compare against
