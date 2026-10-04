@@ -7,93 +7,75 @@
 **Primary language:** Python  
 **Research area:** constrained combinatorial interaction testing (CIT), locating arrays, and fault localization
 
-## 0. Status as of 2026-10-04b (read this first)
+## 0. Status as of 2026-10-04 (read this first)
 
-Current HEAD on `v0.2-experiments`: `3e18b06` "Add low-constraint-density
-benchmark model" (pushed to GitHub, verified against origin).
+Current HEAD on `v0.2-experiments`: `f2ca363` "Add high-constraint-density
+benchmark model" (pushed to GitHub, verified against origin), plus a
+documentation commit that records this status.
 
 Done since this handoff was originally written:
 - `cla_harness/experiment.py` was rebuilt around `evaluate_method` /
   `run_method` / `run_model`, producing one metrics record per (model,
   method): tests, coverage, ambiguous pairs, localized/total, localization
-  rate, and separate generation/evaluation timings.
-- Coverage is verified independently (`coverage_of` in `experiment.py`), not
-  just assumed from the generator succeeding.
+  rate, and separate generation/evaluation timings. Coverage is verified
+  independently (`coverage_of`), not assumed from the generator.
 - Results are written to `results/v0_2_results.csv` via `write_results_csv`
-  in `io.py`. That file is gitignored and not committed; it regenerates on
-  every run.
-- Six benchmark models now run end to end: `examples/model.json`,
-  `examples/my_model.json`, `examples/model_6param.json`,
-  `examples/model_8param.json`, `examples/model_multivalue.json`,
-  `examples/model_low_constraints.json`. Real, already-measured results for
-  all six are recorded in `docs/PROJECT_NOTES.md` under "Benchmark results"
-  -- read that before re-running anything; the numbers are already known
-  and should not be re-derived from scratch or guessed at. Two open,
-  unconfirmed observations are flagged there: the multi-value model's
-  covering suite localized 52.17% of faults, far above any binary model's
-  rate; and removing all constraints (model_low_constraints.json) actually
-  *lowered* the locating suite size relative to model.json's 2-rule
-  version, despite slightly more feasible interactions to distinguish.
-  Neither should be treated as settled -- both need the high-density model
-  (see below) or further models to confirm.
-- 15 automated tests exist (`tests/test_experiment.py`, 12 tests, plus the
-  original 3 in `tests/test_harness.py`), covering: the coverage invariant,
-  the zero-ambiguity-iff-full-localization property, CSV round-tripping,
-  hand-derived valid-config/interaction counts for five of the six models,
-  and a labeled regression snapshot of the greedy heuristics' current
-  behavior on `model.json` (expected to change only if the heuristics are
-  deliberately improved).
+  in `io.py` (gitignored; regenerates every run).
+- Seven benchmark models run end to end: `model.json`, `my_model.json`,
+  `model_6param.json`, `model_8param.json`, `model_multivalue.json`,
+  `model_low_constraints.json`, `model_high_constraints.json` (all in
+  `examples/`). Every model planned in Section 14 now exists. Real measured
+  results for all of them are in `docs/PROJECT_NOTES.md` under "Benchmark
+  results" -- read that before re-running anything; do not re-derive or guess
+  the numbers.
+- 16 automated tests (13 in `tests/test_experiment.py`, 3 in
+  `tests/test_harness.py`): coverage invariant, zero-ambiguity-iff-full-
+  localization, CSV round-trip, hand-derived valid-config and feasible-
+  interaction counts for six of the seven models, and a labeled regression
+  snapshot of the greedy heuristics on `model.json`.
+
+Most important result so far: `model_high_constraints.json` (4 forbidden
+rules) is the first model where the locating suite did NOT reach full
+localization (28/35 = 80%), and this is a structural ceiling, not a heuristic
+shortfall: using all 11 valid configurations as the suite leaves the same 5
+ambiguous pairs. Chains of rules force several parameter values at once, so
+several interactions are logically identical. Full write-up, including the
+caveats and a literature-check reminder, is in `docs/PROJECT_NOTES.md` under
+"Finding: a structural ceiling on localization". Do not describe the greedy
+locating heuristic as reaching full localization in general; it did on six
+models and provably could not on this one.
+
+Open, unconfirmed observations (one data point each; see PROJECT_NOTES.md):
+- model_multivalue.json's covering suite localized 52.17% of faults, well
+  above any binary model.
+- model_low_constraints.json needed fewer locating tests (9) than model.json
+  (11) despite slightly more feasible interactions.
 
 Known open issues, not yet fixed:
-- The test suite is slow (~8s for 13 tests) because several tests loop over
-  every model in `MODEL_FILES` and regenerate both suites from scratch each
-  time. This gets worse as more models are added. Needs a decision: cache
-  each model's generated suites once per test run instead of recomputing
-  them per test.
-- Most tracked files show as modified in `git status` due to a CRLF/LF
-  line-ending mismatch between the environments this project has been
-  edited from. This is cosmetic (diffs are empty with
-  `--ignore-space-at-eol`), but should eventually be fixed with a
-  `.gitattributes` file. Do not `git add .` until this is resolved, or you
-  will commit whitespace-only churn across unrelated files.
+- Test suite is slow (~8s) because several tests loop over every model and
+  regenerate suites each time; it grows with each model added. Decide on
+  caching generated suites per model within a test run.
+- Most tracked files show as modified in `git status` from a CRLF/LF
+  line-ending mismatch between environments. Cosmetic, but do not
+  `git add .` until a `.gitattributes` file resolves it.
 - `constraint_locating_harness.egg-info/` is tracked in git; it is a
-  generated build artifact and should be added to `.gitignore` and removed
-  from tracking.
+  generated artifact and should be gitignored and untracked.
+- The summary table printed by `print_summary` has fixed-width columns that
+  are too narrow for the longer model filenames (cosmetic).
 - `README.md` and the rest of this handoff still describe the V0.1
-  single-model workflow; neither reflects the current multi-model
-  experiment runner yet.
+  single-model workflow.
 
-Recommended immediate next step: one benchmark model left on the roadmap --
-a high-constraint-density model, same 5 binary parameters as model.json and
-model_low_constraints.json, but with more forbidden rules than model.json's
-2 (model_low_constraints.json has 0). That completes a clean three-point
-density curve (0, 2, many rules) on otherwise-identical parameter structure.
-Design it the same way as the others: change exactly one variable (rule
-count) relative to the existing 0/2-rule models, add it to `MODEL_PATHS` and
-`MODEL_FILES`, add a hand-derived (or exhaustively-checked, if the rules
-overlap enough to make hand inclusion-exclusion unwieldy) count test, run it,
-compare against model.json and model_low_constraints.json specifically,
-record the result in `docs/PROJECT_NOTES.md`, then commit.
-
-Two open, unconfirmed observations are worth keeping in mind while designing
-it, both noted in `docs/PROJECT_NOTES.md`: the multi-value model's unusually
-high 52.17% covering-suite localization rate, and model_low_constraints.json
-needing *fewer* locating tests than model.json despite more feasible
-interactions. The high-density model may shed light on the second one
-directly, since it extends the same density curve.
-
-Also worth doing soon, though it does not have to come first: fix the slow
-test suite described above, since it will only get more painful as models
-grow.
-
-A promising direction for V0.3, not to start yet, is recorded at the end of
-`docs/PROJECT_NOTES.md` under "Future work: metaheuristic locating-aware
-objective": giving simulated annealing or a genetic algorithm a fitness
-function that penalizes ambiguous interaction pairs directly, rather than
-optimizing only for coverage/size as existing metaheuristic covering-array
-literature does. This is motivated by a measured finding, also documented
-there, that the greedy locating heuristic's search cost grows much faster
-than the models themselves do.
+Remaining V0.2 checklist items (Section 15): update README/documentation;
+then merge `v0.2-experiments` into `main` and tag `v0.2.0`. Suggested order
+of small steps, one at a time: (1) add an "achievable ceiling" metric to
+`experiment.py` (see PROJECT_NOTES.md; small, makes every localization rate
+interpretable, and is the natural follow-up to the finding above -- decide
+whether it belongs in V0.2 or V0.3); (2) fix the slow test suite; (3) repo
+hygiene (`.gitattributes`, untrack egg-info, widen summary columns);
+(4) README/docs update; (5) merge and tag. The metaheuristic direction
+(SA/GA with a locating-aware objective) stays a V0.3 idea, recorded at the
+end of PROJECT_NOTES.md; the ceiling finding sharpens it, since a better
+search can only improve results up to the ceiling.
 
 ## 1. Read This First
 This project is already under development. **Do not redesign or rebuild it from scratch unless explicitly asked.** Inspect the repository first, preserve the existing architecture where reasonable, determine what is already implemented, and make incremental testable changes. Do not present illustrative numbers as experimental results. Preserve the distinction between established research concepts and this project's implementation/experimental contribution.
@@ -384,11 +366,11 @@ Independent variables can include parameter count, values per parameter, interac
 [x] Calculate ambiguous interaction pairs
 [x] Measure runtime
 [x] Save reproducible CSV results
-[x] Run multiple benchmark models (6 so far: model.json, my_model.json,
+[x] Run multiple benchmark models (7: model.json, my_model.json,
     model_6param.json, model_8param.json, model_multivalue.json,
-    model_low_constraints.json -- only the high-constraint-density model
-    from Section 14 still planned, to complete the density comparison)
-[x] Add/extend automated tests (13 tests total; see Section 0)
+    model_low_constraints.json, model_high_constraints.json -- all models
+    planned in Section 14 now exist)
+[x] Add/extend automated tests (16 tests total; see Section 0)
 [ ] Update README/documentation
 [ ] Commit/push completed work (ongoing per-commit habit, not a one-time item)
 [ ] Merge v0.2-experiments into main after verification

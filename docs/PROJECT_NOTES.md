@@ -143,6 +143,33 @@ is still future work (see V0.2 checklist).
   pick from. Only two points on this curve so far; the high-density model
   is needed before drawing any conclusion about direction.
 
+### examples/model_high_constraints.json (model.json's parameters, 4 forbidden rules) -- commit f2ca363
+- Change relative to model.json: identical 5 binary parameters; forbidden
+  list grows from 2 rules to 4 (model.json's original two, plus
+  Auth=CAC & Logging=Off, plus Network=Ethernet & Encryption=Off).
+- Valid configurations: 11 / 32 (hand-derived by inclusion-exclusion and
+  test-verified)
+- Feasible pairwise interactions: 35 (test-verified). 5 of the 40 possible
+  term-pairs are infeasible: the 4 forbidden rules themselves, plus one
+  *indirect* case (Database=Remote AND Encryption=Off) that no rule names
+  but that cannot occur because Database=Remote forces Network=Ethernet
+  (rule 2), which forces Encryption=On (rule 4).
+- Covering suite: 7 tests, coverage 35/35 (100%), 21 ambiguous pairs,
+  localized 14/35 (40.00%)
+- Locating suite: 11 tests (every valid configuration), coverage 35/35
+  (100%), **5 ambiguous pairs, localized 28/35 (80.00%)** -- the first model
+  where full localization was not reached. See "Finding: a structural
+  ceiling on localization" below: this is not a heuristic shortfall.
+- Observed generation time (verification run, not averaged): covering
+  ~0.0005s, locating ~0.015s
+
+#### Constraint-density comparison (same 5 binary parameters throughout)
+| Rules | Model                        | Valid | Feasible | Cover tests / localized | Locate tests / localized |
+|-------|------------------------------|-------|----------|-------------------------|--------------------------|
+| 0     | model_low_constraints.json   | 32    | 40       | 6 / 8 of 40 (20.00%)    | 9 / 40 of 40 (100%)      |
+| 2     | model.json                   | 18    | 38       | 6 / 10 of 38 (26.32%)   | 11 / 38 of 38 (100%)     |
+| 4     | model_high_constraints.json  | 11    | 35       | 7 / 14 of 35 (40.00%)   | 11 / 28 of 35 (80.00%)   |
+
 ## Observations worth carrying into the paper
 
 **Localization cost in tests stays small, but the covering-suite localization
@@ -173,6 +200,65 @@ feasible interaction's full signature. The test-suite-size cost of locating
 has stayed cheap so far; the search cost to find that suite has not. This is
 a concrete, measured motivation for exploring a smarter search method (see
 Future work below) rather than a vague appeal to "greedy might not scale."
+
+## Finding: a structural ceiling on localization (model_high_constraints.json)
+
+**Claim (for this model, `t=2`, deterministic single-fault model):** the
+maximum achievable unique-localization rate is 28/35 = 80%, for *any* test
+suite, of any size, built from this model's valid configurations. The greedy
+locating generator's 80% is not a near-miss.
+
+**Evidence.** Using all 11 valid configurations as the suite -- the largest
+suite that exists under this model -- still leaves exactly 5 ambiguous
+interaction pairs, the same 5 the greedy suite leaves (the greedy suite in
+fact selected all 11 configurations). Adding tests cannot help once every
+valid configuration is already included.
+
+**Why.** Each ambiguous pair traces to one parameter value that forces a
+chain of other values through the forbidden rules, so several differently
+named interactions are logically the same event and have identical
+PASS/FAIL signatures in every possible suite:
+- `Encryption=Off` forces `Auth=Password` (rule 1) and `Network=WiFi`
+  (rule 4), and `Network=WiFi` forces `Database=Local` (rule 2). So
+  `Encryption=Off AND Auth=Password`, `Encryption=Off AND Network=WiFi`, and
+  `Encryption=Off AND Database=Local` all hold in exactly the same valid
+  configurations. Three interactions, 3 ambiguous pairs.
+- `Auth=CAC` forces `Encryption=On` (rule 1) and `Logging=On` (rule 3), so
+  `Auth=CAC AND Encryption=On` and `Auth=CAC AND Logging=On` are identical.
+  1 pair.
+- `Database=Remote` forces `Network=Ethernet` (rule 2), which forces
+  `Encryption=On` (rule 4), so `Database=Remote AND Network=Ethernet` and
+  `Database=Remote AND Encryption=On` are identical. 1 pair.
+
+**Why it matters for the research question.** The project's framing so far is
+a cost tradeoff: coverage is cheap, localization costs extra tests. This
+model shows a second, different limit: in some constrained spaces no number
+of extra tests buys full localization, because the constraints themselves
+erase the distinguishing information. It also means the six earlier
+"locating suite reached 100%" results should not be read as evidence that
+the greedy heuristic always reaches full localization; they may reflect
+milder constraint structure, which these experiments have not separated
+from heuristic quality.
+
+**Implications for the framework (candidates, not yet done):**
+1. Report an *achievable ceiling* alongside the localization rate: group
+   interactions by their signature over the full set of valid configurations
+   (no suite generation needed); the ceiling is the fraction of interactions
+   that are alone in their group. Then "localized / ceiling" separates
+   heuristic quality from model structure.
+2. Constraint structure, not just rule count, is what matters: the 4-rule
+   model's ceiling comes from rules sharing parameters and chaining. Worth
+   characterizing which constraint graphs produce collapse.
+
+**Caveats.** One model. Pairwise only. Deterministic single-fault outcomes
+only; richer fault models (multiple faults, noise) change what is
+distinguishable. The ceiling is for 2-way interactions as the candidate set;
+a different candidate definition would give a different ceiling. This is an
+illustration of a known kind of phenomenon, not a claimed discovery: the
+locating-array literature already requires distinguishability conditions, and
+a literature check on constrained locating arrays (when full locating
+suites cannot exist under constraints) should be done before any novelty
+claim.
 
 ## Future work: metaheuristic locating-aware objective (candidate V0.3 direction)
 
