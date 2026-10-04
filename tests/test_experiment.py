@@ -8,6 +8,7 @@ from cla_harness.generator import greedy_covering_suite, greedy_locating_suite
 from cla_harness.io import load_model, write_results_csv
 from cla_harness.experiment import (
     RESULT_COLUMNS,
+    ceiling_of,
     evaluate_suite,
     run_method,
 )
@@ -176,6 +177,62 @@ class ExperimentInvariants(unittest.TestCase):
         _, _, (cover, locate) = run_both_methods("model.json")
         self.assertEqual((cover["tests"], cover["localized"]), (6, 10))
         self.assertEqual((locate["tests"], locate["localized"]), (11, 38))
+
+
+class CeilingByHand(unittest.TestCase):
+    """The achievable ceiling on tiny models worked out on paper."""
+
+    def _ceiling(self, forbidden_rules):
+        from cla_harness.core import Forbidden
+        parameters = {"A": ["0", "1"], "B": ["0", "1"]}
+        forbidden = [Forbidden.from_dict(rule) for rule in forbidden_rules]
+        configs = valid_configurations(parameters, forbidden)
+        interactions = feasible_interactions(configs, 1)
+        return ceiling_of(configs, interactions), len(interactions)
+
+    def test_unconstrained_everything_separable(self):
+        # 4 configs; A0, A1, B0, B1 all have different signatures.
+        self.assertEqual(self._ceiling([]), (4, 4))
+
+    def test_forced_equivalences_give_zero_ceiling(self):
+        # Forbid A0&B1 and A1&B0: only (0,0) and (1,1) remain valid.
+        # A0 and B0 appear in exactly the same tests, as do A1 and B1,
+        # so no suite can tell them apart.
+        rules = [{"A": "0", "B": "1"}, {"A": "1", "B": "0"}]
+        self.assertEqual(self._ceiling(rules), (0, 4))
+
+
+class CeilingOnBenchmarks(unittest.TestCase):
+    """Ceiling invariants checked against every shipped model."""
+
+    def test_ceiling_matches_localizing_with_all_valid_configs(self):
+        # Direct definition: the ceiling equals what evaluate_suite
+        # achieves when the suite is every valid configuration.
+        # Skip the two biggest models to keep the suite fast.
+        for model_file in ["model.json", "my_model.json", "model_multivalue.json",
+                           "model_low_constraints.json", "model_high_constraints.json"]:
+            with self.subTest(model=model_file):
+                parameters, forbidden = load_model(str(EXAMPLES / model_file))
+                configs = valid_configurations(parameters, forbidden)
+                interactions = feasible_interactions(configs, 2)
+                localized, _ = evaluate_suite(configs, interactions)
+                self.assertEqual(ceiling_of(configs, interactions), localized)
+
+    def test_no_method_exceeds_ceiling(self):
+        for model_file in ["model.json", "model_multivalue.json", "model_high_constraints.json"]:
+            with self.subTest(model=model_file):
+                _, _, records = run_both_methods(model_file)
+                for r in records:
+                    self.assertLessEqual(r["localized"], r["ceiling"])
+                    self.assertEqual(r["ceiling_gap"], r["ceiling"] - r["localized"])
+
+    def test_high_constraints_ceiling_is_28_of_35(self):
+        # Hand-derived structural ceiling (see PROJECT_NOTES.md); the
+        # locating heuristic reaches it, so its gap is zero.
+        _, _, (cover, locate) = run_both_methods("model_high_constraints.json")
+        self.assertEqual(locate["ceiling"], 28)
+        self.assertEqual(locate["ceiling_gap"], 0)
+        self.assertEqual(cover["ceiling_gap"], 14)
 
 
 class CsvOutput(unittest.TestCase):

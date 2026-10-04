@@ -1,4 +1,5 @@
 import time
+from collections import Counter
 
 from .core import (
     valid_configurations,
@@ -44,6 +45,8 @@ RESULT_COLUMNS = [
     "localized",
     "total",
     "localization_rate",
+    "ceiling",
+    "ceiling_gap",
     "generation_seconds",
     "evaluation_seconds",
 ]
@@ -69,6 +72,23 @@ def evaluate_suite(suite, interactions):
             correctly_localized += 1
 
     return correctly_localized, total
+
+def ceiling_of(configs, interactions):
+    """Most interactions ANY suite could localize under the deterministic
+    single-fault model: those whose pass/fail signature over ALL valid
+    configurations differs from every other interaction's signature.
+
+    Adding tests only splits signature groups, never merges them, so the
+    full set of valid configurations separates as much as any suite can.
+    Interactions that share a signature there are logically identical
+    under the model's constraints.
+    """
+    signatures = [
+        tuple(contains_interaction(c, i) for c in configs)
+        for i in interactions
+    ]
+    counts = Counter(signatures)
+    return sum(1 for s in signatures if counts[s] == 1)
 
 def coverage_of(suite, interactions):
     """Count feasible interactions appearing in at least one test of the suite."""
@@ -108,6 +128,8 @@ def run_method(model, method, generator, configs, interactions, strength):
     result["model"] = model
     result["strength"] = strength
     result["valid_configs"] = len(configs)
+    result["ceiling"] = ceiling_of(configs, interactions)
+    result["ceiling_gap"] = result["ceiling"] - result["localized"]
     return result
 
 def print_report(title, result):
@@ -122,6 +144,8 @@ def print_report(title, result):
     print("Ambiguous pairs:", result["ambiguous_pairs"])
     print("Localized:", result["localized"], "/", result["total"])
     print("Localization rate:", f"{result['localization_rate']:.2%}")
+    print("Achievable ceiling:", result["ceiling"], "/", result["total"],
+          "(gap:", result["ceiling_gap"], ")")
     print("Generation time:", f"{result['generation_seconds']:.4f} s")
     print("Evaluation time:", f"{result['evaluation_seconds']:.4f} s")
 
@@ -160,12 +184,13 @@ def print_summary(rows):
     print()
     print("=" * 60)
     print("SUMMARY")
-    print(f"{'model':<28}{'method':<8}{'tests':>6}{'amb.pairs':>11}{'localized':>12}")
+    print(f"{'model':<36}{'method':<8}{'tests':>6}{'amb.pairs':>11}{'localized':>12}{'ceiling':>9}")
     for r in rows:
         localized = f"{r['localized']}/{r['total']}"
         print(
-            f"{r['model']:<28}{r['method']:<8}{r['tests']:>6}"
+            f"{r['model']:<36}{r['method']:<8}{r['tests']:>6}"
             f"{r['ambiguous_pairs']:>11}{localized:>12}"
+            f"{r['ceiling']:>9}"
         )
 
 def main():
