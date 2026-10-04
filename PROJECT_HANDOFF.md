@@ -7,6 +7,76 @@
 **Primary language:** Python  
 **Research area:** constrained combinatorial interaction testing (CIT), locating arrays, and fault localization
 
+## 0. Status as of 2026-10-04 (read this first)
+
+All V0.2 work is complete and pushed on `v0.2-experiments`. The last step,
+merging into `main` and tagging `v0.2.0`, is recorded below. If `git log`
+on `main` shows a "Merge v0.2-experiments" commit and `git tag` lists
+`v0.2.0`, V0.2 is finished and the next phase (V0.3) can begin.
+
+Done since this handoff was originally written:
+- `cla_harness/experiment.py` was rebuilt around `evaluate_method` /
+  `run_method` / `run_model`, producing one metrics record per (model,
+  method): tests, coverage, ambiguous pairs, localized/total, localization
+  rate, and separate generation/evaluation timings. Coverage is verified
+  independently (`coverage_of`), not assumed from the generator.
+- Results are written to `results/v0_2_results.csv` via `write_results_csv`
+  in `io.py` (gitignored; regenerates every run).
+- Seven benchmark models run end to end: `model.json`, `my_model.json`,
+  `model_6param.json`, `model_8param.json`, `model_multivalue.json`,
+  `model_low_constraints.json`, `model_high_constraints.json` (all in
+  `examples/`). Every model planned in Section 14 now exists. Real measured
+  results for all of them are in `docs/PROJECT_NOTES.md` under "Benchmark
+  results" -- read that before re-running anything; do not re-derive or guess
+  the numbers.
+- Achievable-ceiling metric (`ceiling_of`; CSV columns `ceiling` and
+  `ceiling_gap`): the most interactions any suite could localize, from
+  signatures over all valid configurations. Six models have ceiling = total;
+  model_high_constraints has ceiling 28/35 and the locating suite reaches it.
+- 21 automated tests (18 in `tests/test_experiment.py`, 3 in
+  `tests/test_harness.py`): coverage invariant, ceiling hand-checks and
+  invariants, zero-ambiguity-iff-full-
+  localization, CSV round-trip, hand-derived valid-config and feasible-
+  interaction counts for six of the seven models, and a labeled regression
+  snapshot of the greedy heuristics on `model.json`.
+
+Most important result so far: `model_high_constraints.json` (4 forbidden
+rules) is the first model where the locating suite did NOT reach full
+localization (28/35 = 80%), and this is a structural ceiling, not a heuristic
+shortfall: using all 11 valid configurations as the suite leaves the same 5
+ambiguous pairs. Chains of rules force several parameter values at once, so
+several interactions are logically identical. Full write-up, including the
+caveats and a literature-check reminder, is in `docs/PROJECT_NOTES.md` under
+"Finding: a structural ceiling on localization". Do not describe the greedy
+locating heuristic as reaching full localization in general; it did on six
+models and provably could not on this one.
+
+Open, unconfirmed observations (one data point each; see PROJECT_NOTES.md):
+- model_multivalue.json's covering suite localized 52.17% of faults, well
+  above any binary model.
+- model_low_constraints.json needed fewer locating tests (9) than model.json
+  (11) despite slightly more feasible interactions.
+
+Also done: `.gitattributes` (line-ending noise gone), `egg-info` untracked and
+gitignored, test suite sped up from ~10s to ~3s by caching each model's suites
+within a test run, and `README.md` rewritten for V0.2.
+
+Known open issues, not yet fixed:
+- The summary table's model column is 36 characters wide; very long model
+  names would still run together (cosmetic).
+- model_multivalue.json's 52.17% covering-suite localization is one data
+  point; a second multi-value model would confirm or rule it out.
+- `localizer.rank_noisy` exists but no experiment uses it yet.
+
+Next phase (V0.3 candidates, choose one at a time): a metaheuristic
+(simulated annealing, possibly GA) with a locating-aware objective, aiming at
+smaller suites than the greedy locating heuristic and measured against the
+ceiling; a literature check on constrained locating/distinguishing arrays
+before any novelty claim; larger models and higher strength; then Z3,
+multiple faults, noise, test-runner integration and statistical/AI ranking,
+introduced deliberately and not together. The metaheuristic direction is
+recorded at the end of PROJECT_NOTES.md.
+
 ## 1. Read This First
 This project is already under development. **Do not redesign or rebuild it from scratch unless explicitly asked.** Inspect the repository first, preserve the existing architecture where reasonable, determine what is already implemented, and make incremental testable changes. Do not present illustrative numbers as experimental results. Preserve the distinction between established research concepts and this project's implementation/experimental contribution.
 
@@ -288,18 +358,21 @@ Independent variables can include parameter count, values per parameter, interac
 
 ## 15. Definition of V0.2 Complete
 ```text
-[ ] Automatically inject every feasible single t-way fault
-[ ] Evaluate ordinary covering suite
-[ ] Evaluate locating-oriented suite
-[ ] Calculate unique localization rate
-[ ] Verify interaction coverage
-[ ] Calculate ambiguous interaction pairs
-[ ] Measure runtime
-[ ] Save reproducible CSV results
-[ ] Run multiple benchmark models
-[ ] Add/extend automated tests
-[ ] Update README/documentation
-[ ] Commit/push completed work
+[x] Automatically inject every feasible single t-way fault
+[x] Evaluate ordinary covering suite
+[x] Evaluate locating-oriented suite
+[x] Calculate unique localization rate
+[x] Verify interaction coverage
+[x] Calculate ambiguous interaction pairs
+[x] Measure runtime
+[x] Save reproducible CSV results
+[x] Run multiple benchmark models (7: model.json, my_model.json,
+    model_6param.json, model_8param.json, model_multivalue.json,
+    model_low_constraints.json, model_high_constraints.json -- all models
+    planned in Section 14 now exist)
+[x] Add/extend automated tests (21 tests total; see Section 0)
+[x] Update README/documentation
+[ ] Commit/push completed work (ongoing per-commit habit, not a one-time item)
 [ ] Merge v0.2-experiments into main after verification
 [ ] Tag/release v0.2.0
 ```
