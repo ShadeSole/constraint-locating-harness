@@ -9,9 +9,10 @@
 
 ## 0. Status as of 2026-10-04 (read this first)
 
-Current HEAD on `v0.2-experiments`: `9996811` "Add achievable-ceiling metric
-(ceiling, ceiling_gap) with tests" (pushed to GitHub, verified against
-origin), plus a documentation commit that records this status.
+All V0.2 work is complete and pushed on `v0.2-experiments`. The last step,
+merging into `main` and tagging `v0.2.0`, is recorded below. If `git log`
+on `main` shows a "Merge v0.2-experiments" commit and `git tag` lists
+`v0.2.0`, V0.2 is finished and the next phase (V0.3) can begin.
 
 Done since this handoff was originally written:
 - `cla_harness/experiment.py` was rebuilt around `evaluate_method` /
@@ -56,28 +57,25 @@ Open, unconfirmed observations (one data point each; see PROJECT_NOTES.md):
 - model_low_constraints.json needed fewer locating tests (9) than model.json
   (11) despite slightly more feasible interactions.
 
-Known open issues, not yet fixed:
-- Test suite is slow (~8s) because several tests loop over every model and
-  regenerate suites each time; it grows with each model added. Decide on
-  caching generated suites per model within a test run.
-- Most tracked files show as modified in `git status` from a CRLF/LF
-  line-ending mismatch between environments. Cosmetic, but do not
-  `git add .` until a `.gitattributes` file resolves it.
-- `constraint_locating_harness.egg-info/` is tracked in git; it is a
-  generated artifact and should be gitignored and untracked.
-- The summary table's model column was widened to 36 characters; very long
-  model names would still run together (cosmetic).
-- `README.md` and the rest of this handoff still describe the V0.1
-  single-model workflow.
+Also done: `.gitattributes` (line-ending noise gone), `egg-info` untracked and
+gitignored, test suite sped up from ~10s to ~3s by caching each model's suites
+within a test run, and `README.md` rewritten for V0.2.
 
-Remaining V0.2 checklist items (Section 15): update README/documentation;
-then merge `v0.2-experiments` into `main` and tag `v0.2.0`. Suggested order
-of small steps, one at a time: (1) repo hygiene (`.gitattributes`, untrack
-egg-info); (2) fix the slow test suite; (3) README/docs update; (4) merge and
-tag. The achievable-ceiling metric is done. The metaheuristic direction
-(SA/GA with a locating-aware objective) stays a V0.3 idea, recorded at the
-end of PROJECT_NOTES.md; the ceiling now gives it a concrete target, since a
-better search can only improve results up to the ceiling.
+Known open issues, not yet fixed:
+- The summary table's model column is 36 characters wide; very long model
+  names would still run together (cosmetic).
+- model_multivalue.json's 52.17% covering-suite localization is one data
+  point; a second multi-value model would confirm or rule it out.
+- `localizer.rank_noisy` exists but no experiment uses it yet.
+
+Next phase (V0.3 candidates, choose one at a time): a metaheuristic
+(simulated annealing, possibly GA) with a locating-aware objective, aiming at
+smaller suites than the greedy locating heuristic and measured against the
+ceiling; a literature check on constrained locating/distinguishing arrays
+before any novelty claim; larger models and higher strength; then Z3,
+multiple faults, noise, test-runner integration and statistical/AI ranking,
+introduced deliberately and not together. The metaheuristic direction is
+recorded at the end of PROJECT_NOTES.md.
 
 ## 1. Read This First
 This project is already under development. **Do not redesign or rebuild it from scratch unless explicitly asked.** Inspect the repository first, preserve the existing architecture where reasonable, determine what is already implemented, and make incremental testable changes. Do not present illustrative numbers as experimental results. Preserve the distinction between established research concepts and this project's implementation/experimental contribution.
@@ -373,7 +371,7 @@ Independent variables can include parameter count, values per parameter, interac
     model_low_constraints.json, model_high_constraints.json -- all models
     planned in Section 14 now exist)
 [x] Add/extend automated tests (21 tests total; see Section 0)
-[ ] Update README/documentation
+[x] Update README/documentation
 [ ] Commit/push completed work (ongoing per-commit habit, not a one-time item)
 [ ] Merge v0.2-experiments into main after verification
 [ ] Tag/release v0.2.0
