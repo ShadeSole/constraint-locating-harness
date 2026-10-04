@@ -110,3 +110,37 @@ is not installed in the project's environment yet.
 
 This also matches the project's stated plan to introduce Z3 deliberately, and
 it makes the ceiling computation a solver query instead of a table lookup.
+
+## Derived model: `examples/model_spins_core.json` (spins constrained core)
+
+The SPIN simulator benchmark (`spins`) has 18 parameters, but all 13 of its
+constraints involve only 9 of them. `constrained_core` (in `cla_harness/core.py`)
+keeps just those 9 parameters and all 13 rules. The result is a DERIVED model,
+not the benchmark: interactions involving the 9 omitted, unconstrained
+parameters are not represented, and results on it must not be presented as
+results on `spins`.
+
+Checked facts (not run-time measurements):
+- 4,096 raw configurations; 978 valid. The omitted parameters are
+  unconstrained (7 binary, 2 four-valued, 2^7 * 4^2 = 2,048 combinations), so
+  978 * 2,048 = 2,002,944, equal to the full benchmark's independently counted
+  number of valid configurations.
+- 239 feasible 2-way interactions: 252 value pairs across different
+  parameters, minus the 13 forbidden pairs (derived by hand, confirmed by the
+  library).
+- Achievable ceiling 229 of 239, from an independently written script. The 10
+  interactions that no suite can separate fall into four groups, caused by
+  chains of forced values: `P0=1` forces `P1=0`, `P2=0`, `P14=0` and `P15=0`
+  (four identical interactions), and any non-zero `P15` forces both `P0=0` and
+  `P12=0`, so `P0=0 & P15=k` and `P12=0 & P15=k` are identical for k = 1, 2, 3.
+  This is the same mechanism as in `model_high_constraints.json`, here arising
+  from a published benchmark's rules.
+- A test confirms the file equals the projection of the real benchmark when the
+  CCAG files are present beside the repository.
+
+Because the greedy locating heuristic is slow on this model (minutes), it is
+listed in `SLOW_MODEL_PATHS` and only runs with
+`python -m cla_harness.experiment --include-slow`.
+
+Attribution: derived from the CCAG benchmark set (MIT license), whose `spins`
+model originates from Cohen, Dwyer & Shi, IEEE TSE 34 (2008).

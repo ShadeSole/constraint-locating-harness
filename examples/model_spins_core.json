@@ -1,0 +1,102 @@
+{
+  "_source": "Derived from the SPIN simulator (spins) model in the CCAG benchmark set (github.com/GIST-NJU/CCAG, MIT license), originally from Cohen, Dwyer & Shi, IEEE TSE 34 (2008). Projection onto the 9 parameters that appear in its 13 constraints. NOT the benchmark itself.",
+  "_note": "Parameters keep their original CASA positions (P0..P17); the 9 omitted parameters (P5..P11, P16, P17) are unconstrained. Valid configurations: 978 here, 978*2048 = 2,002,944 in the full model.",
+  "parameters": {
+    "P0": [
+      "0",
+      "1"
+    ],
+    "P1": [
+      "0",
+      "1"
+    ],
+    "P2": [
+      "0",
+      "1"
+    ],
+    "P3": [
+      "0",
+      "1"
+    ],
+    "P4": [
+      "0",
+      "1"
+    ],
+    "P12": [
+      "0",
+      "1"
+    ],
+    "P13": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "P14": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ],
+    "P15": [
+      "0",
+      "1",
+      "2",
+      "3"
+    ]
+  },
+  "forbidden": [
+    {
+      "P0": "1",
+      "P1": "1"
+    },
+    {
+      "P0": "1",
+      "P2": "1"
+    },
+    {
+      "P0": "1",
+      "P13": "1"
+    },
+    {
+      "P0": "1",
+      "P14": "1"
+    },
+    {
+      "P0": "1",
+      "P14": "2"
+    },
+    {
+      "P0": "1",
+      "P14": "3"
+    },
+    {
+      "P0": "1",
+      "P15": "1"
+    },
+    {
+      "P0": "1",
+      "P15": "2"
+    },
+    {
+      "P0": "1",
+      "P15": "3"
+    },
+    {
+      "P12": "1",
+      "P15": "1"
+    },
+    {
+      "P12": "1",
+      "P15": "2"
+    },
+    {
+      "P12": "1",
+      "P15": "3"
+    },
+    {
+      "P3": "1",
+      "P4": "0"
+    }
+  ]
+}

@@ -34,6 +34,25 @@ def valid_configurations(parameters: Dict[str, List[str]], forbidden: Iterable[F
     rules = list(forbidden)
     return [c for c in all_configurations(parameters) if is_valid(c, rules)]
 
+def constrained_core(parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden]):
+    """Project a model onto the parameters that appear in at least one rule.
+
+    Returns (core_parameters, forbidden, free_parameters). Every rule is kept
+    unchanged, because by definition all its parameters are in the core. The
+    free parameters are untouched by any rule, so for the original model
+
+        valid configurations = valid core configurations * product of the
+                               value counts of the free parameters.
+
+    The result is a DERIVED model: interactions involving a free parameter are
+    not represented, so it must never be reported as the original benchmark.
+    """
+    rules = list(forbidden)
+    used = {name for rule in rules for name, _ in rule.terms}
+    core = {name: values for name, values in parameters.items() if name in used}
+    free = [name for name in parameters if name not in used]
+    return core, rules, free
+
 def interactions_of(config: Config, strength: int = 2) -> FrozenSet[Interaction]:
     if strength < 1 or strength > len(config):
         raise ValueError("strength must be between 1 and the number of parameters")

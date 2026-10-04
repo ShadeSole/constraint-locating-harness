@@ -1,3 +1,4 @@
+import sys
 import time
 from collections import Counter
 
@@ -28,6 +29,11 @@ MODEL_PATHS = [
     "examples/model_multivalue.json",
     "examples/model_low_constraints.json",
     "examples/model_high_constraints.json",
+]
+# Models too slow for every run (the greedy locating heuristic takes minutes on
+# them). Included only when the runner is called with --include-slow.
+SLOW_MODEL_PATHS = [
+    "examples/model_spins_core.json",
 ]
 RESULTS_PATH = "results/v0_2_results.csv"
 STRENGTH = 2
@@ -193,10 +199,17 @@ def print_summary(rows):
             f"{r['ceiling']:>9}"
         )
 
+def selected_model_paths(argv):
+    """The models to run: the default list, plus the slow ones on request."""
+    paths = list(MODEL_PATHS)
+    if "--include-slow" in argv:
+        paths.extend(SLOW_MODEL_PATHS)
+    return paths
+
 def main():
 
     rows = []
-    for model_path in MODEL_PATHS:
+    for model_path in selected_model_paths(sys.argv[1:]):
         rows.extend(run_model(model_path, STRENGTH))
 
     print_summary(rows)
