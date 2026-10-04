@@ -1,9 +1,9 @@
 import unittest
 from pathlib import Path
 
-from cla_harness.annealing import suite_cost, unavoidable_pairs
+from cla_harness.annealing import anneal_suite, suite_cost, unavoidable_pairs
 from cla_harness.core import Forbidden, feasible_interactions, valid_configurations
-from cla_harness.experiment import evaluate_suite, ceiling_of
+from cla_harness.experiment import coverage_of, evaluate_suite, ceiling_of
 from cla_harness.generator import greedy_covering_suite, greedy_locating_suite
 from cla_harness.io import load_model
 
@@ -138,6 +138,87 @@ class CostOnSpinsCore(unittest.TestCase):
         suite = greedy_covering_suite(self.configs, self.interactions, strength=2)
         r = suite_cost(suite, self.interactions, self.unavoidable)
         self.assertEqual((r["uncovered"], r["avoidable_collisions"]), (0, 360))
+
+
+class AnnealByHand(unittest.TestCase):
+    """Two binary parameters, strength 1: four interactions, four valid tests."""
+
+    def setUp(self):
+        self.configs, self.interactions = two_binary()
+        self.unavoidable = unavoidable_pairs(self.configs, self.interactions)
+
+    def run_sa(self, n_tests, seed=0, steps=500):
+        return anneal_suite(self.configs, self.interactions, self.unavoidable,
+                            n_tests, seed=seed, max_steps=steps)
+
+    def test_three_tests_are_enough(self):
+        # Verified by hand: any three of the four configurations separate all
+        # four interactions, so annealing must find a zero-cost suite.
+        for seed in range(5):
+            result = self.run_sa(3, seed)
+            self.assertTrue(result["solved"])
+            self.assertEqual(len(result["suite"]), 3)
+
+    def test_two_tests_can_never_be_enough(self):
+        # Four interactions need four different non-empty signatures, but two
+        # tests allow only three (01, 10, 11). No search can reach zero.
+        result = self.run_sa(2, steps=300)
+        self.assertFalse(result["solved"])
+        self.assertEqual(result["steps"], 300)
+        self.assertGreater(result["cost"]["cost"], 0)
+
+    def test_same_seed_gives_the_same_run(self):
+        a, b = self.run_sa(2, seed=7, steps=200), self.run_sa(2, seed=7, steps=200)
+        self.assertEqual(a["suite"], b["suite"])
+        self.assertEqual((a["steps"], a["accepted"]), (b["steps"], b["accepted"]))
+
+    def test_suite_uses_only_valid_configurations_and_reported_cost_is_real(self):
+        for n in (2, 3):
+            result = self.run_sa(n, steps=200)
+            self.assertEqual(len(result["suite"]), n)
+            for test in result["suite"]:
+                self.assertIn(test, self.configs)
+            recomputed = suite_cost(result["suite"], self.interactions, self.unavoidable)
+            self.assertEqual(result["cost"], recomputed)
+
+    def test_bad_sizes_are_rejected(self):
+        for n in (0, 5):
+            with self.assertRaises(ValueError):
+                self.run_sa(n)
+
+    def test_returns_the_best_suite_seen_not_the_last_one(self):
+        # With an enormous temperature and no cooling every move is accepted, so
+        # the search is a random walk whose final state is rarely its best. The
+        # returned suite must still be the best one, and its reported cost must
+        # match the suite actually returned.
+        parameters, forbidden = load_model(str(EXAMPLES / "model.json"))
+        configs = valid_configurations(parameters, forbidden)
+        interactions = feasible_interactions(configs, 2)
+        unavoidable = unavoidable_pairs(configs, interactions)
+        for seed in range(5):
+            result = anneal_suite(configs, interactions, unavoidable, 4, seed=seed,
+                                  max_steps=200, start_temp=1e9, cooling=1.0)
+            recomputed = suite_cost(result["suite"], interactions, unavoidable)
+            self.assertEqual(result["cost"], recomputed)
+            self.assertEqual(result["accepted"], 200)  # nothing was rejected
+
+
+class AnnealMatchesIndependentEvaluator(unittest.TestCase):
+    def test_zero_cost_suite_covers_everything_and_reaches_the_ceiling(self):
+        # model.json: the greedy locating suite needs 11 tests. Annealing finds
+        # a 9-test suite with cost 0; the project's separate evaluator must
+        # agree that it covers all 38 interactions and localizes 38 of 38.
+        parameters, forbidden = load_model(str(EXAMPLES / "model.json"))
+        configs = valid_configurations(parameters, forbidden)
+        interactions = feasible_interactions(configs, 2)
+        unavoidable = unavoidable_pairs(configs, interactions)
+        result = anneal_suite(configs, interactions, unavoidable, 9, seed=0, max_steps=20000)
+        self.assertTrue(result["solved"])
+        covered, total = coverage_of(result["suite"], interactions)
+        localized, _ = evaluate_suite(result["suite"], interactions)
+        self.assertEqual((covered, total), (38, 38))
+        self.assertEqual(localized, ceiling_of(configs, interactions))
+        self.assertEqual(localized, 38)
 
 
 if __name__ == "__main__":
