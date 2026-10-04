@@ -3,7 +3,8 @@
 Step 1: the cost function.
 Step 2: a plain annealing loop for a FIXED suite size, with the simplest possible
 neighbor move (replace one test by a random valid configuration).
-Later steps: a smarter neighbor, then a search over the suite size.
+Step 3: a targeted neighbor move (after Konishi et al.), chosen with neighbor="targeted".
+Later steps: a search over the suite size, then speed.
 
 The cost follows the two-part form used for unconstrained locating arrays by
 Konishi, Kojima, Nakagawa & Tsuchiya (arXiv 1909.13090): a suite is good when
@@ -51,6 +52,7 @@ def suite_cost(
     interactions: Iterable[Interaction],
     unavoidable: Set[Pair],
     weight: float = 1.0,
+    detail: bool = False,
 ) -> dict:
     """Score a suite; zero means covered and as well separated as is possible.
 
@@ -58,23 +60,138 @@ def suite_cost(
     avoidable_collisions pairs of COVERED interactions that appear in exactly the
                          same tests although some valid test could separate them
     cost                 weight * uncovered + avoidable_collisions
+
+    With detail=True the result also lists WHICH interactions are involved
+    (uncovered_list, colliding_list), which the targeted neighbor move needs.
+    Both lists are sorted so that runs are reproducible.
     """
     interactions = list(interactions)
     groups: Dict[tuple, List[Interaction]] = defaultdict(list)
-    uncovered = 0
+    uncovered_list: List[Interaction] = []
     for interaction in interactions:
         key = tuple(contains_interaction(c, interaction) for c in suite)
         if any(key):
             groups[key].append(interaction)
         else:
-            uncovered += 1
-    collisions = _pairs_in_groups(groups.values())
-    avoidable = len(collisions - unavoidable)
-    return {
-        "uncovered": uncovered,
-        "avoidable_collisions": avoidable,
-        "cost": weight * uncovered + avoidable,
+            uncovered_list.append(interaction)
+    avoidable_pairs = _pairs_in_groups(groups.values()) - unavoidable
+    result = {
+        "uncovered": len(uncovered_list),
+        "avoidable_collisions": len(avoidable_pairs),
+        "cost": weight * len(uncovered_list) + len(avoidable_pairs),
     }
+    if detail:
+        colliding = {i for pair in avoidable_pairs for i in pair}
+        result["uncovered_list"] = sorted(uncovered_list, key=sorted)
+        result["colliding_list"] = sorted(colliding, key=sorted)
+    return result
+
+
+def exact_minimum_suite_size(
+    configs: List[Config],
+    interactions: Iterable[Interaction],
+    unavoidable: Set[Pair],
+    max_n: int,
+    max_subsets: int = 5_000_000,
+) -> dict | None:
+    """Smallest N for which SOME suite of N valid tests has cost zero, by trying all.
+
+    Exact ground truth for small models, to check what the heuristics find.
+    The cost here is the same one as in suite_cost (everything covered, and
+    every pair that can be separated is separated), computed independently with
+    bit masks. Raises ValueError rather than run for hours: the number of
+    subsets tried is the sum of C(len(configs), n) for n = 1..max_n.
+
+    Returns {"n": smallest size, "count": how many suites of that size have cost
+    zero, "example": one of them} or None if no size up to max_n works.
+    """
+    interactions = sorted(interactions, key=sorted)
+    total = sum(math.comb(len(configs), n) for n in range(1, max_n + 1))
+    if total > max_subsets:
+        raise ValueError(f"{total} subsets to try is more than max_subsets={max_subsets}")
+
+    position = {interaction: k for k, interaction in enumerate(interactions)}
+    allowed = {
+        frozenset(position[i] for i in pair) for pair in unavoidable
+    }
+    # Bit k of masks[j] is set when test k contains interaction j.
+    masks = [
+        sum(1 << k for k, c in enumerate(configs) if contains_interaction(c, i))
+        for i in interactions
+    ]
+
+    def zero_cost(chosen_mask):
+        groups: Dict[int, List[int]] = defaultdict(list)
+        for j, mask in enumerate(masks):
+            signature = mask & chosen_mask
+            if signature == 0:
+                return False  # an interaction is not covered
+            groups[signature].append(j)
+        for group in groups.values():
+            for a, b in combinations(group, 2):
+                if frozenset((a, b)) not in allowed:
+                    return False  # a separable pair is not separated
+        return True
+
+    for n in range(1, max_n + 1):
+        count, example = 0, None
+        for chosen in combinations(range(len(configs)), n):
+            chosen_mask = 0
+            for k in chosen:
+                chosen_mask |= 1 << k
+            if zero_cost(chosen_mask):
+                count += 1
+                if example is None:
+                    example = [configs[k] for k in chosen]
+        if count:
+            return {"n": n, "count": count, "example": example}
+    return None
+
+
+class _TargetedHelper:
+    """Chooses the targeted neighbor move (after Konishi et al., arXiv 1909.13090).
+
+    Konishi et al. work with unconstrained arrays where a row can be overwritten
+    freely. Here every row must stay a valid configuration, so instead of writing
+    an interaction into a row we swap in a VALID configuration that contains it
+    (a lookup built once), and "change one factor value" becomes "swap in a valid
+    configuration that differs in exactly one parameter".
+    """
+
+    def __init__(self, configs, interactions):
+        self.configs = configs
+        self.containing = {
+            i: [k for k, c in enumerate(configs) if contains_interaction(c, i)]
+            for i in interactions
+        }
+        self._one_change: Dict[int, List[int]] = {}
+
+    def one_change_neighbors(self, index):
+        if index not in self._one_change:
+            base = self.configs[index]
+            self._one_change[index] = [
+                k for k, c in enumerate(self.configs)
+                if sum(1 for name in base if base[name] != c[name]) == 1
+            ]
+        return self._one_change[index]
+
+    def move(self, rng, current, cost):
+        """Return (position in the suite to change, index of the valid configuration to put there)."""
+        uncovered = cost["uncovered_list"]
+        if uncovered:
+            target = rng.choice(uncovered)
+            return rng.randrange(len(current)), rng.choice(self.containing[target])
+
+        target = rng.choice(cost["colliding_list"])
+        having = [p for p, k in enumerate(current) if contains_interaction(self.configs[k], target)]
+        lacking = [p for p in range(len(current)) if p not in having]
+        if lacking and (not having or rng.random() < 0.5):
+            return rng.choice(lacking), rng.choice(self.containing[target])
+        position = rng.choice(having)
+        options = self.one_change_neighbors(current[position])
+        if options:
+            return position, rng.choice(options)
+        return position, rng.choice(self.containing[target])
 
 
 def anneal_suite(
@@ -87,6 +204,7 @@ def anneal_suite(
     start_temp: float = 2.0,
     cooling: float = 0.999,
     weight: float = 1.0,
+    neighbor: str = "random",
 ) -> dict:
     """Simulated annealing for a suite of exactly n_tests valid configurations.
 
@@ -97,19 +215,34 @@ def anneal_suite(
     kept with probability exp(-delta / temperature). The temperature starts at
     start_temp and is multiplied by `cooling` after every proposed move.
 
+    neighbor="random" is the move above. neighbor="targeted" picks the move using
+    the current suite's problems (see _targeted_move): if some interaction is
+    uncovered it puts a test containing that interaction in; otherwise it picks an
+    interaction in an avoidable collision and either puts a test containing it in
+    place of a test that lacks it, or changes one parameter value of a test that
+    has it.
+
     The search stops as soon as the cost reaches zero, or after max_steps moves.
     The best suite seen is returned, which can differ from the final state.
     Results are reproducible: the same seed gives the same run.
     """
-    interactions = list(interactions)
+    if neighbor not in ("random", "targeted"):
+        raise ValueError("neighbor must be 'random' or 'targeted'")
+    # A fixed order, so that "random" choices depend only on the seed.
+    interactions = sorted(interactions, key=sorted)
     rng = random.Random(seed)
     if not 1 <= n_tests <= len(configs):
         raise ValueError("n_tests must be between 1 and the number of valid configurations")
 
+    targeted = neighbor == "targeted"
+    helper = _TargetedHelper(configs, interactions) if targeted else None
+
     current = rng.sample(range(len(configs)), n_tests)  # distinct starting tests
 
     def cost_of(indices):
-        return suite_cost([configs[i] for i in indices], interactions, unavoidable, weight)
+        return suite_cost(
+            [configs[i] for i in indices], interactions, unavoidable, weight, detail=targeted
+        )
 
     current_cost = cost_of(current)
     best, best_cost = list(current), current_cost
@@ -119,8 +252,11 @@ def anneal_suite(
 
     while steps < max_steps and best_cost["cost"] > 0:
         steps += 1
-        position = rng.randrange(n_tests)
-        replacement = rng.randrange(len(configs))
+        if targeted:
+            position, replacement = helper.move(rng, current, current_cost)
+        else:
+            position = rng.randrange(n_tests)
+            replacement = rng.randrange(len(configs))
         proposal = list(current)
         proposal[position] = replacement
         proposal_cost = cost_of(proposal)
@@ -135,7 +271,7 @@ def anneal_suite(
 
     return {
         "suite": [configs[i] for i in best],
-        "cost": best_cost,
+        "cost": {k: best_cost[k] for k in ("uncovered", "avoidable_collisions", "cost")},
         "steps": steps,
         "accepted": accepted,
         "solved": best_cost["cost"] == 0,
@@ -156,6 +292,9 @@ def main(argv=None):
     parser.add_argument("--seeds", type=int, default=5, help="number of independent runs")
     parser.add_argument("--steps", type=int, default=20000, help="moves per run")
     parser.add_argument("--strength", type=int, default=2)
+    parser.add_argument("--neighbor", choices=["random", "targeted"], default="random")
+    parser.add_argument("--exact", action="store_true",
+                        help="also find the true minimum suite size by trying every subset (small models only)")
     args = parser.parse_args(argv)
 
     parameters, forbidden = load_model(args.model)
@@ -165,13 +304,21 @@ def main(argv=None):
     ceiling = ceiling_of(configs, interactions)
     print(f"{args.model}: {len(configs)} valid configurations, "
           f"{len(interactions)} feasible interactions, ceiling {ceiling}")
-    print(f"Searching for a suite of {args.n_tests} tests, {args.steps} moves per run")
+    if args.exact:
+        exact = exact_minimum_suite_size(configs, interactions, unavoidable, args.n_tests)
+        if exact is None:
+            print(f"Exact search: no suite of up to {args.n_tests} tests reaches cost zero")
+        else:
+            print(f"Exact search: smallest possible suite has {exact['n']} tests "
+                  f"({exact['count']} such suites exist)")
+    print(f"Searching for a suite of {args.n_tests} tests, {args.steps} moves per run, "
+          f"{args.neighbor} moves")
 
     solved = 0
     for seed in range(args.seeds):
         start = time.perf_counter()
         result = anneal_suite(configs, interactions, unavoidable, args.n_tests,
-                              seed=seed, max_steps=args.steps)
+                              seed=seed, max_steps=args.steps, neighbor=args.neighbor)
         seconds = time.perf_counter() - start
         covered, total = coverage_of(result["suite"], interactions)
         localized, _ = evaluate_suite(result["suite"], interactions)

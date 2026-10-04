@@ -1,7 +1,15 @@
 import unittest
 from pathlib import Path
 
-from cla_harness.annealing import anneal_suite, suite_cost, unavoidable_pairs
+import random
+
+from cla_harness.annealing import (
+    _TargetedHelper,
+    anneal_suite,
+    exact_minimum_suite_size,
+    suite_cost,
+    unavoidable_pairs,
+)
 from cla_harness.core import Forbidden, feasible_interactions, valid_configurations
 from cla_harness.experiment import coverage_of, evaluate_suite, ceiling_of
 from cla_harness.generator import greedy_covering_suite, greedy_locating_suite
@@ -219,6 +227,148 @@ class AnnealMatchesIndependentEvaluator(unittest.TestCase):
         self.assertEqual((covered, total), (38, 38))
         self.assertEqual(localized, ceiling_of(configs, interactions))
         self.assertEqual(localized, 38)
+
+
+class ExactMinimumByHand(unittest.TestCase):
+    def test_unconstrained_two_binary_needs_three_tests(self):
+        # Hand-derived earlier: any 3 of the 4 configurations separate all four
+        # interactions, and 2 tests cannot (only 3 non-empty signatures exist).
+        configs, interactions = two_binary()
+        unavoidable = unavoidable_pairs(configs, interactions)
+        found = exact_minimum_suite_size(configs, interactions, unavoidable, max_n=4)
+        self.assertEqual((found["n"], found["count"]), (3, 4))
+
+    def test_forced_equivalences_need_both_valid_tests(self):
+        # Only (0,0) and (1,1) are valid: one test leaves two interactions
+        # uncovered, both tests give cost zero.
+        configs, interactions = two_binary([{"A": "0", "B": "1"}, {"A": "1", "B": "0"}])
+        unavoidable = unavoidable_pairs(configs, interactions)
+        found = exact_minimum_suite_size(configs, interactions, unavoidable, max_n=2)
+        self.assertEqual((found["n"], found["count"]), (2, 1))
+
+    def test_returns_none_when_max_n_is_too_small(self):
+        configs, interactions = two_binary()
+        unavoidable = unavoidable_pairs(configs, interactions)
+        self.assertIsNone(exact_minimum_suite_size(configs, interactions, unavoidable, max_n=2))
+
+    def test_refuses_to_run_for_hours(self):
+        configs, interactions = two_binary()
+        unavoidable = unavoidable_pairs(configs, interactions)
+        with self.assertRaises(ValueError):
+            exact_minimum_suite_size(configs, interactions, unavoidable, max_n=4, max_subsets=5)
+
+    def test_example_really_has_cost_zero(self):
+        configs, interactions = two_binary()
+        unavoidable = unavoidable_pairs(configs, interactions)
+        found = exact_minimum_suite_size(configs, interactions, unavoidable, max_n=4)
+        self.assertEqual(suite_cost(found["example"], interactions, unavoidable)["cost"], 0)
+
+
+# Smallest zero-cost suite sizes found by trying every subset, and how many suites
+# of that size exist. Regression snapshots from exact_minimum_suite_size, which
+# uses its own bit-mask cost; the greedy locating heuristic needs 11, 11 and 9.
+EXACT_MINIMA = {
+    "model.json": (9, 2),
+    "model_high_constraints.json": (9, 1),
+    "my_model.json": (8, 8),
+}
+
+
+class SearchAgainstExactMinimum(unittest.TestCase):
+    def setUp(self):
+        self.models = {}
+        for name in EXACT_MINIMA:
+            parameters, forbidden = load_model(str(EXAMPLES / name))
+            configs = valid_configurations(parameters, forbidden)
+            interactions = feasible_interactions(configs, 2)
+            self.models[name] = (configs, interactions, unavoidable_pairs(configs, interactions))
+
+    def test_exact_minima(self):
+        for name, (n, count) in EXACT_MINIMA.items():
+            configs, interactions, unavoidable = self.models[name]
+            found = exact_minimum_suite_size(configs, interactions, unavoidable, max_n=n)
+            self.assertEqual((found["n"], found["count"]), (n, count), name)
+
+    def test_annealing_reaches_the_exact_minimum_with_both_moves(self):
+        for name, (n, _) in EXACT_MINIMA.items():
+            configs, interactions, unavoidable = self.models[name]
+            for neighbor in ("random", "targeted"):
+                for seed in range(2):
+                    result = anneal_suite(configs, interactions, unavoidable, n,
+                                          seed=seed, max_steps=20000, neighbor=neighbor)
+                    self.assertTrue(result["solved"], (name, neighbor, seed))
+
+    def test_annealing_cannot_beat_the_exact_minimum(self):
+        # One test below the proven minimum is impossible, so no search can solve it.
+        for name, (n, _) in EXACT_MINIMA.items():
+            configs, interactions, unavoidable = self.models[name]
+            result = anneal_suite(configs, interactions, unavoidable, n - 1,
+                                  seed=0, max_steps=1500, neighbor="targeted")
+            self.assertFalse(result["solved"], name)
+
+
+class TargetedMoveBehaviour(unittest.TestCase):
+    def setUp(self):
+        self.configs, self.interactions = two_binary()
+        self.unavoidable = unavoidable_pairs(self.configs, self.interactions)
+        self.helper = _TargetedHelper(self.configs, sorted(self.interactions, key=sorted))
+
+    def index_of(self, a, b):
+        return self.configs.index(config(a, b))
+
+    def test_detail_lists_name_the_problem_interactions(self):
+        r = suite_cost([config("0", "0")], self.interactions, self.unavoidable, detail=True)
+        names = lambda items: sorted(sorted(i)[0][0] + sorted(i)[0][1] for i in items)
+        self.assertEqual(names(r["uncovered_list"]), ["A1", "B1"])
+        self.assertEqual(names(r["colliding_list"]), ["A0", "B0"])
+
+    def test_default_cost_has_no_detail_keys(self):
+        r = suite_cost([config("0", "0")], self.interactions, self.unavoidable)
+        self.assertEqual(set(r), {"uncovered", "avoidable_collisions", "cost"})
+
+    def test_uncovered_interaction_gets_a_test_that_contains_one(self):
+        current = [self.index_of("0", "0")]  # leaves A1 and B1 uncovered
+        cost = suite_cost([self.configs[k] for k in current], self.interactions,
+                          self.unavoidable, detail=True)
+        for seed in range(20):
+            position, replacement = self.helper.move(random.Random(seed), current, cost)
+            self.assertEqual(position, 0)
+            new_test = self.configs[replacement]
+            self.assertTrue(new_test["A"] == "1" or new_test["B"] == "1")  # holds A1 or B1
+
+    def test_collision_move_changes_the_suite_and_stays_valid(self):
+        current = [self.index_of("0", "0"), self.index_of("1", "1")]  # all covered, 2 collisions
+        cost = suite_cost([self.configs[k] for k in current], self.interactions,
+                          self.unavoidable, detail=True)
+        self.assertEqual(cost["uncovered_list"], [])
+        for seed in range(50):
+            position, replacement = self.helper.move(random.Random(seed), current, cost)
+            self.assertIn(position, (0, 1))
+            self.assertNotEqual(replacement, current[position])
+            self.assertTrue(0 <= replacement < len(self.configs))
+
+    def test_one_change_neighbors_differ_in_exactly_one_parameter(self):
+        for k, base in enumerate(self.configs):
+            for j in self.helper.one_change_neighbors(k):
+                self.assertEqual(sum(base[n] != self.configs[j][n] for n in base), 1)
+
+    def test_targeted_search_is_reproducible_and_valid(self):
+        parameters, forbidden = load_model(str(EXAMPLES / "model.json"))
+        configs = valid_configurations(parameters, forbidden)
+        interactions = feasible_interactions(configs, 2)
+        unavoidable = unavoidable_pairs(configs, interactions)
+        kwargs = dict(seed=3, max_steps=2000, neighbor="targeted")
+        a = anneal_suite(configs, interactions, unavoidable, 9, **kwargs)
+        b = anneal_suite(configs, interactions, unavoidable, 9, **kwargs)
+        self.assertEqual((a["suite"], a["steps"], a["accepted"]), (b["suite"], b["steps"], b["accepted"]))
+        for test in a["suite"]:
+            self.assertIn(test, configs)
+        self.assertEqual(a["cost"], suite_cost(a["suite"], interactions, unavoidable))
+
+    def test_unknown_neighbor_is_rejected(self):
+        with self.assertRaises(ValueError):
+            anneal_suite(self.configs, self.interactions, self.unavoidable, 2,
+                         seed=0, neighbor="magic")
 
 
 if __name__ == "__main__":
