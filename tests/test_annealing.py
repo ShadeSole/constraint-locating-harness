@@ -2,11 +2,15 @@ import unittest
 from pathlib import Path
 
 import random
+from unittest import mock
 
+from cla_harness import annealing
 from cla_harness.annealing import (
     _TargetedHelper,
+    _restart_seed,
     anneal_suite,
     exact_minimum_suite_size,
+    find_small_suite,
     suite_cost,
     unavoidable_pairs,
 )
@@ -373,3 +377,102 @@ class TargetedMoveBehaviour(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class FindSmallSuiteByHand(unittest.TestCase):
+    """Two binary parameters, strength 1: the hand-verified minimum is 3 tests."""
+
+    def setUp(self):
+        self.configs, self.interactions = two_binary()
+        self.unavoidable = unavoidable_pairs(self.configs, self.interactions)
+
+    def search(self, start=4, **kwargs):
+        kwargs.setdefault("restarts", 3)
+        kwargs.setdefault("steps_per_restart", 200)
+        return find_small_suite(self.configs, self.interactions, self.unavoidable,
+                                start, **kwargs)
+
+    def test_shrinks_to_the_minimum_and_stops(self):
+        found = self.search()
+        self.assertEqual(found["size"], 3)
+        self.assertEqual([(a["n"], a["solved"]) for a in found["attempts"]],
+                         [(4, True), (3, True), (2, False)])
+
+    def test_returned_suite_is_valid_and_has_cost_zero(self):
+        found = self.search()
+        self.assertEqual(len(found["suite"]), 3)
+        for test in found["suite"]:
+            self.assertIn(test, self.configs)
+        self.assertEqual(suite_cost(found["suite"], self.interactions, self.unavoidable)["cost"], 0)
+
+    def test_failure_costs_exactly_the_fixed_budget(self):
+        # Size 2 can never be solved, so every restart must use every move.
+        found = self.search(restarts=3, steps_per_restart=200)
+        failed = found["attempts"][-1]
+        self.assertEqual(failed["restarts_used"], 3)
+        self.assertEqual(failed["moves"], 3 * 200)
+
+    def test_total_moves_adds_up_over_all_sizes(self):
+        found = self.search()
+        self.assertEqual(found["total_moves"], sum(a["moves"] for a in found["attempts"]))
+
+    def test_same_arguments_give_the_same_result(self):
+        a, b = self.search(seed=4), self.search(seed=4)
+        self.assertEqual(a["suite"], b["suite"])
+        self.assertEqual(a["attempts"], b["attempts"])
+
+    def test_nothing_found_when_the_start_size_is_too_small(self):
+        found = self.search(start=2)
+        self.assertIsNone(found["suite"])
+        self.assertIsNone(found["size"])
+        self.assertEqual(len(found["attempts"]), 1)
+
+    def test_min_size_stops_the_shrinking_early(self):
+        found = self.search(min_size=3)
+        self.assertEqual([a["n"] for a in found["attempts"]], [4, 3])
+        self.assertEqual(found["size"], 3)
+
+    def test_bad_arguments_are_rejected(self):
+        for kwargs in ({"start": 0}, {"start": 5}, {"restarts": 0},
+                       {"steps_per_restart": 0}, {"end_temp": 0},
+                       {"end_temp": 3.0}, {"min_size": 0}):
+            with self.assertRaises(ValueError, msg=str(kwargs)):
+                self.search(**kwargs)
+
+    def test_cooling_runs_from_start_temp_down_to_end_temp_over_the_budget(self):
+        calls = []
+        real = annealing.anneal_suite
+
+        def spy(*args, **kwargs):
+            calls.append(kwargs)
+            return real(*args, **kwargs)
+
+        with mock.patch.object(annealing, "anneal_suite", spy):
+            self.search(start=3, steps_per_restart=400, start_temp=2.0, end_temp=0.05)
+        self.assertTrue(calls)
+        for kwargs in calls:
+            self.assertEqual(kwargs["max_steps"], 400)
+            final = kwargs["start_temp"] * kwargs["cooling"] ** 400
+            self.assertAlmostEqual(final, 0.05, places=9)
+
+    def test_restart_seeds_are_stable_and_differ_by_size_and_restart(self):
+        self.assertEqual(_restart_seed(1, 5, 0), _restart_seed(1, 5, 0))
+        seeds = {_restart_seed(1, n, r) for n in (4, 5, 6) for r in range(4)}
+        self.assertEqual(len(seeds), 12)
+        self.assertNotEqual(_restart_seed(1, 5, 0), _restart_seed(2, 5, 0))
+
+
+class FindSmallSuiteAgainstExactMinimum(unittest.TestCase):
+    def test_search_ends_exactly_at_the_proven_minimum(self):
+        # Starting two tests above the proven minimum, the search must come down to
+        # the minimum and cannot go below it, because no smaller suite exists.
+        for name, (n, _) in EXACT_MINIMA.items():
+            parameters, forbidden = load_model(str(EXAMPLES / name))
+            configs = valid_configurations(parameters, forbidden)
+            interactions = feasible_interactions(configs, 2)
+            unavoidable = unavoidable_pairs(configs, interactions)
+            found = find_small_suite(configs, interactions, unavoidable, n + 2,
+                                     seed=0, restarts=3, steps_per_restart=2000)
+            self.assertEqual(found["size"], n, name)
+            localized, _ = evaluate_suite(found["suite"], interactions)
+            self.assertEqual(localized, ceiling_of(configs, interactions), name)

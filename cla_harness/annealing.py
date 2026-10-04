@@ -4,7 +4,9 @@ Step 1: the cost function.
 Step 2: a plain annealing loop for a FIXED suite size, with the simplest possible
 neighbor move (replace one test by a random valid configuration).
 Step 3: a targeted neighbor move (after Konishi et al.), chosen with neighbor="targeted".
-Later steps: a search over the suite size, then speed.
+Step 4: a search over the suite size (find_small_suite): start from a size known to
+work and keep shrinking by one until a fixed budget of restarts all fail.
+Later steps: speed.
 
 The cost follows the two-part form used for unconstrained locating arrays by
 Konishi, Kojima, Nakagawa & Tsuchiya (arXiv 1909.13090): a suite is good when
@@ -278,6 +280,101 @@ def anneal_suite(
     }
 
 
+def _restart_seed(seed: int, n_tests: int, restart: int) -> int:
+    """A seed for one restart that depends only on (seed, size, restart number).
+
+    A string is used on purpose: Random(str) is reproducible across machines and
+    Python versions, unlike hash() of a tuple, which changes between runs.
+    """
+    return random.Random(f"{seed}/{n_tests}/{restart}").randrange(2 ** 31)
+
+
+def find_small_suite(
+    configs: List[Config],
+    interactions: Iterable[Interaction],
+    unavoidable: Set[Pair],
+    start_size: int,
+    seed: int = 0,
+    restarts: int = 5,
+    steps_per_restart: int = 20000,
+    start_temp: float = 2.0,
+    end_temp: float = 0.05,
+    neighbor: str = "targeted",
+    min_size: int = 1,
+) -> dict:
+    """Look for the smallest suite that reaches cost zero, by shrinking one test at a time.
+
+    1. Try to solve at start_size. This should be a size known (or hoped) to work,
+       for example the size of the greedy locating suite.
+    2. At each size, make up to `restarts` independent annealing runs, each with a
+       budget of `steps_per_restart` moves. The first run that reaches cost zero
+       solves the size.
+    3. After a solved size n, try n - 1 from scratch. Stop at the first size where
+       every restart fails (or when n would go below min_size).
+
+    "Failure at size n" is therefore a fixed budget: restarts * steps_per_restart
+    moves. It is NOT wall-clock time, so the outcome does not depend on how fast
+    the machine is. It is also NOT a proof that n is impossible: a failed size may
+    simply need more moves. Only exact_minimum_suite_size proves a minimum, and
+    only for small models.
+
+    The cooling rate is chosen so that the temperature falls from start_temp to
+    end_temp over exactly steps_per_restart moves. Every run therefore uses its whole
+    budget as a slow cooling schedule, instead of freezing after a few thousand moves.
+
+    Returns {"suite": smallest suite solved or None, "size": its size or None,
+    "attempts": one record per size tried, "total_moves": all moves over all runs}.
+    Each attempt record has n, solved, restarts_used and moves.
+    Results are reproducible: the same arguments give the same result.
+    """
+    interactions = list(interactions)
+    if not 1 <= start_size <= len(configs):
+        raise ValueError("start_size must be between 1 and the number of valid configurations")
+    if restarts < 1 or steps_per_restart < 1:
+        raise ValueError("restarts and steps_per_restart must be at least 1")
+    if not 0 < end_temp <= start_temp:
+        raise ValueError("need 0 < end_temp <= start_temp")
+    if min_size < 1:
+        raise ValueError("min_size must be at least 1")
+
+    cooling = (end_temp / start_temp) ** (1.0 / steps_per_restart)
+    best_suite = None
+    attempts = []
+    total_moves = 0
+    n = start_size
+
+    while n >= min_size:
+        solved_suite = None
+        moves = 0
+        used = 0
+        for restart in range(restarts):
+            used += 1
+            result = anneal_suite(
+                configs, interactions, unavoidable, n,
+                seed=_restart_seed(seed, n, restart),
+                max_steps=steps_per_restart, start_temp=start_temp,
+                cooling=cooling, neighbor=neighbor,
+            )
+            moves += result["steps"]
+            if result["solved"]:
+                solved_suite = result["suite"]
+                break
+        total_moves += moves
+        attempts.append({"n": n, "solved": solved_suite is not None,
+                         "restarts_used": used, "moves": moves})
+        if solved_suite is None:
+            break
+        best_suite = solved_suite
+        n -= 1
+
+    return {
+        "suite": best_suite,
+        "size": len(best_suite) if best_suite is not None else None,
+        "attempts": attempts,
+        "total_moves": total_moves,
+    }
+
+
 def main(argv=None):
     """Try annealing at one suite size on one model: python -m cla_harness.annealing MODEL N"""
     import argparse
@@ -293,6 +390,10 @@ def main(argv=None):
     parser.add_argument("--steps", type=int, default=20000, help="moves per run")
     parser.add_argument("--strength", type=int, default=2)
     parser.add_argument("--neighbor", choices=["random", "targeted"], default="random")
+    parser.add_argument("--shrink", action="store_true",
+                        help="treat N as a START size and keep shrinking the suite while the search succeeds")
+    parser.add_argument("--restarts", type=int, default=5,
+                        help="with --shrink: independent runs allowed at each size")
     parser.add_argument("--exact", action="store_true",
                         help="also find the true minimum suite size by trying every subset (small models only)")
     args = parser.parse_args(argv)
@@ -311,6 +412,27 @@ def main(argv=None):
         else:
             print(f"Exact search: smallest possible suite has {exact['n']} tests "
                   f"({exact['count']} such suites exist)")
+    if args.shrink:
+        start = time.perf_counter()
+        found = find_small_suite(configs, interactions, unavoidable, args.n_tests,
+                                 seed=0, restarts=args.restarts,
+                                 steps_per_restart=args.steps, neighbor=args.neighbor)
+        seconds = time.perf_counter() - start
+        print(f"Shrinking from {args.n_tests} tests: up to {args.restarts} runs of "
+              f"{args.steps} moves per size, {args.neighbor} moves")
+        for a in found["attempts"]:
+            print(f"  size {a['n']}: solved={a['solved']} runs_used={a['restarts_used']} "
+                  f"moves={a['moves']}")
+        if found["suite"] is None:
+            print(f"No suite found even at the start size; total moves {found['total_moves']}, "
+                  f"time {seconds:.2f}s")
+        else:
+            covered, total = coverage_of(found["suite"], interactions)
+            localized, _ = evaluate_suite(found["suite"], interactions)
+            print(f"Smallest suite found: {found['size']} tests, covered={covered}/{total} "
+                  f"localized={localized}/{total} (ceiling {ceiling}); "
+                  f"total moves {found['total_moves']}, time {seconds:.2f}s")
+        return
     print(f"Searching for a suite of {args.n_tests} tests, {args.steps} moves per run, "
           f"{args.neighbor} moves")
 
