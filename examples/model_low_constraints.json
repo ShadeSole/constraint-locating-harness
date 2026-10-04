@@ -1,0 +1,10 @@
+{
+  "parameters": {
+    "Auth": ["Password", "CAC"],
+    "Network": ["WiFi", "Ethernet"],
+    "Encryption": ["On", "Off"],
+    "Logging": ["On", "Off"],
+    "Database": ["Local", "Remote"]
+  },
+  "forbidden": []
+}

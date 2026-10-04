@@ -13,8 +13,7 @@ from cla_harness.experiment import (
 )
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
-MODEL_FILES = ["model.json", "my_model.json", "model_6param.json", "model_8param.json", "model_multivalue.json"]
-
+MODEL_FILES = ["model.json", "my_model.json", "model_6param.json", "model_8param.json", "model_multivalue.json", "model_low_constraints.json"]
 def run_both_methods(model_file, strength=2):
     """Build the model and return (num_valid_configs, num_interactions, [cover, locate])."""
     parameters, forbidden = load_model(str(EXAMPLES / model_file))
@@ -109,7 +108,17 @@ class ExperimentInvariants(unittest.TestCase):
         valid, feasible, _ = run_both_methods("model_multivalue.json")
         self.assertEqual(valid, 30)
         self.assertEqual(feasible, 46)
-        
+
+    def test_model_level_counts_for_low_constraints_model(self):
+        # model_low_constraints.json = model.json's 5 binary parameters with
+        # the forbidden list emptied out entirely (0 rules instead of 2).
+        # With no constraints, every raw configuration is valid: 2^5 = 32.
+        # Every possible term-pair is feasible too: C(5,2) parameter pairs *
+        # 4 value-combinations each = 10 * 4 = 40.
+        valid, feasible, _ = run_both_methods("model_low_constraints.json")
+        self.assertEqual(valid, 32)
+        self.assertEqual(feasible, 40)
+
     def test_both_methods_cover_every_feasible_interaction(self):
         for model_file in MODEL_FILES:
             _, _, records = run_both_methods(model_file)
