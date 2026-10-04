@@ -109,16 +109,37 @@ is still future work (see V0.2 checklist).
 - Observed generation time (live run on Shade's machine): covering 0.0081s,
   locating 2.0917s
 
+### examples/model_multivalue.json (model.json with Network expanded to 3 values) -- commit 65c2fb6
+- Change relative to model.json: Network grows from 2 values (WiFi, Ethernet)
+  to 3 (WiFi, Ethernet, Cellular). Both forbidden rules and every other
+  parameter are unchanged.
+- Valid configurations: 30 / 48 (hand-derived via inclusion-exclusion and
+  test-verified)
+- Feasible pairwise interactions: 46 (hand-derived and test-verified)
+- Covering suite: 9 tests, coverage 46/46 (100%), 26 ambiguous pairs,
+  localized 24/46 (52.17%)
+- Locating suite: 12 tests, coverage 46/46 (100%), 0 ambiguous pairs,
+  localized 46/46 (100%)
+- Observed generation time: covering ~0.0006s, locating ~0.1045s
+
 ## Observations worth carrying into the paper
 
-**Localization cost in tests stays small, but ambiguity gets worse with size.**
-Across all four models the locating suite needed only 2-5 more tests than the
-covering suite to go from partial to full localization. But the covering
-suite's localization rate actually got worse as models grew (26.32% -> 33.33%
--> 25.86% -> 13.64%): more feasible interactions compete for the same handful
-of distinguishing tests, so "coverage is not localization" gets more true, not
-less, as the configuration space grows. This is worth stating as a headline
-result once more models confirm the trend.
+**Localization cost in tests stays small, but the covering-suite localization
+rate depends on more than just size.** Across all five models the locating
+suite needed only 2-5 more tests than the covering suite to go from partial
+to full localization -- that part looks robust. The covering suite's
+localization rate, however, is not simply a function of model size:
+26.32% -> 33.33% -> 25.86% -> 13.64% for the four binary models (roughly
+getting worse as the configuration space grows), but then 52.17%, nearly
+double the previous best, for model_multivalue.json, the one model with a
+3-valued parameter. The leading hypothesis is that parameter pairs touching a
+3-valued parameter contribute 6 distinct term-combinations instead of 4,
+giving the covering suite more naturally distinct signatures to land on even
+before any locating-specific effort -- but this is one model with one
+parameter changed, not yet a confirmed effect. A second multi-value model
+(a different parameter expanded, or more than one) would help confirm or
+rule this out before it's treated as a real finding rather than a
+coincidence.
 
 **The greedy locating heuristic's computational cost looks superlinear.**
 Going from model_6param.json to model_8param.json, feasible interactions grew
