@@ -13,7 +13,8 @@ from cla_harness.experiment import (
 )
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
-MODEL_FILES = ["model.json", "my_model.json", "model_6param.json", "model_8param.json", "model_multivalue.json", "model_low_constraints.json"]
+MODEL_FILES = ["model.json", "my_model.json", "model_6param.json", "model_8param.json", "model_multivalue.json", "model_low_constraints.json", "model_high_constraints.json"]
+
 def run_both_methods(model_file, strength=2):
     """Build the model and return (num_valid_configs, num_interactions, [cover, locate])."""
     parameters, forbidden = load_model(str(EXAMPLES / model_file))
@@ -87,6 +88,31 @@ class ExperimentInvariants(unittest.TestCase):
         valid, feasible, _ = run_both_methods("model_8param.json")
         self.assertEqual(valid, 144)
         self.assertEqual(feasible, 110)
+
+    def test_model_level_counts_for_high_constraints_model(self):
+        # model_high_constraints.json = model.json's 5 binary parameters with
+        # 4 forbidden rules instead of 2 (model.json's original 2, plus
+        # Auth=CAC & Logging=Off, plus Network=Ethernet & Encryption=Off).
+        #
+        # Valid configurations, by inclusion-exclusion over the 4 rules on the
+        # raw 32 configurations (each rule alone excludes 8 configs; pairwise
+        # overlaps 2,4,4,2,0,2; triple overlaps 1,0,2,0; quadruple overlap 0 --
+        # the zero overlaps come from rules that require contradictory values
+        # of Network, e.g. WiFi vs Ethernet, so they can never both apply):
+        #   invalid = 4*8 - (2+4+4+2+0+2) + (1+0+2+0) - 0 = 32 - 14 + 3 = 21
+        #   valid = 32 - 21 = 11
+        #
+        # Feasible pairwise interactions: of the 40 possible term-pairs, 5 are
+        # infeasible -- the 4 forbidden rules themselves, plus one *indirect*
+        # case the rules don't mention directly: Database=Remote forces
+        # Network=Ethernet (to satisfy rule 2), which forces Encryption=On
+        # (to satisfy rule 4), so Database=Remote AND Encryption=Off can never
+        # appear in any valid configuration even though no single rule
+        # forbids that pair. feasible = 40 - 5 = 35.
+        valid, feasible, _ = run_both_methods("model_high_constraints.json")
+        self.assertEqual(valid, 11)
+        self.assertEqual(feasible, 35)
+
     def test_model_level_counts_for_multivalue_model(self):
         # model_multivalue.json = model.json with Network expanded from 2 values
         # (WiFi, Ethernet) to 3 (WiFi, Ethernet, Cellular). Everything else,
