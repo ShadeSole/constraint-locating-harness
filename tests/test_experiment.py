@@ -1,4 +1,5 @@
 import csv
+import functools
 import tempfile
 import unittest
 from pathlib import Path
@@ -16,8 +17,15 @@ from cla_harness.experiment import (
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples"
 MODEL_FILES = ["model.json", "my_model.json", "model_6param.json", "model_8param.json", "model_multivalue.json", "model_low_constraints.json", "model_high_constraints.json"]
 
+@functools.lru_cache(maxsize=None)
 def run_both_methods(model_file, strength=2):
-    """Build the model and return (num_valid_configs, num_interactions, [cover, locate])."""
+    """Build the model and return (num_valid_configs, num_interactions, (cover, locate)).
+
+    Cached: generating the 8-parameter model's suites takes seconds and
+    several tests need the same results. The greedy generators are
+    deterministic, so every test sees identical records. Tests must treat
+    the returned records as read-only.
+    """
     parameters, forbidden = load_model(str(EXAMPLES / model_file))
     configs = valid_configurations(parameters, forbidden)
     interactions = feasible_interactions(configs, strength)
@@ -25,7 +33,7 @@ def run_both_methods(model_file, strength=2):
         run_method(model_file, "cover", greedy_covering_suite, configs, interactions, strength),
         run_method(model_file, "locate", greedy_locating_suite, configs, interactions, strength),
     ]
-    return len(configs), len(interactions), records
+    return len(configs), len(interactions), tuple(records)
 
 
 class EvaluateSuiteByHand(unittest.TestCase):
