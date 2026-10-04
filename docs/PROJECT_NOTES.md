@@ -238,6 +238,71 @@ untuned temperature, small models, one move type. An unsolved run means "not
 found in 20,000 moves", not "impossible". Runs also take seconds because the
 cost is recomputed from scratch on every move.
 
+## Simulated annealing, targeted moves and exact minima (V0.3 step 3, commit 519a6c8)
+
+Added `neighbor="targeted"` to `anneal_suite`: if some feasible interaction is
+uncovered, pick one and swap a test for a valid configuration containing it;
+otherwise pick an interaction in an avoidable collision and either swap a test
+that lacks it for a valid configuration that contains it, or change one
+parameter value of a test that has it (a valid configuration differing in
+exactly one parameter). After Konishi et al. (arXiv 1909.13090), adapted so
+every test stays a valid configuration. Also added `exact_minimum_suite_size`,
+which tries every subset of valid configurations (small models only) to find
+the true smallest zero-cost suite, with its own bit-mask cost.
+
+**Exact minima (all three reproduced in the user's local environment through
+the test suite; counts are how many suites of that size have cost zero):**
+
+| model | true minimum tests | such suites | greedy locating | SA (either move) |
+|-------|--------------------|-------------|-----------------|------------------|
+| model.json | 9 | 2 | 11 | reaches 9 |
+| my_model.json | 8 | 8 | 9 | reaches 8 |
+| model_high_constraints.json | 9 | 1 | 11 | reaches 9 |
+
+Greedy locating is therefore 2, 1 and 2 tests above the optimum on these three
+models. The smaller sizes SA failed at earlier are impossible, not search
+failures. On model_high_constraints.json exactly one 9-test suite exists out of
+55 choices of 9 from the 11 valid configurations, and SA finds it in a few
+hundred moves. One caution: "cost zero" here means every feasible interaction
+is covered and every separable pair is separated, which a test confirms is the
+same as localizing as many interactions as any suite could; it is not the
+smallest suite for coverage alone.
+
+**Random versus targeted moves, sandbox runs (5 seeds, steps to solution, medians
+over solved runs):** model.json N=9: 1153 random, 324 targeted. my_model.json
+N=9: 409 / 92. model_6param.json N=11: 305 / 111. Targeted needed roughly 3 to 5
+times fewer moves at sizes both solved, and did not solve any size that random
+could not. (my_model.json N=8 was solved by both: 779 / 98.) For model.json with
+targeted moves, run in the user's local environment: seeds 0 to 4 solved N=9 in
+383, 324, 77, 487 and 76 moves.
+
+**model_spins_core.json, targeted moves, N=32 (the size the greedy locating
+heuristic needed), seeds 0 to 2, 6000 moves, reproduced by the user:**
+seed 0 solved at 2116 moves (6.94 s); seed 1 not solved, final cost 29,
+covered 225/239, localized 189/239 (19.04 s); seed 2 solved at 2033 moves
+(6.70 s). Solved 2 of 3.
+
+**Sandbox only (not reproduced by the user; three runs sharing two CPU cores,
+so times are inflated; 3 seeds, 20,000 moves):** N=32 solved 2 of 3; N=30
+solved 1 of 3 (seed 2, at 5998 moves; seed 0 ended at cost 1, seed 1 at cost
+28); N=28 solved 0 of 3 (best cost 6). So SA found a 30-test suite, below the
+greedy heuristic's 32, in one of three runs; no 28-test suite was found.
+
+**Observations and limits:**
+- Unsolved runs commonly stall near cost 30 with about 14 interactions
+  uncovered. With temperature 2.0 multiplied by 0.999 per move, the search is
+  effectively frozen after about 5000 moves, so the rest of a 20,000-move run
+  is wasted. Slower cooling, restarts or reheating are the obvious next
+  experiment; none has been tried, and the schedule has not been tuned at all.
+- Time comparison with greedy is only indicative: greedy locating took about
+  192 s in one sandbox run (not on the user's machine), SA found 32 tests in
+  about 7 s on the user's machine. Different machines, single runs.
+- The exact minimum is known only for models small enough to enumerate. For
+  model_spins_core.json the true minimum is unknown, so "SA found 30, greedy 32"
+  says nothing about how close either is to optimal.
+- Small models, few seeds, one real-benchmark-derived model. No ranking of
+  methods is justified yet.
+
 ## Observations worth carrying into the paper
 
 **Localization cost in tests stays small, but the covering-suite localization

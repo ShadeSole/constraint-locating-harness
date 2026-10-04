@@ -78,7 +78,7 @@ metaheuristic for CONSTRAINED locating arrays, evaluated against the ceiling.
 The checks were done on rendered full text; wording should be verified against
 the PDFs before quoting.
 
-V0.3 progress on branch `v0.3-development` (pushed through `bad0946`):
+V0.3 progress on branch `v0.3-development` (code pushed through `519a6c8`):
 - `docs/BENCHMARKS.md`: where standard instances are (CCAG repository, 35
   CASA-format models, kept outside this repository in a sibling `external/`
   folder), the file format, sizes, and why enumeration cannot reach them.
@@ -89,15 +89,24 @@ V0.3 progress on branch `v0.3-development` (pushed through `bad0946`):
   interactions, ceiling 229). Greedy locating reaches the ceiling with 32 tests
   but takes minutes (about 192 s in the sandbox); results are in
   `docs/PROJECT_NOTES.md`. Runs only with `--include-slow`.
-- 42 tests.
+- Simulated annealing in `cla_harness/annealing.py` (steps 1-3, pushed through
+  `519a6c8`): constraint-aware cost (uncovered + avoidable collisions, zero
+  means ceiling reached), `anneal_suite` for a fixed suite size with random or
+  targeted moves, `exact_minimum_suite_size` for small models, and a runner
+  (`python -m cla_harness.annealing MODEL N --neighbor targeted --exact`).
+  Results and caveats in `docs/PROJECT_NOTES.md`: SA reaches the proven
+  optimum (9, 8, 9 tests) on three small models where greedy needs 11, 9, 11;
+  on the spins core it matches greedy's 32 tests in about 7 s on 2 of 3 seeds.
+- 79 tests (about 11 s; the exact-search tests are the slowest, a known issue).
 
-Next, one step at a time: (a) decide between building the first constrained SA
-over valid configurations now, using the models that already run, or first
-installing Z3 and a solver-based feasibility/distinguishability pipeline that
-the real instances need (all 35 benchmarks except a projected core are out of
-reach of enumeration); (b) targeted search for post-2023 work and the Garvin et
-al. metaheuristic paper; (c) compare against the greedy heuristic and, on
-shared benchmarks, published CLA sizes. Multiple faults, noise, test-runner
+Next, one step at a time: (a) SA step 4: search over the suite size
+automatically (start at a known-feasible size, shrink while runs succeed) with a
+slower cooling schedule and restarts, since unsolved runs freeze early; (b) run
+it on the spins core and the small models and compare size and time against the
+greedy heuristic; (c) targeted search for post-2023 work and the Garvin et al.
+metaheuristic paper; (d) Z3 and a solver-based pipeline so the real CCAG
+instances (all out of reach of enumeration) can be used; (e) compare against
+published CLA sizes on shared benchmarks. Multiple faults, noise, test-runner
 integration and statistical/AI ranking come later, introduced deliberately and
 not together.
 
