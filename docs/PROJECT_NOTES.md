@@ -122,6 +122,27 @@ is still future work (see V0.2 checklist).
   localized 46/46 (100%)
 - Observed generation time: covering ~0.0006s, locating ~0.1045s
 
+### examples/model_low_constraints.json (model.json's parameters, 0 forbidden rules) -- commit 3e18b06
+- Change relative to model.json: identical 5 binary parameters, forbidden
+  list emptied out entirely (0 rules instead of 2). model.json itself now
+  serves as the "medium" density point in this comparison; a high-density
+  model is still planned to complete the three-point curve.
+- Valid configurations: 32 / 32 (trivial with no constraints; test-verified)
+- Feasible pairwise interactions: 40 (all possible term-pairs, trivial with
+  no constraints; test-verified)
+- Covering suite: 6 tests, coverage 40/40 (100%), 46 ambiguous pairs,
+  localized 8/40 (20.00%)
+- Locating suite: 9 tests, coverage 40/40 (100%), 0 ambiguous pairs,
+  localized 40/40 (100%)
+- Observed generation time: covering ~0.0008s, locating ~0.0852s
+- Note: compared to model.json (2 rules, 11 locating tests, 38 feasible),
+  removing all constraints actually *lowered* the locating suite size (9
+  vs 11) despite having slightly more feasible interactions to distinguish
+  (40 vs 38). More valid configurations (32 vs 18) apparently gives the
+  locating heuristic a richer pool of naturally-distinguishing tests to
+  pick from. Only two points on this curve so far; the high-density model
+  is needed before drawing any conclusion about direction.
+
 ## Observations worth carrying into the paper
 
 **Localization cost in tests stays small, but the covering-suite localization

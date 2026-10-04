@@ -7,10 +7,10 @@
 **Primary language:** Python  
 **Research area:** constrained combinatorial interaction testing (CIT), locating arrays, and fault localization
 
-## 0. Status as of 2026-10-04 (read this first)
+## 0. Status as of 2026-10-04b (read this first)
 
-Current HEAD on `v0.2-experiments`: `65c2fb6` "Add multi-value benchmark
-model" (pushed to GitHub, verified against origin).
+Current HEAD on `v0.2-experiments`: `3e18b06` "Add low-constraint-density
+benchmark model" (pushed to GitHub, verified against origin).
 
 Done since this handoff was originally written:
 - `cla_harness/experiment.py` was rebuilt around `evaluate_method` /
@@ -22,20 +22,24 @@ Done since this handoff was originally written:
 - Results are written to `results/v0_2_results.csv` via `write_results_csv`
   in `io.py`. That file is gitignored and not committed; it regenerates on
   every run.
-- Five benchmark models now run end to end: `examples/model.json`,
+- Six benchmark models now run end to end: `examples/model.json`,
   `examples/my_model.json`, `examples/model_6param.json`,
-  `examples/model_8param.json`, `examples/model_multivalue.json`. Real,
-  already-measured results for all five are recorded in
-  `docs/PROJECT_NOTES.md` under "Benchmark results" -- read that before
-  re-running anything; the numbers are already known and should not be
-  re-derived from scratch or guessed at. The multi-value model's covering
-  suite localized 52.17% of faults, far above any binary model's rate --
-  flagged in PROJECT_NOTES.md as an unconfirmed hypothesis, not yet a
-  settled finding.
-- 14 automated tests exist (`tests/test_experiment.py`, 11 tests, plus the
+  `examples/model_8param.json`, `examples/model_multivalue.json`,
+  `examples/model_low_constraints.json`. Real, already-measured results for
+  all six are recorded in `docs/PROJECT_NOTES.md` under "Benchmark results"
+  -- read that before re-running anything; the numbers are already known
+  and should not be re-derived from scratch or guessed at. Two open,
+  unconfirmed observations are flagged there: the multi-value model's
+  covering suite localized 52.17% of faults, far above any binary model's
+  rate; and removing all constraints (model_low_constraints.json) actually
+  *lowered* the locating suite size relative to model.json's 2-rule
+  version, despite slightly more feasible interactions to distinguish.
+  Neither should be treated as settled -- both need the high-density model
+  (see below) or further models to confirm.
+- 15 automated tests exist (`tests/test_experiment.py`, 12 tests, plus the
   original 3 in `tests/test_harness.py`), covering: the coverage invariant,
   the zero-ambiguity-iff-full-localization property, CSV round-tripping,
-  hand-derived valid-config/interaction counts for four of the five models,
+  hand-derived valid-config/interaction counts for five of the six models,
   and a labeled regression snapshot of the greedy heuristics' current
   behavior on `model.json` (expected to change only if the heuristics are
   deliberately improved).
@@ -59,22 +63,24 @@ Known open issues, not yet fixed:
   single-model workflow; neither reflects the current multi-model
   experiment runner yet.
 
-Recommended immediate next step: the last remaining benchmark-model category
-from Section 14 is the low/high constraint-density pair -- two models that
-change only how many forbidden rules apply (or how restrictive they are),
-relative to an existing model, so the effect of constraint density on
-coverage/ambiguity/localization can be isolated the same way parameter count
-and parameter values already were. Design one at a time, the same way the
-6-, 8-parameter, and multi-value models were: change exactly one variable,
-add it to `MODEL_PATHS` (in `experiment.py`) and `MODEL_FILES` (in
-`tests/test_experiment.py`), add a hand-derived count test, run it, compare
-against the existing benchmarks, record the result in `docs/PROJECT_NOTES.md`
-under "Benchmark results", then commit.
+Recommended immediate next step: one benchmark model left on the roadmap --
+a high-constraint-density model, same 5 binary parameters as model.json and
+model_low_constraints.json, but with more forbidden rules than model.json's
+2 (model_low_constraints.json has 0). That completes a clean three-point
+density curve (0, 2, many rules) on otherwise-identical parameter structure.
+Design it the same way as the others: change exactly one variable (rule
+count) relative to the existing 0/2-rule models, add it to `MODEL_PATHS` and
+`MODEL_FILES`, add a hand-derived (or exhaustively-checked, if the rules
+overlap enough to make hand inclusion-exclusion unwieldy) count test, run it,
+compare against model.json and model_low_constraints.json specifically,
+record the result in `docs/PROJECT_NOTES.md`, then commit.
 
-Also worth deciding soon: whether to chase down the multi-value model's
-unusually high 52.17% covering-suite localization rate with a second
-multi-value model before moving on, since right now it's one data point and
-the handoff above already flags it as unconfirmed.
+Two open, unconfirmed observations are worth keeping in mind while designing
+it, both noted in `docs/PROJECT_NOTES.md`: the multi-value model's unusually
+high 52.17% covering-suite localization rate, and model_low_constraints.json
+needing *fewer* locating tests than model.json despite more feasible
+interactions. The high-density model may shed light on the second one
+directly, since it extends the same density curve.
 
 Also worth doing soon, though it does not have to come first: fix the slow
 test suite described above, since it will only get more painful as models
@@ -378,9 +384,10 @@ Independent variables can include parameter count, values per parameter, interac
 [x] Calculate ambiguous interaction pairs
 [x] Measure runtime
 [x] Save reproducible CSV results
-[x] Run multiple benchmark models (5 so far: model.json, my_model.json,
-    model_6param.json, model_8param.json, model_multivalue.json -- only the
-    low/high constraint-density pair from Section 14 still planned)
+[x] Run multiple benchmark models (6 so far: model.json, my_model.json,
+    model_6param.json, model_8param.json, model_multivalue.json,
+    model_low_constraints.json -- only the high-constraint-density model
+    from Section 14 still planned, to complete the density comparison)
 [x] Add/extend automated tests (13 tests total; see Section 0)
 [ ] Update README/documentation
 [ ] Commit/push completed work (ongoing per-commit habit, not a one-time item)
