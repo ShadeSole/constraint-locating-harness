@@ -268,12 +268,17 @@ was achievable.
 **Caveats.** One model. Pairwise only. Deterministic single-fault outcomes
 only; richer fault models (multiple faults, noise) change what is
 distinguishable. The ceiling is for 2-way interactions as the candidate set;
-a different candidate definition would give a different ceiling. This is an
-illustration of a known kind of phenomenon, not a claimed discovery: the
-locating-array literature already requires distinguishability conditions, and
-a literature check on constrained locating arrays (when full locating
-suites cannot exist under constraints) should be done before any novelty
-claim.
+a different candidate definition would give a different ceiling. Literature status (checked 2026-10-04, see `docs/LITERATURE_CHECK.md`): this
+is NOT a new phenomenon. Jin & Tsuchiya (J. Systems and Software 170, 2020)
+define distinguishability for constrained systems (Definition 1 and Lemma 1:
+two sets of valid interactions are distinguishable iff some valid test covers
+an interaction in one and none in the other), define constrained locating
+arrays (CLAs) that only require separating distinguishable pairs, and prove a
+CLA always exists. The `ceiling` metric here is the single-fault (d=1), t=2
+instance of that concept, and the ambiguous pairs left at the ceiling are
+their indistinguishable pairs. What this project adds is measurement: reporting
+localized-versus-achievable as a metric, and (so far only on seven small
+models) how it responds to constraint density.
 
 ## Future work: metaheuristic locating-aware objective (candidate V0.3 direction)
 
@@ -285,22 +290,30 @@ metaheuristic covering-array literature it surveys (simulated annealing,
 genetic algorithms, memetic algorithms, tabu search) do not treat
 distinguishability/localization as an objective at all.
 
-That is a real gap this project already sits in. A concrete, specific
-direction for V0.3, sharper than "also try SA": give a metaheuristic (SA or
-a GA) a locating-aware fitness function, one that penalizes ambiguous
-interaction pairs directly rather than only rewarding coverage, and test
-whether it can reach full localization with a smaller suite than the greedy
-locating heuristic, and/or reach it faster than the greedy heuristic's
-super-linear search cost documented above.
+Literature update (2026-10-04, `docs/LITERATURE_CHECK.md`): the paragraph that
+stood here claimed that metaheuristics do not treat distinguishability as an
+objective. That is wrong for locating arrays. Konishi, Kojima, Nakagawa &
+Tsuchiya ("Using simulated annealing for locating array construction", arXiv
+1909.13090; reported as Information and Software Technology 2020) already use
+SA with cost = weight * (uncovered t-way interactions) + (interactions whose
+covering-row set equals another interaction's), a targeted neighborhood and a
+binary search over array size. It is for unconstrained arrays and lists
+constrained locating arrays as future work, as does the 2023 LocAG paper
+(Dougherty, Green & Kim). The Torres-Jimenez & Rodriguez-Tello paper is
+covering-array SA only.
 
-Suggested order, once the remaining V0.2 benchmarks are in:
-1. Do a quick literature check on locating arrays / distinguishing arrays
-   specifically (not just covering arrays) so any novelty claim is checked
-   against prior work rather than assumed.
-2. As a cheap first experiment, run a plain size/coverage-optimizing SA
-   (as in the uploaded paper) through the existing `evaluate_method`
-   pipeline unmodified, and see where it lands on ambiguous pairs and
-   localization rate, before designing a locating-aware fitness function.
-3. Only then design and implement the locating-aware objective itself.
+What may remain open (hypothesis, pending a deeper search): a metaheuristic for
+constrained locating arrays, where candidate rows must be valid, scored
+against the distinguishability ceiling and compared with the published CLA
+heuristic. Candidate V0.3 order:
+1. Locate the standard benchmarks (CitLab and the sources cited in the CLA
+   paper) and add a loader; the seven hand-built models are too small to
+   support a paper.
+2. Run a targeted search for post-2023 constrained locating array work.
+3. Implement a constrained SA that searches over valid configurations only,
+   starting from the Konishi cost function and neighborhood, with the cost
+   counting only avoidable ambiguity (distinguishable pairs left unseparated).
+4. Compare with the greedy heuristic on the same models; compare with published
+   CLA sizes only where the same benchmark is used.
 
 This does not belong in V0.2. It is recorded here so it is not lost.

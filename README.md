@@ -66,6 +66,8 @@ Metrics recorded per (model, method):
 
 ### The achievable ceiling
 
+This is the single-fault, pairwise form of the *distinguishability* concept from the constrained locating array literature (Jin & Tsuchiya, J. Systems and Software 2020); it is not a new notion.
+
 Constraints can make different interactions logically identical (for example, a
 rule chain that forces `Encryption=Off` to imply `Auth=Password` and
 `Network=WiFi`). Such interactions have the same signature in every valid
@@ -156,10 +158,10 @@ These assumptions should be stated explicitly in any report.
 
 ## Next upgrades
 
-1. A metaheuristic (for example simulated annealing) with a locating-aware objective, aimed at smaller suites than the greedy heuristic. Greedy locating generation also gets noticeably slower as models grow, which is a further motivation.
+1. A metaheuristic (for example simulated annealing) for constrained locating arrays, aimed at smaller suites than the greedy heuristic. SA for unconstrained locating arrays already exists (Konishi et al.), so the open question is constraint handling inside the search. Greedy locating generation also gets noticeably slower as models grow, which is a further motivation.
 2. Z3/SMT constraints rather than enumerating and filtering all configurations.
 3. Multiple simultaneous failure-inducing interactions (`d > 1`).
 4. Noisy/nondeterministic outcomes using probabilistic scoring.
 5. Real test-runner adapters (pytest/JUnit/CI).
 6. Baseline against NIST ACTS or another covering-array generator, and against published constrained locating-array results.
-7. A literature check on constrained locating/distinguishing arrays before any novelty claim.
+7. Standard benchmark instances from the constrained locating array literature. See `docs/LITERATURE_CHECK.md` for what is already published.

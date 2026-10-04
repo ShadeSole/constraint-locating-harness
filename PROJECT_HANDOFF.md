@@ -46,7 +46,7 @@ localization (28/35 = 80%), and this is a structural ceiling, not a heuristic
 shortfall: using all 11 valid configurations as the suite leaves the same 5
 ambiguous pairs. Chains of rules force several parameter values at once, so
 several interactions are logically identical. Full write-up, including the
-caveats and a literature-check reminder, is in `docs/PROJECT_NOTES.md` under
+caveats and the literature status, is in `docs/PROJECT_NOTES.md` under
 "Finding: a structural ceiling on localization". Do not describe the greedy
 locating heuristic as reaching full localization in general; it did on six
 models and provably could not on this one.
@@ -68,14 +68,25 @@ Known open issues, not yet fixed:
   point; a second multi-value model would confirm or rule it out.
 - `localizer.rank_noisy` exists but no experiment uses it yet.
 
-Next phase (V0.3 candidates, choose one at a time): a metaheuristic
-(simulated annealing, possibly GA) with a locating-aware objective, aiming at
-smaller suites than the greedy locating heuristic and measured against the
-ceiling; a literature check on constrained locating/distinguishing arrays
-before any novelty claim; larger models and higher strength; then Z3,
-multiple faults, noise, test-runner integration and statistical/AI ranking,
-introduced deliberately and not together. The metaheuristic direction is
-recorded at the end of PROJECT_NOTES.md.
+Literature check (2026-10-04; full note in `docs/LITERATURE_CHECK.md`, also in
+the Research project). Corrects earlier assumptions: constrained locating
+arrays and their distinguishability concept (Jin & Tsuchiya, JSS 2020) and SA
+for unconstrained locating arrays (Konishi et al., arXiv 1909.13090) are
+published. The `ceiling` metric is the d=1, t=2 form of Jin & Tsuchiya's
+distinguishability, so it is not a novelty claim. The possibly open gap is a
+metaheuristic for CONSTRAINED locating arrays, evaluated against the ceiling.
+The checks were done on rendered full text; wording should be verified against
+the PDFs before quoting.
+
+Next phase (V0.3), one step at a time, working on branch `v0.3-development`:
+(1) find and load standard benchmark instances (the seven hand-built models are
+too small for a paper; published work uses 30-35 instances up to ~200 factors);
+(2) targeted search for post-2023 work and the Garvin et al. metaheuristic
+paper; (3) a constrained SA over valid configurations with a cost that counts
+only avoidable ambiguity; (4) compare against the greedy heuristic and, on
+shared benchmarks, against published CLA sizes. Z3, multiple faults, noise,
+test-runner integration and statistical/AI ranking come later, introduced
+deliberately and not together.
 
 ## 1. Read This First
 This project is already under development. **Do not redesign or rebuild it from scratch unless explicitly asked.** Inspect the repository first, preserve the existing architecture where reasonable, determine what is already implemented, and make incremental testable changes. Do not present illustrative numbers as experimental results. Preserve the distinction between established research concepts and this project's implementation/experimental contribution.
