@@ -6,6 +6,8 @@ neighbor move (replace one test by a random valid configuration).
 Step 3: a targeted neighbor move (after Konishi et al.), chosen with neighbor="targeted".
 Step 4: a search over the suite size (find_small_suite): start from a size known to
 work and keep shrinking by one until a fixed budget of restarts all fail.
+Step 5: optional warm start for the shrinking search: the first run at size n - 1
+begins from the solved size-n suite with its least useful test removed.
 Later steps: speed.
 
 The cost follows the two-part form used for unconstrained locating arrays by
@@ -20,7 +22,7 @@ import math
 import random
 from collections import defaultdict
 from itertools import combinations
-from typing import Dict, FrozenSet, Iterable, List, Set
+from typing import Dict, FrozenSet, Iterable, List, Optional, Set
 
 from .core import Config, Interaction, contains_interaction
 
@@ -207,6 +209,7 @@ def anneal_suite(
     cooling: float = 0.999,
     weight: float = 1.0,
     neighbor: str = "random",
+    initial: Optional[List[int]] = None,
 ) -> dict:
     """Simulated annealing for a suite of exactly n_tests valid configurations.
 
@@ -224,8 +227,13 @@ def anneal_suite(
     place of a test that lacks it, or changes one parameter value of a test that
     has it.
 
+    By default the starting suite is n_tests distinct random valid configurations.
+    `initial` can instead give the starting suite as n_tests positions in `configs`
+    (a warm start); the run then begins there and the random start is not used.
+
     The search stops as soon as the cost reaches zero, or after max_steps moves.
     The best suite seen is returned, which can differ from the final state.
+    "indices" in the result gives the returned suite as positions in `configs`.
     Results are reproducible: the same seed gives the same run.
     """
     if neighbor not in ("random", "targeted"):
@@ -236,10 +244,17 @@ def anneal_suite(
     if not 1 <= n_tests <= len(configs):
         raise ValueError("n_tests must be between 1 and the number of valid configurations")
 
+    if initial is not None:
+        if len(initial) != n_tests or not all(0 <= i < len(configs) for i in initial):
+            raise ValueError("initial must hold n_tests positions in configs")
+
     targeted = neighbor == "targeted"
     helper = _TargetedHelper(configs, interactions) if targeted else None
 
-    current = rng.sample(range(len(configs)), n_tests)  # distinct starting tests
+    if initial is not None:
+        current = list(initial)
+    else:
+        current = rng.sample(range(len(configs)), n_tests)  # distinct starting tests
 
     def cost_of(indices):
         return suite_cost(
@@ -273,6 +288,7 @@ def anneal_suite(
 
     return {
         "suite": [configs[i] for i in best],
+        "indices": list(best),
         "cost": {k: best_cost[k] for k in ("uncovered", "avoidable_collisions", "cost")},
         "steps": steps,
         "accepted": accepted,
@@ -289,6 +305,27 @@ def _restart_seed(seed: int, n_tests: int, restart: int) -> int:
     return random.Random(f"{seed}/{n_tests}/{restart}").randrange(2 ** 31)
 
 
+def drop_least_useful_test(
+    configs: List[Config],
+    interactions: Iterable[Interaction],
+    unavoidable: Set[Pair],
+    indices: List[int],
+) -> List[int]:
+    """Remove the one test whose removal leaves the lowest cost (the first, on ties).
+
+    This is how a warm start for size n - 1 is built from a solved size-n suite. If
+    some test is redundant the result already has cost zero.
+    """
+    interactions = list(interactions)
+    best_rest, best_cost = None, None
+    for position in range(len(indices)):
+        rest = indices[:position] + indices[position + 1:]
+        cost = suite_cost([configs[i] for i in rest], interactions, unavoidable)["cost"]
+        if best_cost is None or cost < best_cost:
+            best_rest, best_cost = rest, cost
+    return best_rest
+
+
 def find_small_suite(
     configs: List[Config],
     interactions: Iterable[Interaction],
@@ -301,6 +338,8 @@ def find_small_suite(
     end_temp: float = 0.05,
     neighbor: str = "targeted",
     min_size: int = 1,
+    warm_start: bool = False,
+    warm_start_temp: float = 0.3,
 ) -> dict:
     """Look for the smallest suite that reaches cost zero, by shrinking one test at a time.
 
@@ -318,13 +357,21 @@ def find_small_suite(
     simply need more moves. Only exact_minimum_suite_size proves a minimum, and
     only for small models.
 
+    With warm_start=True, the FIRST run at each size below start_size does not start
+    from random tests. It starts from the previously solved suite with its least
+    useful test removed (drop_least_useful_test), at the lower temperature
+    warm_start_temp so that the good structure is not melted away. The remaining
+    runs at that size start cold as before. The warm run counts as one of the
+    `restarts`, so the budget at each size stays restarts * steps_per_restart.
+
     The cooling rate is chosen so that the temperature falls from start_temp to
     end_temp over exactly steps_per_restart moves. Every run therefore uses its whole
     budget as a slow cooling schedule, instead of freezing after a few thousand moves.
 
     Returns {"suite": smallest suite solved or None, "size": its size or None,
     "attempts": one record per size tried, "total_moves": all moves over all runs}.
-    Each attempt record has n, solved, restarts_used and moves.
+    Each attempt record has n, solved, restarts_used, moves and solved_by
+    ("warm", "cold" or None).
     Results are reproducible: the same arguments give the same result.
     """
     interactions = list(interactions)
@@ -336,35 +383,47 @@ def find_small_suite(
         raise ValueError("need 0 < end_temp <= start_temp")
     if min_size < 1:
         raise ValueError("min_size must be at least 1")
+    if warm_start and not end_temp <= warm_start_temp <= start_temp:
+        raise ValueError("need end_temp <= warm_start_temp <= start_temp")
 
     cooling = (end_temp / start_temp) ** (1.0 / steps_per_restart)
+    warm_cooling = (end_temp / warm_start_temp) ** (1.0 / steps_per_restart)
     best_suite = None
+    best_indices = None
     attempts = []
     total_moves = 0
     n = start_size
 
     while n >= min_size:
         solved_suite = None
+        solved_indices = None
+        solved_by = None
         moves = 0
         used = 0
         for restart in range(restarts):
             used += 1
+            warm = warm_start and restart == 0 and best_indices is not None
             result = anneal_suite(
                 configs, interactions, unavoidable, n,
                 seed=_restart_seed(seed, n, restart),
-                max_steps=steps_per_restart, start_temp=start_temp,
-                cooling=cooling, neighbor=neighbor,
+                max_steps=steps_per_restart,
+                start_temp=warm_start_temp if warm else start_temp,
+                cooling=warm_cooling if warm else cooling,
+                neighbor=neighbor,
+                initial=(drop_least_useful_test(configs, interactions, unavoidable, best_indices)
+                         if warm else None),
             )
             moves += result["steps"]
             if result["solved"]:
-                solved_suite = result["suite"]
+                solved_suite, solved_indices = result["suite"], result["indices"]
+                solved_by = "warm" if warm else "cold"
                 break
         total_moves += moves
         attempts.append({"n": n, "solved": solved_suite is not None,
-                         "restarts_used": used, "moves": moves})
+                         "restarts_used": used, "moves": moves, "solved_by": solved_by})
         if solved_suite is None:
             break
-        best_suite = solved_suite
+        best_suite, best_indices = solved_suite, solved_indices
         n -= 1
 
     return {
@@ -394,6 +453,11 @@ def main(argv=None):
                         help="treat N as a START size and keep shrinking the suite while the search succeeds")
     parser.add_argument("--restarts", type=int, default=5,
                         help="with --shrink: independent runs allowed at each size")
+    parser.add_argument("--warm-start", action="store_true",
+                        help="with --shrink: first run at each smaller size starts from the previous solution")
+    parser.add_argument("--warm-temp", type=float, default=0.3,
+                        help="with --warm-start: starting temperature of the warm run")
+    parser.add_argument("--seed", type=int, default=0, help="with --shrink: base seed")
     parser.add_argument("--exact", action="store_true",
                         help="also find the true minimum suite size by trying every subset (small models only)")
     args = parser.parse_args(argv)
@@ -415,14 +479,16 @@ def main(argv=None):
     if args.shrink:
         start = time.perf_counter()
         found = find_small_suite(configs, interactions, unavoidable, args.n_tests,
-                                 seed=0, restarts=args.restarts,
-                                 steps_per_restart=args.steps, neighbor=args.neighbor)
+                                 seed=args.seed, restarts=args.restarts,
+                                 steps_per_restart=args.steps, neighbor=args.neighbor,
+                                 warm_start=args.warm_start, warm_start_temp=args.warm_temp)
         seconds = time.perf_counter() - start
         print(f"Shrinking from {args.n_tests} tests: up to {args.restarts} runs of "
-              f"{args.steps} moves per size, {args.neighbor} moves")
+              f"{args.steps} moves per size, {args.neighbor} moves"
+              f"{', warm start' if args.warm_start else ''}")
         for a in found["attempts"]:
             print(f"  size {a['n']}: solved={a['solved']} runs_used={a['restarts_used']} "
-                  f"moves={a['moves']}")
+                  f"moves={a['moves']} solved_by={a['solved_by']}")
         if found["suite"] is None:
             print(f"No suite found even at the start size; total moves {found['total_moves']}, "
                   f"time {seconds:.2f}s")

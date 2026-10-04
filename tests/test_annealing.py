@@ -9,6 +9,7 @@ from cla_harness.annealing import (
     _TargetedHelper,
     _restart_seed,
     anneal_suite,
+    drop_least_useful_test,
     exact_minimum_suite_size,
     find_small_suite,
     suite_cost,
@@ -476,3 +477,126 @@ class FindSmallSuiteAgainstExactMinimum(unittest.TestCase):
             self.assertEqual(found["size"], n, name)
             localized, _ = evaluate_suite(found["suite"], interactions)
             self.assertEqual(localized, ceiling_of(configs, interactions), name)
+
+
+class WarmStartByHand(unittest.TestCase):
+    """Two binary parameters, strength 1: any three of the four tests give cost zero."""
+
+    def setUp(self):
+        self.configs, self.interactions = two_binary()
+        self.unavoidable = unavoidable_pairs(self.configs, self.interactions)
+
+    def cost(self, indices):
+        suite = [self.configs[i] for i in indices]
+        return suite_cost(suite, self.interactions, self.unavoidable)["cost"]
+
+    def test_run_starts_from_the_given_suite(self):
+        # Zero moves allowed, so the result is exactly the starting suite.
+        result = anneal_suite(self.configs, self.interactions, self.unavoidable,
+                              2, seed=0, max_steps=0, initial=[0, 0])
+        self.assertEqual(result["indices"], [0, 0])
+        self.assertEqual(result["suite"], [self.configs[0]] * 2)
+        self.assertEqual(result["steps"], 0)
+
+    def test_a_good_starting_suite_is_solved_without_any_move(self):
+        result = anneal_suite(self.configs, self.interactions, self.unavoidable,
+                              3, seed=0, max_steps=100, initial=[0, 1, 2])
+        self.assertTrue(result["solved"])
+        self.assertEqual(result["steps"], 0)
+
+    def test_indices_match_the_returned_suite(self):
+        result = anneal_suite(self.configs, self.interactions, self.unavoidable,
+                              3, seed=2, max_steps=200)
+        self.assertEqual([self.configs[i] for i in result["indices"]], result["suite"])
+
+    def test_bad_initial_suites_are_rejected(self):
+        for initial in ([0, 1], [0, 1, 2, 3], [0, 1, 9], [0, 1, -1]):
+            with self.assertRaises(ValueError, msg=str(initial)):
+                anneal_suite(self.configs, self.interactions, self.unavoidable,
+                             3, seed=0, initial=initial)
+
+    def test_drop_keeps_all_but_one_test_and_picks_the_cheapest_drop(self):
+        indices = [0, 1, 2]
+        costs = [self.cost(indices[:k] + indices[k + 1:]) for k in range(3)]
+        self.assertGreater(len(set(costs)), 1)  # the choice really matters here
+        rest = drop_least_useful_test(self.configs, self.interactions,
+                                      self.unavoidable, indices)
+        self.assertEqual(len(rest), 2)
+        self.assertEqual(self.cost(rest), min(costs))
+        self.assertEqual(rest, indices[:costs.index(min(costs))] + indices[costs.index(min(costs)) + 1:])
+
+    def test_drop_from_a_redundant_suite_stays_at_cost_zero(self):
+        rest = drop_least_useful_test(self.configs, self.interactions,
+                                      self.unavoidable, [0, 1, 2, 3])
+        self.assertEqual(len(rest), 3)
+        self.assertEqual(self.cost(rest), 0)
+
+    def search(self, **kwargs):
+        kwargs.setdefault("restarts", 3)
+        kwargs.setdefault("steps_per_restart", 200)
+        return find_small_suite(self.configs, self.interactions, self.unavoidable,
+                                4, warm_start=True, **kwargs)
+
+    def test_warm_start_solves_the_next_size_from_the_previous_suite(self):
+        found = self.search()
+        self.assertEqual(found["size"], 3)
+        by_size = {a["n"]: a for a in found["attempts"]}
+        self.assertEqual(by_size[4]["solved_by"], "cold")  # nothing to warm start from
+        self.assertEqual(by_size[3]["solved_by"], "warm")
+        self.assertEqual((by_size[3]["restarts_used"], by_size[3]["moves"]), (1, 0))
+        self.assertIsNone(by_size[2]["solved_by"])
+
+    def test_without_warm_start_every_run_is_cold(self):
+        found = find_small_suite(self.configs, self.interactions, self.unavoidable, 4,
+                                 restarts=3, steps_per_restart=200)
+        self.assertEqual(found["size"], 3)
+        self.assertEqual({a["solved_by"] for a in found["attempts"]}, {"cold", None})
+
+    def test_warm_run_is_one_of_the_restarts_so_the_failure_budget_is_unchanged(self):
+        found = self.search(restarts=3, steps_per_restart=200)
+        failed = found["attempts"][-1]
+        self.assertEqual((failed["restarts_used"], failed["moves"]), (3, 3 * 200))
+
+    def test_only_the_first_run_at_a_size_is_warm_and_it_is_cooler(self):
+        calls = []
+        real = annealing.anneal_suite
+
+        def spy(*args, **kwargs):
+            calls.append((args[3], kwargs))
+            return real(*args, **kwargs)
+
+        with mock.patch.object(annealing, "anneal_suite", spy):
+            self.search(restarts=3, steps_per_restart=400, start_temp=2.0,
+                        end_temp=0.05, warm_start_temp=0.3)
+        size_two = [kw for n, kw in calls if n == 2]
+        self.assertEqual(len(size_two), 3)
+        self.assertIsNotNone(size_two[0]["initial"])
+        self.assertEqual(len(size_two[0]["initial"]), 2)
+        self.assertEqual(size_two[0]["start_temp"], 0.3)
+        self.assertAlmostEqual(0.3 * size_two[0]["cooling"] ** 400, 0.05, places=9)
+        for kw in size_two[1:]:
+            self.assertIsNone(kw["initial"])
+            self.assertEqual(kw["start_temp"], 2.0)
+        # The very first size has nothing to warm start from.
+        self.assertTrue(all(kw["initial"] is None for n, kw in calls if n == 4))
+
+    def test_warm_temperature_is_only_checked_when_warm_start_is_on(self):
+        for temp in (0.01, 3.0):
+            with self.assertRaises(ValueError):
+                self.search(warm_start_temp=temp)
+            found = find_small_suite(self.configs, self.interactions, self.unavoidable, 4,
+                                     restarts=2, steps_per_restart=100, warm_start_temp=temp)
+            self.assertEqual(found["size"], 3)
+
+
+class WarmStartAgainstExactMinimum(unittest.TestCase):
+    def test_warm_search_also_ends_exactly_at_the_proven_minimum(self):
+        for name, (n, _) in EXACT_MINIMA.items():
+            parameters, forbidden = load_model(str(EXAMPLES / name))
+            configs = valid_configurations(parameters, forbidden)
+            interactions = feasible_interactions(configs, 2)
+            unavoidable = unavoidable_pairs(configs, interactions)
+            found = find_small_suite(configs, interactions, unavoidable, n + 2, seed=0,
+                                     restarts=3, steps_per_restart=2000, warm_start=True)
+            self.assertEqual(found["size"], n, name)
+            self.assertEqual(suite_cost(found["suite"], interactions, unavoidable)["cost"], 0, name)
