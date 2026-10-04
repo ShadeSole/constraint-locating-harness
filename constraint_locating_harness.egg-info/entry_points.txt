@@ -1,2 +1,0 @@
-[console_scripts]
-cla-harness = cla_harness.cli:main
