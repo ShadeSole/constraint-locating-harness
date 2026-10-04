@@ -170,6 +170,34 @@ is still future work (see V0.2 checklist).
 | 2     | model.json                   | 18    | 38       | 6 / 10 of 38 (26.32%)   | 11 / 38 of 38 (100%)     |
 | 4     | model_high_constraints.json  | 11    | 35       | 7 / 14 of 35 (40.00%)   | 11 / 28 of 35 (80.00%)   |
 
+### examples/model_spins_core.json (DERIVED from the CCAG `spins` benchmark) -- commit bad0946
+- What it is: the SPIN simulator benchmark projected onto the 9 parameters
+  that appear in its 13 constraints (6 binary, 3 four-valued). It is a
+  derived model, not the benchmark: the 9 omitted unconstrained parameters
+  are not represented. Source and attribution in `docs/BENCHMARKS.md`.
+  First model in the set that comes from a published benchmark's rules.
+- Valid configurations: 978 of 4,096 raw (978 * 2,048 = 2,002,944, the full
+  benchmark's independently counted valid configurations).
+- Feasible pairwise interactions: 239 (hand-derived as 252 value pairs
+  across parameters minus 13 forbidden pairs; test-verified).
+- Achievable ceiling: 229 / 239. The 10 interactions no suite can separate
+  fall into four groups from chains of forced values: P0=1 forces P1=0,
+  P2=0, P14=0 and P15=0 (four identical interactions); any non-zero P15
+  forces P0=0 and P12=0 (three identical pairs). The same mechanism as in
+  model_high_constraints.json, here arising from a published benchmark.
+- Covering suite: 22 tests, coverage 239/239 (100%), 369 ambiguous pairs,
+  localized 71/239 (29.71%), ceiling gap 158.
+- Locating suite: 32 tests, coverage 239/239 (100%), 9 ambiguous pairs
+  (3 + the 6 pairs inside the group of four), localized 229/239 (95.82%),
+  ceiling gap 0. The greedy heuristic reached the ceiling.
+- Test counts, coverage, ambiguous pairs, localized counts and ceiling were
+  reproduced exactly on the user's machine and in the sandbox.
+- Generation time (one sandbox run, not averaged, NOT confirmed on the
+  user's machine): covering about 0.18 s, locating about 192 s, roughly
+  1,000 times slower. Timing on the user's machine was not captured; compare
+  only after repeating runs on one machine.
+- Runs only with `python -m cla_harness.experiment --include-slow`.
+
 ## Observations worth carrying into the paper
 
 **Localization cost in tests stays small, but the covering-suite localization
@@ -200,6 +228,22 @@ feasible interaction's full signature. The test-suite-size cost of locating
 has stayed cheap so far; the search cost to find that suite has not. This is
 a concrete, measured motivation for exploring a smarter search method (see
 Future work below) rather than a vague appeal to "greedy might not scale."
+
+**Greedy locating generation cost grows steeply with the number of valid
+configurations (added with the spins core).** Generation took about 2 s for
+model_8param.json (144 valid configurations, 110 interactions) and about 192 s
+for model_spins_core.json (978 valid configurations, 239 interactions) in
+sandbox runs, while greedy covering stayed under 0.2 s. Two models do not
+establish a growth law, and the runs were not averaged. It does show that the
+greedy locating heuristic's cost is the practical limit on this model, which
+motivates a cheaper search; the likely cause is that every candidate is scored
+by recomputing ambiguous pairs each round, not yet profiled.
+
+**The ceiling mechanism appears in a published benchmark's constraints.** In
+model_spins_core.json the unreachable 10 interactions come from the same
+forced-value chains as in model_high_constraints.json, so the effect is not an
+artifact of hand-built rules. Still one benchmark, pairwise only, and known
+theory (Jin & Tsuchiya, see docs/LITERATURE_CHECK.md), not a new result.
 
 ## Finding: a structural ceiling on localization (model_high_constraints.json)
 

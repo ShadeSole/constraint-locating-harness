@@ -78,15 +78,28 @@ metaheuristic for CONSTRAINED locating arrays, evaluated against the ceiling.
 The checks were done on rendered full text; wording should be verified against
 the PDFs before quoting.
 
-Next phase (V0.3), one step at a time, working on branch `v0.3-development`:
-(1) find and load standard benchmark instances (the seven hand-built models are
-too small for a paper; published work uses 30-35 instances up to ~200 factors);
-(2) targeted search for post-2023 work and the Garvin et al. metaheuristic
-paper; (3) a constrained SA over valid configurations with a cost that counts
-only avoidable ambiguity; (4) compare against the greedy heuristic and, on
-shared benchmarks, against published CLA sizes. Z3, multiple faults, noise,
-test-runner integration and statistical/AI ranking come later, introduced
-deliberately and not together.
+V0.3 progress on branch `v0.3-development` (pushed through `bad0946`):
+- `docs/BENCHMARKS.md`: where standard instances are (CCAG repository, 35
+  CASA-format models, kept outside this repository in a sibling `external/`
+  folder), the file format, sizes, and why enumeration cannot reach them.
+- `load_casa_model` (`cla_harness/io.py`): reads CASA models; validated
+  against an independent count of 2,002,944 valid configurations for `spins`.
+- `constrained_core` (`cla_harness/core.py`) and `examples/model_spins_core.json`:
+  a DERIVED 9-parameter model with all 13 spins rules (978 valid configs, 239
+  interactions, ceiling 229). Greedy locating reaches the ceiling with 32 tests
+  but takes minutes (about 192 s in the sandbox); results are in
+  `docs/PROJECT_NOTES.md`. Runs only with `--include-slow`.
+- 42 tests.
+
+Next, one step at a time: (a) decide between building the first constrained SA
+over valid configurations now, using the models that already run, or first
+installing Z3 and a solver-based feasibility/distinguishability pipeline that
+the real instances need (all 35 benchmarks except a projected core are out of
+reach of enumeration); (b) targeted search for post-2023 work and the Garvin et
+al. metaheuristic paper; (c) compare against the greedy heuristic and, on
+shared benchmarks, published CLA sizes. Multiple faults, noise, test-runner
+integration and statistical/AI ranking come later, introduced deliberately and
+not together.
 
 ## 1. Read This First
 This project is already under development. **Do not redesign or rebuild it from scratch unless explicitly asked.** Inspect the repository first, preserve the existing architecture where reasonable, determine what is already implemented, and make incremental testable changes. Do not present illustrative numbers as experimental results. Preserve the distinction between established research concepts and this project's implementation/experimental contribution.
