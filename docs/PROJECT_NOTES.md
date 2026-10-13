@@ -351,15 +351,16 @@ suite minus the one test whose removal costs least, at a lower temperature
 each size is unchanged. Runner flags: `--warm-start`, `--warm-temp`, `--seed`.
 102 tests pass in the sandbox (12 new, 7 deliberate breaks each caught).
 
-**Sandbox only (not reproduced by the user; model_spins_core.json, targeted
-moves, seed 0, 5 restarts per size; runs seeded, so move counts should reproduce):**
+**model_spins_core.json, targeted moves, seed 0, 5 restarts per size. Rows marked
+"user-reproduced" matched the user's Windows run move for move (102 tests OK);
+the warm-start rows are sandbox only:**
 
 | Setting | Sizes tried | Smallest found | Total moves |
 |---|---|---|---|
 | cold, 6000 moves/run, start 32 (user-reproduced) | 32, 31, 30 solved; 29 failed | 30 | 60,556 |
 | warm (T 0.3 or 0.1, same result), 6000 moves/run, start 32 | 32, 31 (warm, 187 moves), 30 solved; 29 failed | 30 | 56,878 |
 | warm, 20,000 moves/run, start 31 | 31, 30 solved; 29 failed (100,000 moves) | 30 | 183,875 |
-| cold, 20,000 moves/run, start 31 | 31, 30, 29 solved; 28 failed (100,000 moves) | 29 | 200,251 |
+| cold, 20,000 moves/run, start 31 (user-reproduced; 605.92 s on the user's machine, 748.17 s in the sandbox) | 31, 30, 29 solved; 28 failed (100,000 moves) | 29 | 200,251 |
 
 Every suite found covers 239/239 and localizes 229/239 (the ceiling).
 

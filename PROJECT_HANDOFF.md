@@ -104,7 +104,7 @@ V0.3 progress on branch `v0.3-development` (code pushed through `0984942`; step 
   models (sandbox).
 - Step 5 (warm start, `--warm-start`): saves moves on easy sizes but did not help
   below 30 in sandbox runs; a larger move budget (20,000/run) found 29 on the
-  spins core in one cold search (sandbox only, one seed). See PROJECT_NOTES.md.
+  spins core in one cold search (one seed; reproduced by the user, 605.92 s). See PROJECT_NOTES.md.
 - 102 tests (about 19 s; the exact-search tests are the slowest, a known issue).
 
 Next, one step at a time: (a) more seeds and budgets (does 29 repeat? is 28 reachable?), and a warm run
