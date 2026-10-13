@@ -954,3 +954,31 @@ so ratios in rows where the enumeration median prints as 0.0000 or 0.0001 (for e
 model_low_constraints, 4,515.6 times) are unreliable and only the direction is meaningful.
 What it does not show: how either approach behaves on models too large to enumerate (none was tried), and nothing
 here supports "Z3 is faster"; at this model size it is not. Single machine, 8 tiny models.
+
+## Summary of research plan items 10 to 13: Z3 stage 1 (research plan item 14)
+
+Origin: cloud run, not reproduced by the author. Every number is copied from the four sections above; none is new.
+z3-solver 5.1.0.0 (optional; the core package stays standard library only). All checks are on the 8 models in
+`examples/`, each with at most 978 valid configurations.
+
+| item | Z3 function in `cla_harness/solver.py` | checked against | result on all 8 models | slowest-to-fastest vs enumeration (medians of 3 repeats) |
+|---|---|---|---|---|
+| 10 | `is_valid(parameters, forbidden, config)` | `valid_configurations`, full product (largest 4,096) | agreed on every configuration | Z3 slower in all 8: about 1,100 to 4,500 times (rebuilds the solver per call) |
+| 11 | `valid_configurations_z3`, `sample_valid_configurations` | same set; samples must be valid | list equal on all 8; 1,000 of 1,000 samples valid on all 8 | listing: Z3 slower in all 8, about 45 to 770 times |
+| 12 | `feasible_interactions_z3` (t = 2 only) | `feasible_interactions` | equal on all 8 (for example 38, 35 and 239 on three models) | Z3 slower in all 8, about 2 to 71 times; 1.8 times on `model_spins_core.json` |
+| 13 | (timing only) | n/a | 24 of 24 cells: Z3 slower | spins core: validity 19.29 s vs 0.0168 s, listing 0.931 s vs 0.0209 s, pairs 0.0525 s vs 0.0299 s |
+
+The suite with Z3 installed has 127 tests, OK, 3 skipped; with Z3 hidden, the Z3 tests skip.
+
+What Z3 does now: it gives a second, independent way to answer three questions (is this configuration valid, which
+configurations are valid, which pairs of values can co-occur) and on these 8 models it agrees with the enumeration
+every time. That agreement is evidence the constraint encoding is right for rules of this form.
+
+What Z3 does not change yet: the SA search, the greedy generators, the ceiling and the localization evaluator all
+still enumerate valid configurations; nothing calls `solver.py` except its tests and timing scripts. No result in
+the earlier sections depends on Z3. On these tiny models Z3 is slower than enumeration in every measured cell, so
+nothing here shows a speed benefit.
+
+What is not tested: any model too large to enumerate (the reason to use a solver), CASA-format models, strengths other
+than 2 for interactions, and the sampler's distribution (reproducible but not uniform). Wiring Z3 into the search and
+trying a large benchmark are item 15, which is marked STOP FOR USER.

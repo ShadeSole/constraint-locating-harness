@@ -181,3 +181,12 @@ their origin label, what to be skeptical of, anything left under "Open questions
   largest example (the spins-derived model, 978 valid configurations) Z3 took 0.0525 s against 0.0299 s, about 1.8
   times slower. Be skeptical: all models are tiny, so this says nothing yet about models too big to enumerate; and
   the very large ratios in the one-at-a-time validity check come from rebuilding the solver on each call.
+
+- 2026-10-13, plan item 14 (summary of items 10-13, plain language): Z3 is a program that can answer questions about
+  the rules directly, without first writing down every allowed configuration. I added an optional Z3 module that
+  answers three questions: is this configuration allowed, which configurations are allowed, and which pairs of settings
+  can ever occur together. On all 8 example models its answers matched the old way exactly every time, which suggests
+  the rules are translated correctly. It was slower than the old way on every model tried, because these models are
+  tiny. Nothing in the search uses it yet: the search still lists all configurations first. The real test is a model
+  too big to list, which has not been tried and is the next decision for you (item 15). Cloud run, not reproduced by
+  the author. Full table: PROJECT_NOTES, "Summary of research plan items 10 to 13".

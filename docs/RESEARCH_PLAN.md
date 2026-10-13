@@ -11,5 +11,5 @@
 - [x] 11. In solver.py add (a) list all valid configurations via Z3 with blocking clauses, and (b) seeded random valid-configuration sampling. On every model with at most 5,000 valid configurations, confirm (a) returns exactly the same set as valid_configurations, and every sample from (b) is in that set. Report timings. Add tests.
 - [x] 12. In solver.py add feasible_interactions_z3 for t = 2 (an interaction is feasible if some valid configuration contains it). On all 8 models, confirm the interaction set equals feasible_interactions from the enumeration. Add tests.
 - [x] 13. Timing table: enumeration versus Z3 for items 10 to 12 on all 8 models, 3 repeats each. Report only measured timings. Do not assume Z3 is faster.
-- [ ] 14. Summarize items 10 to 13 in docs/PROJECT_NOTES.md and add a plain-language entry to docs/CRASH_COURSE.md. Say what Z3 does and does not change yet (the search still enumerates).
+- [x] 14. Summarize items 10 to 13 in docs/PROJECT_NOTES.md and add a plain-language entry to docs/CRASH_COURSE.md. Say what Z3 does and does not change yet (the search still enumerates).
 - [ ] 15. STOP FOR USER: wire the solver into the SA search, and try a CCAG benchmark model too large to enumerate.
