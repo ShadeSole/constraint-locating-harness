@@ -198,3 +198,11 @@ their origin label, what to be skeptical of, anything left under "Open questions
   It is slower on these small models, almost all the time spent in Z3 queries. Cloud run, not reproduced by the author.
   Be skeptical: the suites were random, not the ones the search visits, and the models are tiny. The search itself does
   not use this yet (item 16).
+
+- 2026-10-13, plan item 16: the search can now run without a list of every allowed configuration. Each time it needs
+  a new test it asks Z3 for an allowed configuration, optionally one containing a specific interaction that is not yet
+  covered, or one that differs from an existing test in exactly one setting. On the three small models with a known
+  best size (9, 9 and 8) it reached that size with the same effort as the old search, using only allowed tests. Over
+  7 models and 3 seeds it ended at the same size as the old search every time (21 of 21). It was slower here (about 2.5
+  to 7.5 times). Cloud run, not reproduced by the author. Be skeptical: the models are tiny, so this shows the new
+  search is correct, not that it is useful; that needs a model too big to list (item 17).

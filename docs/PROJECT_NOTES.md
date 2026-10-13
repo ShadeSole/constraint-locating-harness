@@ -1018,3 +1018,50 @@ cost less). What it shows: the Z3 cost agrees with the enumeration-based cost ex
 number of distinct colliding pairs, and so of Z3 queries, is the thing to watch; or inside an SA loop, where suites
 change one test at a time and the cache hit rate may differ from random suites. Random suites are not the suites SA
 visits, so agreement is evidence for the classification, not for any search result.
+
+## Z3 stage 2, item 16: solver-backed SA moves and search (research plan item 16)
+
+Origin: cloud run, not reproduced by the author. Base commit 5e5c6f4 plus `scripts/item16_compare.py` (new), z3-solver
+5.1.0.0. New functions in `cla_harness/solver.py` (`annealing.anneal_suite` and `find_small_suite` unchanged):
+- `anneal_suite_z3(model, n_tests, seed, max_steps, start_temp, cooling, weight, neighbor)`: same acceptance rule,
+  schedule and stopping rule as `anneal_suite`; the state is a list of configuration dicts; the cost is
+  `Z3CostModel.suite_cost` (item 15); starting tests are Z3-drawn valid configurations. Moves: "random" replaces a
+  test with a Z3-drawn valid configuration; "targeted" puts in a Z3-drawn valid configuration containing an uncovered
+  interaction, or, for an avoidable collision, replaces a test lacking the chosen interaction with one containing it, or
+  a test having it with a valid configuration that differs in exactly one parameter (found by Z3 with the other
+  parameters fixed). The draws are random-order extensions, reproducible per seed, not uniform.
+- `find_small_suite_z3(model, start_size, seed, restarts, steps_per_restart, ...)`: the cold shrinking search, mirroring
+  `find_small_suite` (same cooling derivation and restart seeds; no warm start).
+Tests (7 new, full suite 137 OK, 3 skipped): every test in every suite is valid (checked against the enumeration), the
+returned cost equals a fresh recomputation, SA reaches the exact minima 9, 8 and 9 with both moves at the SAME budget as
+the enumeration-based test (proven-minimum size, seeds 0 and 1, up to 20,000 moves), cannot solve one test below the
+minimum, `find_small_suite_z3` started two above ends exactly at the minimum (3 restarts x 2000 moves, as for
+`find_small_suite`), reproducibility, the one-change neighbor differs in exactly one parameter and is valid, and a
+deliberate break (model with the rules removed produces forbidden tests) is caught.
+
+Comparison on the 7 non-slow example models, seeds 0, 1 and 2, same settings for both searches (targeted moves, 3
+restarts x 3000 moves per size, start = greedy locating size), `PYTHONPATH=. python3 scripts/item16_compare.py SEED`:
+the final size from the Z3-backed search **equalled the enumeration-based search's size in all 21 of 21 runs**, and all
+Z3 suites contained only valid tests.
+
+| model | exact minimum (notes) | final size, enumeration SA / Z3 SA, seeds 0/1/2 | total moves, Z3 SA, seeds 0/1/2 | wall seconds enumeration SA | wall seconds Z3 SA |
+|---|---|---|---|---|---|
+| model.json | 9 | 9/9/9 and 9/9/9 | 9,367 / 9,572 / 9,294 | 2.0 / 2.0 / 2.1 | 14.3 / 14.7 / 13.7 |
+| model_high_constraints.json | 9 | 9/9/9 and 9/9/9 | 9,008 / 9,030 / 9,116 | 1.8 / 1.9 / 1.9 | 14.0 / 14.1 / 14.7 |
+| my_model.json | 8 | 8/8/8 and 8/8/8 | 9,139 / 9,681 / 9,652 | 2.0 / 1.9 / 1.8 | 14.6 / 15.3 / 16.0 |
+| model_6param.json | not recorded | 10/10/10 and 10/10/10 | 9,730 / 10,964 / 11,448 | 4.7 / 4.0 / 4.5 | 20.3 / 22.4 / 23.1 |
+| model_8param.json | not recorded | 11/12/11 and 11/12/11 | 12,853 / 9,694 / 13,645 | 8.8 / 9.0 / 14.6 | 38.3 / 29.3 / 40.5 |
+| model_low_constraints.json | not recorded | 8/8/8 and 8/8/8 | 9,341 / 9,270 / 9,316 | 1.9 / 2.0 / 2.0 | 14.6 / 14.8 / 14.4 |
+| model_multivalue.json | not recorded | 11/11/11 and 11/11/11 | 9,271 / 9,200 / 9,383 | 3.0 / 2.8 / 3.0 | 16.2 / 16.0 / 16.1 |
+
+Where no exact minimum is recorded (the four lower rows) the sizes are what the searches FOUND, not shown minimal.
+The enumeration-based sizes also agree with the earlier item 2 table (same settings). Timings: the three seeds ran
+at the same time on a 4-core container, so seconds are approximate. Z3-backed search took about 2.5 to 7.5 times as
+long as the enumeration-based one on these models. Most of the Z3 time is not in the cost queries: those took 0.1 to
+1.2 s per search (item 15's cache answers nearly all of them; Z3 cache misses 139 to 2,957, hits 57,198 to 300,455);
+the rest is in generating moves and starting tests, whose Z3 calls are not separately counted here.
+
+What this shows: with Z3 supplying the moves and the cost, SA behaves like the enumeration-based SA on these small
+models (same final sizes, valid tests, the proven minima reached). What it does not show: any benefit at this scale
+(it is slower), anything on a model too large to enumerate (item 17), or that the two searches visit the same suites
+(move counts differ because the random draws differ). Seven models, three seeds.

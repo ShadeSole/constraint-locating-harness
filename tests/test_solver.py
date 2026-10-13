@@ -207,5 +207,76 @@ class SolverCost(unittest.TestCase):
         self.assertGreater(len(wrong), 0)
 
 
+Z3_MINIMA = {"model.json": 9, "model_high_constraints.json": 9, "my_model.json": 8}
+
+
+@unittest.skipUnless(solver is not None, "z3-solver is not installed")
+class SolverAnnealing(unittest.TestCase):
+    def model_for(self, name):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index(name)])
+        valid = {key(c) for c in valid_configurations(parameters, forbidden)}
+        return solver.Z3CostModel(parameters, forbidden), valid
+
+    def test_every_test_in_every_suite_is_valid_and_cost_is_consistent(self):
+        for name in ("model.json", "model_spins_core.json"):
+            model, valid = self.model_for(name)
+            for neighbor in ("random", "targeted"):
+                result = solver.anneal_suite_z3(model, 12, seed=2, max_steps=60, neighbor=neighbor)
+                self.assertEqual(len(result["suite"]), 12)
+                self.assertTrue(all(key(c) in valid for c in result["suite"]), (name, neighbor))
+                self.assertEqual(model.suite_cost(result["suite"])["cost"], result["cost"]["cost"])
+
+    def test_reaches_the_exact_minimum_with_both_moves(self):
+        # Same budget as the enumeration-based test: size = proven minimum, 2 seeds, 20,000 moves.
+        for name, n in Z3_MINIMA.items():
+            model, valid = self.model_for(name)
+            for neighbor in ("random", "targeted"):
+                for seed in range(2):
+                    result = solver.anneal_suite_z3(model, n, seed=seed, max_steps=20000, neighbor=neighbor)
+                    self.assertTrue(result["solved"], (name, neighbor, seed))
+                    self.assertTrue(all(key(c) in valid for c in result["suite"]))
+
+    def test_cannot_beat_the_exact_minimum(self):
+        for name, n in Z3_MINIMA.items():
+            model, _ = self.model_for(name)
+            result = solver.anneal_suite_z3(model, n - 1, seed=0, max_steps=1500, neighbor="targeted")
+            self.assertFalse(result["solved"], name)
+
+    def test_search_ends_exactly_at_the_proven_minimum(self):
+        for name, n in Z3_MINIMA.items():
+            model, valid = self.model_for(name)
+            found = solver.find_small_suite_z3(model, n + 2, seed=0, restarts=3, steps_per_restart=2000)
+            self.assertEqual(found["size"], n, name)
+            self.assertTrue(all(key(c) in valid for c in found["suite"]))
+
+    def test_reproducible_and_seed_sensitive(self):
+        model, _ = self.model_for("model.json")
+        a = solver.anneal_suite_z3(model, 10, seed=5, max_steps=80, neighbor="targeted")
+        b = solver.anneal_suite_z3(model, 10, seed=5, max_steps=80, neighbor="targeted")
+        c = solver.anneal_suite_z3(model, 10, seed=6, max_steps=80, neighbor="targeted")
+        self.assertEqual(a, b)
+        self.assertNotEqual(a["suite"], c["suite"])
+
+    def test_one_change_neighbor_differs_in_exactly_one_parameter_and_is_valid(self):
+        import random
+        model, valid = self.model_for("model.json")
+        rng = random.Random(0)
+        for _ in range(30):
+            base = solver._draw(model, rng)
+            other = solver._one_change_neighbor(model, rng, base)
+            self.assertIsNotNone(other)
+            self.assertIn(key(other), valid)
+            self.assertEqual(sum(base[n] != other[n] for n in base), 1)
+
+    def test_deliberate_break_is_caught(self):
+        # With the model's rules ignored the "valid" check below would fail: sampling from an
+        # unconstrained model must produce tests the real model forbids.
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        valid = {key(c) for c in valid_configurations(parameters, forbidden)}
+        loose = solver.Z3CostModel(parameters, [])
+        result = solver.anneal_suite_z3(loose, 12, seed=0, max_steps=5, neighbor="random")
+        self.assertTrue(any(key(c) not in valid for c in result["suite"]))
+
+
 if __name__ == "__main__":
     unittest.main()
