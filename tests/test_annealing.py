@@ -679,6 +679,33 @@ class WarmStartByHand(unittest.TestCase):
                                      restarts=2, steps_per_restart=100, warm_start_temp=temp)
             self.assertEqual(found["size"], 3)
 
+    def test_warm_extra_keeps_every_cold_restart_and_adds_one_run(self):
+        calls = []
+        real = annealing.anneal_suite
+
+        def spy(*args, **kwargs):
+            calls.append((args[3], kwargs))
+            return real(*args, **kwargs)
+
+        with mock.patch.object(annealing, "anneal_suite", spy):
+            found = self.search(restarts=3, steps_per_restart=400, warm_extra=True)
+        size_two = [kw for n, kw in calls if n == 2]
+        self.assertEqual(len(size_two), 4)                 # 1 warm + 3 cold
+        self.assertIsNotNone(size_two[0]["initial"])
+        self.assertTrue(all(kw["initial"] is None for kw in size_two[1:]))
+        self.assertEqual(found["attempts"][-1]["moves"], 4 * 400)
+        cold = [kw["seed"] for n, kw in calls if n == 2][1:]
+        with mock.patch.object(annealing, "anneal_suite", spy):
+            calls.clear()
+            find_small_suite(self.configs, self.interactions, self.unavoidable, 4,
+                             restarts=3, steps_per_restart=400)
+        self.assertEqual(cold, [kw["seed"] for n, kw in calls if n == 2])
+
+    def test_warm_extra_needs_warm_start(self):
+        with self.assertRaises(ValueError):
+            find_small_suite(self.configs, self.interactions, self.unavoidable, 4,
+                             restarts=2, steps_per_restart=100, warm_extra=True)
+
 
 class WarmStartAgainstExactMinimum(unittest.TestCase):
     def test_warm_search_also_ends_exactly_at_the_proven_minimum(self):

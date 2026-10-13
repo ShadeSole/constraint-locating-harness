@@ -122,3 +122,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   ceiling; SA was 0 to 2 tests below greedy and identical across seeds. The ceiling fraction drops at t = 3 on
   five models (for example model.json 60/68). Be skeptical: no exact minimum at t = 3, SA equal to greedy on
   three models, tiny hand-built models only.
+
+- 2026-10-13, plan item 5: added `warm_extra` (warm run as an additional run, cold restarts untouched) and
+  compared cold, warm-replaces-restart-0 and warm-extra on the spins-derived model, seeds 0-2
+  (`scripts/item5_warm_compare.py`). Cloud run, not reproduced by the author. Smallest sizes: cold 30/31/32,
+  warm 30/30/32, extra 30/31/30. Be skeptical: three seeds, one derived model, and extra gets one more run
+  per size, so it is not a budget-matched comparison (cold with 6 restarts was not run).

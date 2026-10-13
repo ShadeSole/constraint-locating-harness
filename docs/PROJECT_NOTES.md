@@ -662,3 +662,38 @@ valid configurations, so no smaller suite exists to find. SA size did not vary a
 Caveats: 3 seeds, small hand-built models, untuned schedule, a failed smaller size means "not found in the
 budget", not proof of minimality (no exact search at t = 3 was run). Suite sizes grow faster than the number of
 interactions suggests, and runtime at t = 3 is 10 to 12 times that at t = 2 on model_8param.json.
+
+## Warm start as an extra run versus replacing restart 0 (research plan item 5)
+
+Origin: cloud run, not reproduced by the author. Base commit e2243bd plus uncommitted-then-committed changes in
+this item: `find_small_suite(..., warm_extra=True)` and CLI flag `--warm-extra` (existing warm-start code
+reused; default behavior unchanged), 2 new tests (112 total pass, 3 skipped), and
+`scripts/item5_warm_compare.py`. Modes: **cold** = no warm start; **warm** = warm run replaces restart 0
+(the existing V0.3 step 5 behavior); **extra** = the warm run goes first and all 5 cold restarts follow with
+exactly the seeds of the cold search, so a size below the start has up to 6 runs instead of 5.
+Setup: model_spins_core.json, strength 2, targeted moves, 5 restarts, 6000 moves/run, start 32 (greedy
+locating size), base seeds 0, 1, 2, one search per cell. Command:
+`PYTHONPATH=. python3 scripts/item5_warm_compare.py examples/model_spins_core.json 32 SEED MODE`.
+
+| seed | cold: smallest (total moves) | warm (replaces restart 0) | extra (additional run) |
+|---|---|---|---|
+| 0 | 30 (60,556) | 30 (56,878) | 30 (69,550) |
+| 1 | 31 (36,737) | 30 (35,898) | 31 (40,296) |
+| 2 | 32 (33,061) | 32 (33,061) | 30 (46,064) |
+
+All suites found are the ceiling-reaching suites the search returns (cost zero); every size below the smallest
+listed failed all of its runs within budget. Seed 0 cold (60,556 moves) and warm (56,878) repeat the figures in
+the "warm start and a larger budget" section move for move. Wall times (365 to 537 s per search) are not
+comparable: nine searches shared a 4-core container; not used for conclusions.
+
+Observations: the smallest size found was 30 in 2 of 3 seeds for cold, 2 of 3 for warm and 3 of 3 for extra.
+Extra was never worse than cold (its cold restarts are the same runs) and beat cold on seed 2 (30 vs 32),
+where the warm run solved 31 and then 30 from the carried suite. Replacing restart 0 helped on seed 1 and
+was identical to cold on seeds 0 (size) and 2. Extra costs one more run per failed size, visible in total moves
+(seed 0: 69,550 vs 60,556).
+
+Caveats: three seeds, one derived model (not the benchmark `spins`), one budget, untuned warm temperature
+(0.3). Which warm seed is used differs between modes (warm uses restart index 0, extra uses -1), so some
+differences between warm and extra are seed luck; with three data points no ranking is supported. Extra gets one
+more run than the others at each size, so it is not a budget-matched comparison. A matched comparison would give
+cold 6 restarts; not run.

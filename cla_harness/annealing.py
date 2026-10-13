@@ -340,6 +340,7 @@ def find_small_suite(
     min_size: int = 1,
     warm_start: bool = False,
     warm_start_temp: float = 0.3,
+    warm_extra: bool = False,
 ) -> dict:
     """Look for the smallest suite that reaches cost zero, by shrinking one test at a time.
 
@@ -364,6 +365,11 @@ def find_small_suite(
     runs at that size start cold as before. The warm run counts as one of the
     `restarts`, so the budget at each size stays restarts * steps_per_restart.
 
+    With warm_extra=True (needs warm_start=True) the warm run is instead an EXTRA run:
+    it goes first, and all `restarts` cold runs follow with exactly the seeds they have
+    in a cold search (restart 0 is no longer replaced). The budget at a size below
+    start_size is then (restarts + 1) * steps_per_restart, one run more than before.
+
     The cooling rate is chosen so that the temperature falls from start_temp to
     end_temp over exactly steps_per_restart moves. Every run therefore uses its whole
     budget as a slow cooling schedule, instead of freezing after a few thousand moves.
@@ -383,6 +389,8 @@ def find_small_suite(
         raise ValueError("need 0 < end_temp <= start_temp")
     if min_size < 1:
         raise ValueError("min_size must be at least 1")
+    if warm_extra and not warm_start:
+        raise ValueError("warm_extra needs warm_start=True")
     if warm_start and not end_temp <= warm_start_temp <= start_temp:
         raise ValueError("need end_temp <= warm_start_temp <= start_temp")
 
@@ -400,9 +408,12 @@ def find_small_suite(
         solved_by = None
         moves = 0
         used = 0
-        for restart in range(restarts):
+        schedule = list(range(restarts))
+        if warm_start and best_indices is not None:
+            schedule = [-1] + schedule if warm_extra else schedule
+        for restart in schedule:
             used += 1
-            warm = warm_start and restart == 0 and best_indices is not None
+            warm = warm_start and best_indices is not None and restart == (-1 if warm_extra else 0)
             result = anneal_suite(
                 configs, interactions, unavoidable, n,
                 seed=_restart_seed(seed, n, restart),
@@ -505,6 +516,9 @@ def main(argv=None):
                         help="with --shrink: first run at each smaller size starts from the previous solution")
     parser.add_argument("--warm-temp", type=float, default=0.3,
                         help="with --warm-start: starting temperature of the warm run")
+    parser.add_argument("--warm-extra", action="store_true",
+                        help="with --warm-start: the warm run is an extra run before the cold restarts, "
+                             "not a replacement for restart 0")
     parser.add_argument("--seed", type=int, default=0, help="with --shrink: base seed")
     parser.add_argument("--multi-seed", type=int, default=0, metavar="K",
                         help="repeat the --shrink search for K base seeds (seed, seed+1, ...) "
@@ -540,7 +554,7 @@ def main(argv=None):
             one = multi_seed_search(configs, interactions, unavoidable, args.n_tests, [seed],
                                     restarts=args.restarts, steps_per_restart=args.steps,
                                     neighbor=args.neighbor, warm_start=args.warm_start,
-                                    warm_start_temp=args.warm_temp)
+                                    warm_start_temp=args.warm_temp, warm_extra=args.warm_extra)
             seconds = time.perf_counter() - start
             run = one["runs"][0]
             runs.append(run)
@@ -561,7 +575,7 @@ def main(argv=None):
         found = find_small_suite(configs, interactions, unavoidable, args.n_tests,
                                  seed=args.seed, restarts=args.restarts,
                                  steps_per_restart=args.steps, neighbor=args.neighbor,
-                                 warm_start=args.warm_start, warm_start_temp=args.warm_temp)
+                                 warm_start=args.warm_start, warm_start_temp=args.warm_temp, warm_extra=args.warm_extra)
         seconds = time.perf_counter() - start
         print(f"Shrinking from {args.n_tests} tests: up to {args.restarts} runs of "
               f"{args.steps} moves per size, {args.neighbor} moves"
