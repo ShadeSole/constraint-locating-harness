@@ -5,7 +5,7 @@ from itertools import product
 from math import prod
 from pathlib import Path
 
-from cla_harness.core import Forbidden, all_configurations, valid_configurations
+from cla_harness.core import Forbidden, all_configurations, feasible_interactions, valid_configurations
 from cla_harness.io import load_model
 
 try:
@@ -113,6 +113,42 @@ class SolverEnumerationAndSampling(unittest.TestCase):
         self.assertNotEqual({key(c) for c in solver.valid_configurations_z3(parameters, [])}, expected)
         unconstrained = solver.sample_valid_configurations(parameters, [], 300, seed=0)
         self.assertTrue(any(key(x) not in expected for x in unconstrained))
+
+
+@unittest.skipUnless(solver is not None, "z3-solver is not installed")
+class SolverFeasibleInteractions(unittest.TestCase):
+    def test_equals_enumeration_on_every_example_model(self):
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            expected = feasible_interactions(valid_configurations(parameters, forbidden), 2)
+            self.assertGreater(len(expected), 0, path)
+            self.assertEqual(solver.feasible_interactions_z3(parameters, forbidden), expected, path)
+
+    def test_known_counts_from_the_notes(self):
+        # PROJECT_NOTES: model.json 38, model_high_constraints.json 35 (28 distinguishable), spins core 239.
+        counts = {Path(p).name: len(solver.feasible_interactions_z3(*load_model(p))) for p in EXAMPLES}
+        self.assertEqual((counts["model.json"], counts["model_high_constraints.json"],
+                          counts["model_spins_core.json"]), (38, 35, 239))
+
+    def test_indirectly_infeasible_pair_is_excluded(self):
+        # B=1 forces A=0 (rule A=1&B=1), C=1 forces A=1 (rule A=0&C=1): B=1 and C=1 can never co-occur
+        # although no rule names that pair.
+        parameters = {"A": ["0", "1"], "B": ["0", "1"], "C": ["0", "1"]}
+        forbidden = [Forbidden.from_dict({"A": "1", "B": "1"}), Forbidden.from_dict({"A": "0", "C": "1"})]
+        found = solver.feasible_interactions_z3(parameters, forbidden)
+        self.assertNotIn(frozenset({("B", "1"), ("C", "1")}), found)
+        self.assertEqual(found, feasible_interactions(valid_configurations(parameters, forbidden), 2))
+
+    def test_no_valid_configuration_and_unsupported_strength(self):
+        parameters = {"A": ["x"], "B": ["u"]}
+        self.assertEqual(solver.feasible_interactions_z3(parameters, [Forbidden.from_dict({"A": "x"})]), frozenset())
+        with self.assertRaises(ValueError):
+            solver.feasible_interactions_z3(parameters, [], strength=3)
+
+    def test_deliberate_break_is_caught(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        expected = feasible_interactions(valid_configurations(parameters, forbidden), 2)
+        self.assertNotEqual(solver.feasible_interactions_z3(parameters, []), expected)
 
 
 if __name__ == "__main__":

@@ -168,3 +168,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   the existing enumeration exactly and every sample was valid. On these tiny models Z3 was slower than plain
   enumeration (single runs: for example 0.141 s versus 0.0001 s on model.json). Be skeptical: the point of Z3 is
   models too big to enumerate, which has not been tested yet, and the sampler is reproducible but not uniform.
+
+- 2026-10-13, plan item 12: Z3 can now decide which pairs of settings can ever occur together by asking, for each
+  pair, "does any allowed configuration contain both?" Cloud run, not reproduced by the author. On all 8 example
+  models the result equals the existing enumeration exactly (for example 38 for model.json, 239 for the spins-
+  derived model). Z3 was slower on these tiny models, though the gap narrowed on the largest. Be skeptical: the
+  reason to use Z3 is models too big to enumerate, and none was tried yet.

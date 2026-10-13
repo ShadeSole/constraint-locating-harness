@@ -106,3 +106,25 @@ def sample_valid_configurations(parameters: Dict[str, List[str]], forbidden: Ite
         solver.check(*chosen)
         samples.append(_decode(solver.model(), parameters, variables))
     return samples
+
+
+def feasible_interactions_z3(parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden],
+                             strength: int = 2):
+    """Feasible 2-way interactions: value pairs of two parameters that some valid configuration contains.
+
+    Returns a frozenset of frozensets of (parameter, value) terms, the same type as
+    `core.feasible_interactions`. One satisfiability query (solver assumptions) per candidate
+    pair, so the cost is the number of candidate pairs, not the number of valid configurations.
+    Only strength 2 is implemented (ValueError otherwise).
+    """
+    from itertools import combinations
+    if strength != 2:
+        raise ValueError("feasible_interactions_z3 supports strength 2 only")
+    solver, variables = build_solver(parameters, forbidden)
+    feasible = set()
+    for first, second in combinations(parameters, 2):
+        for i, first_value in enumerate(parameters[first]):
+            for j, second_value in enumerate(parameters[second]):
+                if solver.check(variables[first] == i, variables[second] == j) == z3.sat:
+                    feasible.add(frozenset({(first, first_value), (second, second_value)}))
+    return frozenset(feasible)

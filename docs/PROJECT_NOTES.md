@@ -873,3 +873,33 @@ What this shows: on these tiny models Z3 listing was slower than plain enumerati
 1,400x on the single runs; the first row also includes Z3's one-time start-up cost, which is not separated). It does
 not show what happens on models too large to enumerate; that is the reason for the solver, and was not tested.
 Sampling cost is roughly 1.5 to 3.7 ms per sample here. One run per cell, so treat timings as rough.
+
+## Z3 stage 1, item 12: feasible 2-way interactions via Z3 (research plan item 12)
+
+Origin: cloud run, not reproduced by the author. Base commit 8ebd5a0 plus `scripts/item12_timing.py` (new),
+z3-solver 5.1.0.0. Added `feasible_interactions_z3(parameters, forbidden, strength=2)` to `cla_harness/solver.py`
+(no existing function changed). A pair of values of two parameters is feasible if Z3 finds a valid configuration
+containing both (one satisfiability query with assumptions per candidate pair); the result has the same type as
+`core.feasible_interactions`. Only strength 2 is implemented (other values raise ValueError). 5 new tests
+(equality on all 8 models, the counts 38 / 35 / 239 already recorded in these notes, an indirectly infeasible pair
+that no rule names, no-valid-configuration and unsupported strength, one deliberate break). Full suite: 127 tests OK,
+3 skipped.
+
+Result: on all 8 example models the Z3 interaction set equals the set from enumeration, exactly. Single timed run
+each, seconds (item 13 adds repeats); "enumerate" includes building the valid configurations:
+
+| model | feasible 2-way | enumerate | Z3 |
+|---|---|---|---|
+| model.json | 38 | 0.0002 | 0.017 |
+| model_6param.json | 58 | 0.0003 | 0.011 |
+| model_8param.json | 110 | 0.0019 | 0.019 |
+| model_high_constraints.json | 35 | 0.0002 | 0.008 |
+| model_low_constraints.json | 40 | 0.0002 | 0.008 |
+| model_multivalue.json | 46 | 0.0002 | 0.009 |
+| model_spins_core.json | 239 | 0.0351 | 0.059 |
+| my_model.json | 39 | 0.0003 | 0.014 |
+
+What this shows: Z3 was slower on every model here, though the gap shrinks as the model grows (about 1.7 times on
+spins core, tens of times on the smallest; one run each, and the first call may include Z3 start-up). The cost of the
+Z3 route depends on the number of candidate value pairs, not on the number of valid configurations, which is the
+property that matters for models too large to enumerate; that was NOT tested. Models are tiny.
