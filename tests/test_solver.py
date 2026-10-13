@@ -76,5 +76,44 @@ class SolverIsValid(unittest.TestCase):
         self.assertGreater(len(wrong), 0)
 
 
+@unittest.skipUnless(solver is not None, "z3-solver is not installed")
+class SolverEnumerationAndSampling(unittest.TestCase):
+    def test_listing_equals_enumeration_on_every_example_model(self):
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            expected = {key(c) for c in valid_configurations(parameters, forbidden)}
+            self.assertLessEqual(len(expected), 5000, path)
+            listed = solver.valid_configurations_z3(parameters, forbidden)
+            self.assertEqual(len(listed), len(expected), path)            # no duplicates
+            self.assertEqual({key(c) for c in listed}, expected, path)
+
+    def test_samples_are_valid_seeded_and_varied(self):
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            expected = {key(c) for c in valid_configurations(parameters, forbidden)}
+            a = solver.sample_valid_configurations(parameters, forbidden, 200, seed=3)
+            b = solver.sample_valid_configurations(parameters, forbidden, 200, seed=3)
+            c = solver.sample_valid_configurations(parameters, forbidden, 200, seed=4)
+            self.assertEqual(len(a), 200)
+            self.assertTrue(all(key(x) in expected for x in a + c), path)
+            self.assertEqual(a, b, path)                                    # same seed, same draw
+            if len(expected) > 1:
+                self.assertGreater(len({key(x) for x in a}), 1, path)
+                self.assertNotEqual(a, c, path)                             # different seed differs
+
+    def test_model_with_no_valid_configuration(self):
+        parameters = {"A": ["x"], "B": ["u"]}
+        forbidden = [Forbidden.from_dict({"A": "x"})]
+        self.assertEqual(solver.valid_configurations_z3(parameters, forbidden), [])
+        self.assertEqual(solver.sample_valid_configurations(parameters, forbidden, 5), [])
+
+    def test_deliberate_breaks_are_caught(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        expected = {key(c) for c in valid_configurations(parameters, forbidden)}
+        self.assertNotEqual({key(c) for c in solver.valid_configurations_z3(parameters, [])}, expected)
+        unconstrained = solver.sample_valid_configurations(parameters, [], 300, seed=0)
+        self.assertTrue(any(key(x) not in expected for x in unconstrained))
+
+
 if __name__ == "__main__":
     unittest.main()

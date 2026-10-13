@@ -839,3 +839,37 @@ Timing note, not a benchmark: `is_valid` rebuilds the solver on every call, so t
 mostly on that (the largest model is 4096 calls). Item 13 will do the timing comparison properly.
 Caveat: agreement on 8 small models and one synthetic model supports that the encoding is right for pair-or-larger
 partial-assignment rules of this kind; it does not prove it for the CASA files, whose clauses are larger.
+
+## Z3 stage 1, item 11: listing and sampling valid configurations (research plan item 11)
+
+Origin: cloud run, not reproduced by the author. Base commit eb3bfd6 plus `scripts/item11_timing.py` (new),
+z3-solver 5.1.0.0. Added to `cla_harness/solver.py` (no existing function changed):
+- `valid_configurations_z3(parameters, forbidden)`: lists every valid configuration with one blocking clause per
+  solution; the order is Z3's, not product order.
+- `sample_valid_configurations(parameters, forbidden, n, seed)`: seeded draws; per draw the parameters are visited
+  in random order and values tried in random order, keeping the first value Z3 can still extend (solver
+  assumptions). Every sample is valid by construction. It is reproducible per seed but NOT uniform over valid
+  configurations; repeats are possible. Returns [] if the model has no valid configuration.
+- 4 new tests (listing equals enumeration, samples valid/seeded/varied, a model with no valid configuration, two
+  deliberate breaks caught). Full suite: 122 tests OK, 3 skipped.
+
+Results on all 8 example models (each has at most 978 valid configurations, so all are within the 5,000 limit):
+(a) the Z3 list equals the enumeration set exactly on all 8 (same size, no duplicates, same members);
+(b) all 1,000 seeded samples (seed 0) were valid on all 8. Single timed run each, seconds, one container
+(repeats come in item 13):
+
+| model | valid | enumerate | Z3 list | Z3, 1000 samples |
+|---|---|---|---|---|
+| model.json | 18 | 0.0001 | 0.141 | 1.697 |
+| model_6param.json | 36 | 0.0003 | 0.034 | 2.135 |
+| model_8param.json | 144 | 0.0005 | 0.112 | 3.162 |
+| model_high_constraints.json | 11 | 0.0002 | 0.019 | 1.807 |
+| model_low_constraints.json | 32 | 0.0001 | 0.035 | 1.530 |
+| model_multivalue.json | 30 | 0.0001 | 0.024 | 1.758 |
+| model_spins_core.json | 978 | 0.0200 | 1.076 | 3.675 |
+| my_model.json | 24 | 0.0001 | 0.021 | 1.922 |
+
+What this shows: on these tiny models Z3 listing was slower than plain enumeration in every row (by about 50x to
+1,400x on the single runs; the first row also includes Z3's one-time start-up cost, which is not separated). It does
+not show what happens on models too large to enumerate; that is the reason for the solver, and was not tested.
+Sampling cost is roughly 1.5 to 3.7 ms per sample here. One run per cell, so treat timings as rough.

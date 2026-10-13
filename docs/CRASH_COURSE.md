@@ -162,3 +162,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   every possible configuration matched the existing enumeration; the new tests skip if Z3 is not installed.
   Nothing in the search uses Z3 yet. Be skeptical: the models are tiny, and this one-at-a-time check rebuilds the
   solver each call, so it is slow. Speed is item 13's job.
+
+- 2026-10-13, plan item 11: Z3 can now list every valid configuration (it asks for one, forbids it, asks again) and
+  draw seeded random valid ones. Cloud run, not reproduced by the author. On all 8 example models the list matched
+  the existing enumeration exactly and every sample was valid. On these tiny models Z3 was slower than plain
+  enumeration (single runs: for example 0.141 s versus 0.0001 s on model.json). Be skeptical: the point of Z3 is
+  models too big to enumerate, which has not been tested yet, and the sampler is reproducible but not uniform.
