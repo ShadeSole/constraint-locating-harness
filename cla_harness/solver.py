@@ -128,3 +128,69 @@ def feasible_interactions_z3(parameters: Dict[str, List[str]], forbidden: Iterab
                 if solver.check(variables[first] == i, variables[second] == j) == z3.sat:
                     feasible.add(frozenset({(first, first_value), (second, second_value)}))
     return frozenset(feasible)
+
+
+class Z3CostModel:
+    """Lazy, solver-backed version of `annealing.suite_cost` for one model.
+
+    The feasible 2-way interactions come from `feasible_interactions_z3`. For a pair of
+    interactions that a suite covers with exactly the same tests, Z3 is asked whether some
+    VALID configuration contains one but not the other (the pair is then "avoidable": a better
+    suite could separate it). Answers are cached per unordered pair, so a pair costs at most
+    one decision however many suites are scored. `hits`, `misses` and `seconds` count cache
+    use and the time spent in Z3 queries, so a slow run is visible.
+    """
+
+    def __init__(self, parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden]):
+        self.parameters = parameters
+        self.solver, self.variables = build_solver(parameters, forbidden)
+        self.interactions = sorted(feasible_interactions_z3(parameters, forbidden), key=sorted)
+        self._separable: Dict[frozenset, bool] = {}
+        self.hits = 0
+        self.misses = 0
+        self.seconds = 0.0
+
+    def _contains(self, interaction):
+        return z3.And(*[self.variables[name] == self.parameters[name].index(value)
+                        for name, value in interaction])
+
+    def separable(self, a, b) -> bool:
+        """True if some valid configuration contains exactly one of the interactions a, b."""
+        import time
+        pair = frozenset((a, b))
+        if pair in self._separable:
+            self.hits += 1
+            return self._separable[pair]
+        self.misses += 1
+        start = time.perf_counter()
+        in_a, in_b = self._contains(a), self._contains(b)
+        answer = (self.solver.check(in_a, z3.Not(in_b)) == z3.sat
+                  or self.solver.check(in_b, z3.Not(in_a)) == z3.sat)
+        self.seconds += time.perf_counter() - start
+        self._separable[pair] = answer
+        return answer
+
+    def suite_cost(self, suite: List[Config], weight: float = 1.0, detail: bool = False) -> dict:
+        """Same result as `annealing.suite_cost(suite, interactions, unavoidable, weight, detail)`."""
+        from collections import defaultdict
+        from itertools import combinations
+        from .core import contains_interaction
+        groups = defaultdict(list)
+        uncovered_list = []
+        for interaction in self.interactions:
+            signature = tuple(contains_interaction(c, interaction) for c in suite)
+            if any(signature):
+                groups[signature].append(interaction)
+            else:
+                uncovered_list.append(interaction)
+        avoidable = [(a, b) for group in groups.values() if len(group) > 1
+                     for a, b in combinations(group, 2) if self.separable(a, b)]
+        result = {
+            "uncovered": len(uncovered_list),
+            "avoidable_collisions": len(avoidable),
+            "cost": weight * len(uncovered_list) + len(avoidable),
+        }
+        if detail:
+            result["uncovered_list"] = sorted(uncovered_list, key=sorted)
+            result["colliding_list"] = sorted({i for pair in avoidable for i in pair}, key=sorted)
+        return result

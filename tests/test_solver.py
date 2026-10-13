@@ -7,6 +7,7 @@ from pathlib import Path
 
 from cla_harness.core import Forbidden, all_configurations, feasible_interactions, valid_configurations
 from cla_harness.io import load_model
+from cla_harness.annealing import suite_cost, unavoidable_pairs
 
 try:
     from cla_harness import solver
@@ -149,6 +150,61 @@ class SolverFeasibleInteractions(unittest.TestCase):
         parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
         expected = feasible_interactions(valid_configurations(parameters, forbidden), 2)
         self.assertNotEqual(solver.feasible_interactions_z3(parameters, []), expected)
+
+
+def random_suites(configs, count, seed):
+    rng = random.Random(seed)
+    return [rng.choices(configs, k=rng.randint(1, min(16, 2 * len(configs)))) for _ in range(count)]
+
+
+@unittest.skipUnless(solver is not None, "z3-solver is not installed")
+class SolverCost(unittest.TestCase):
+    SUITES_PER_MODEL = 200
+
+    def test_cost_identical_to_suite_cost_on_random_suites_for_every_model(self):
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            configs = valid_configurations(parameters, forbidden)
+            interactions = feasible_interactions(configs, 2)
+            unavoidable = unavoidable_pairs(configs, interactions)
+            model = solver.Z3CostModel(parameters, forbidden)
+            self.assertEqual(set(model.interactions), set(interactions), path)
+            mixed = 0
+            for suite in random_suites(configs, self.SUITES_PER_MODEL, seed=11):
+                want = suite_cost(suite, interactions, unavoidable, detail=True)
+                got = model.suite_cost(suite, detail=True)
+                self.assertEqual(got, want, path)
+                mixed += want["avoidable_collisions"] > 0
+            self.assertGreater(mixed, 0, path)       # the comparison included avoidable collisions
+
+    def test_weight_is_applied_and_cache_is_used(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        configs = valid_configurations(parameters, forbidden)
+        interactions = feasible_interactions(configs, 2)
+        unavoidable = unavoidable_pairs(configs, interactions)
+        model = solver.Z3CostModel(parameters, forbidden)
+        suite = configs[:3]
+        self.assertEqual(model.suite_cost(suite, weight=5.0)["cost"],
+                         suite_cost(suite, interactions, unavoidable, weight=5.0)["cost"])
+        misses = model.misses
+        self.assertGreater(misses, 0)
+        model.suite_cost(suite)                       # the same suite again: no new Z3 queries
+        self.assertEqual(model.misses, misses)
+        self.assertGreater(model.hits, 0)
+
+    def test_deliberate_break_is_caught(self):
+        # Treating every colliding pair as avoidable overcounts on high_constraints, which has
+        # indistinguishable interactions (28 of 35 localizable).
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model_high_constraints.json")])
+        configs = valid_configurations(parameters, forbidden)
+        interactions = feasible_interactions(configs, 2)
+        unavoidable = unavoidable_pairs(configs, interactions)
+        self.assertGreater(len(unavoidable), 0)
+        model = solver.Z3CostModel(parameters, forbidden)
+        model.separable = lambda a, b: True
+        wrong = [s for s in random_suites(configs, 50, seed=1)
+                 if model.suite_cost(s)["cost"] != suite_cost(s, interactions, unavoidable)["cost"]]
+        self.assertGreater(len(wrong), 0)
 
 
 if __name__ == "__main__":

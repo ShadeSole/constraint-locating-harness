@@ -982,3 +982,39 @@ nothing here shows a speed benefit.
 What is not tested: any model too large to enumerate (the reason to use a solver), CASA-format models, strengths other
 than 2 for interactions, and the sampler's distribution (reproducible but not uniform). Wiring Z3 into the search and
 trying a large benchmark are item 15, which is marked STOP FOR USER.
+
+## Z3 stage 2, item 15: lazy solver-backed cost (research plan item 15)
+
+Origin: cloud run, not reproduced by the author. Base commit 0290c6b plus `scripts/item15_check.py` (new),
+z3-solver 5.1.0.0. Added `Z3CostModel` to `cla_harness/solver.py` (`annealing.suite_cost` and all other existing
+code unchanged). Construction takes the feasible 2-way interactions from `feasible_interactions_z3`. For each pair of
+interactions that a suite covers with exactly the same tests, `separable(a, b)` asks Z3 whether some VALID configuration
+contains one but not the other; such a pair is "avoidable". Answers are cached per unordered pair; `hits`,
+`misses` and `seconds` record cache use and time inside Z3 queries. `suite_cost(suite, weight, detail)` returns the
+same dictionary as `annealing.suite_cost` (uncovered, avoidable_collisions, cost, and with detail the sorted
+uncovered and colliding lists). No enumerated list of valid configurations or precomputed `unavoidable` set is used.
+
+Cross-check: on each of the 8 example models, 200 seeded random suites (random.Random(11); 1 to 16 configurations drawn
+with repeats from the valid set), compared with `suite_cost` using the enumeration-based `unavoidable_pairs`,
+including the detail lists: **identical on 200 of 200 suites on every model (1,600 of 1,600)**. The check was not vacuous:
+185 to 200 suites per model had at least one avoidable collision (table). Tests: 3 new (the 8-model cross-check, weight and
+caching, a deliberate break that treats every colliding pair as avoidable and is caught). Full suite: 130 tests OK, 3 skipped.
+
+| model | suites identical | suites with avoidable collisions | suite_cost, 200 suites (s) | Z3 cost, 200 suites (s) | of which in Z3 queries (s) | cache misses / hits |
+|---|---|---|---|---|---|---|
+| model.json | 200 / 200 | 198 | 0.045 | 0.187 | 0.137 | 370 / 4,391 |
+| model_6param.json | 200 / 200 | 199 | 0.069 | 0.450 | 0.369 | 1,001 / 9,261 |
+| model_8param.json | 200 / 200 | 200 | 0.130 | 1.783 | 1.596 | 4,235 / 30,370 |
+| model_high_constraints.json | 200 / 200 | 199 | 0.039 | 0.147 | 0.104 | 284 / 4,774 |
+| model_low_constraints.json | 200 / 200 | 185 | 0.045 | 0.217 | 0.164 | 475 / 4,101 |
+| model_multivalue.json | 200 / 200 | 199 | 0.053 | 0.265 | 0.202 | 526 / 5,409 |
+| model_spins_core.json | 200 / 200 | 200 | 0.304 | 6.979 | 6.469 | 15,968 / 77,181 |
+| my_model.json | 200 / 200 | 196 | 0.061 | 0.202 | 0.149 | 424 / 4,437 |
+
+Timings are single runs; the Z3 column is cumulative for the 200 suites, so the cache fills as it goes (later suites
+cost less). What it shows: the Z3 cost agrees with the enumeration-based cost exactly, and is slower on these models
+(about 4 to 23 times for 200 suites), with almost all of the time in Z3 queries; on spins core about 0.4 ms per query
+(15,968 misses in 6.47 s). What it does not show: behaviour on a model too large to enumerate (item 17), where the
+number of distinct colliding pairs, and so of Z3 queries, is the thing to watch; or inside an SA loop, where suites
+change one test at a time and the cache hit rate may differ from random suites. Random suites are not the suites SA
+visits, so agreement is evidence for the classification, not for any search result.

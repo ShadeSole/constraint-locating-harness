@@ -190,3 +190,11 @@ their origin label, what to be skeptical of, anything left under "Open questions
   tiny. Nothing in the search uses it yet: the search still lists all configurations first. The real test is a model
   too big to list, which has not been tried and is the next decision for you (item 15). Cloud run, not reproduced by
   the author. Full table: PROJECT_NOTES, "Summary of research plan items 10 to 13".
+
+- 2026-10-13, plan item 15: the search scores a suite by counting interactions it misses and pairs of interactions it
+  cannot tell apart although some allowed test could. That second part used a table built by listing every allowed
+  configuration. I wrote a version that asks Z3 instead, one pair at a time, and remembers the answers. On all 8
+  example models and 200 random suites each, it gave exactly the same score as the old way every time (1,600 of 1,600).
+  It is slower on these small models, almost all the time spent in Z3 queries. Cloud run, not reproduced by the author.
+  Be skeptical: the suites were random, not the ones the search visits, and the models are tiny. The search itself does
+  not use this yet (item 16).
