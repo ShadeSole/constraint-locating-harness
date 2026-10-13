@@ -686,7 +686,7 @@ listed failed all of its runs within budget. Seed 0 cold (60,556 moves) and warm
 the "warm start and a larger budget" section move for move. Wall times (365 to 537 s per search) are not
 comparable: nine searches shared a 4-core container; not used for conclusions.
 
-Observations: the smallest size found was 30 in 2 of 3 seeds for cold, 2 of 3 for warm and 3 of 3 for extra.
+Observations: the smallest size found was 30 in 1 of 3 seeds for cold, 2 of 3 for warm and 2 of 3 for extra.
 Extra was never worse than cold (its cold restarts are the same runs) and beat cold on seed 2 (30 vs 32),
 where the warm run solved 31 and then 30 from the carried suite. Replacing restart 0 helped on seed 1 and
 was identical to cold on seeds 0 (size) and 2. Extra costs one more run per failed size, visible in total moves
