@@ -128,3 +128,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   (`scripts/item5_warm_compare.py`). Cloud run, not reproduced by the author. Smallest sizes: cold 30/31/32,
   warm 30/30/32, extra 30/31/30. Be skeptical: three seeds, one derived model, and extra gets one more run
   per size, so it is not a budget-matched comparison (cold with 6 restarts was not run).
+
+- 2026-10-13, plan item 6: repeated the cold shrinking search on the spins-derived model for seeds 0-4
+  (`scripts/item6_spread.py`, via `multi_seed_search`). Cloud run, not reproduced by the author. Final sizes
+  30, 31, 32, 31, 30 (min 30, median 31, max 32); seed 0 gave 30 as the plan required. So the smallest suite
+  found depends noticeably on the seed, which is why single-seed sizes should not be quoted alone. Be
+  skeptical: five seeds, one derived model, "failed" means not found within budget. Seeds 5-9 are item 7.

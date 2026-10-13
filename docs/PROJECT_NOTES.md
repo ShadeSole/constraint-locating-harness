@@ -697,3 +697,30 @@ Caveats: three seeds, one derived model (not the benchmark `spins`), one budget,
 differences between warm and extra are seed luck; with three data points no ranking is supported. Extra gets one
 more run than the others at each size, so it is not a budget-matched comparison. A matched comparison would give
 cold 6 restarts; not run.
+
+## Spread on the spins-derived model, part 1: cold search, seeds 0-4 (research plan item 6)
+
+Origin: cloud run, not reproduced by the author. Base commit b1bea6b plus `scripts/item6_spread.py` (new; calls
+`multi_seed_search` once per seed so each seed can be timed). Model: examples/model_spins_core.json (a DERIVED
+model, not the benchmark `spins`), strength 2, targeted moves, cold search (no warm start), 5 restarts,
+6000 moves per run, start size 32 (greedy locating size). Command:
+`PYTHONPATH=. python3 scripts/item6_spread.py SEED cold`.
+
+| seed | final size | total moves | seconds | sizes solved | first size that failed all 5 runs |
+|---|---|---|---|---|---|
+| 0 | 30 | 60,556 | 263.3 | 32, 31, 30 | 29 |
+| 1 | 31 | 36,737 | 166.3 | 32, 31 | 30 |
+| 2 | 32 | 33,061 | 153.9 | 32 | 31 |
+| 3 | 31 | 48,327 | 218.3 | 32, 31 | 30 |
+| 4 | 30 | 40,232 | 171.2 | 32, 31, 30 | 29 |
+
+Over the 5 seeds: min 30, median 31, max 32 (sizes 30, 31, 32, 31, 30; histogram 30: 2, 31: 2, 32: 1).
+Check required by the plan: seed 0 gave 30 tests, as expected, with 60,556 moves, equal to the earlier
+recorded figure. Seeds 1 and 2 also match the item 5 runs (same sizes and moves).
+Timing caveat: seeds 0-3 ran at the same time on a 4-core container and seed 4 ran alone afterwards, so
+seconds are not strictly comparable between seeds 0-3 and seed 4; treat them as order of magnitude.
+Every returned suite has cost zero (covers all 239 feasible interactions and reaches the 229-interaction
+ceiling by construction of the search). A "failed" size means not found within 5 x 6000 moves, not proven
+impossible. Greedy locating needed 32 tests on this model (see the suite-size search section). Five seeds
+on one derived model: no general claim. Items 7 and 8 extend this to seeds 5-9 and a budget-matched
+comparison.
