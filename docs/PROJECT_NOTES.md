@@ -1076,8 +1076,7 @@ Benchmark files: CCAG (GIST-NJU/CCAG, public, read access via the session's git 
 
 Model facts (measured): 18 parameters, 46 values, 13 rules; 2,002,944 valid configurations (computed as 978 valid
 configurations of the 9-parameter constrained core times 2,048 combinations of the 9 free parameters, which matches the
-figure in docs/BENCHMARKS.md); 979 feasible 2-way interactions (from `feasible_interactions_z3`; 239 of them involve only
-the 9 core parameters, as in the derived model). The search never listed the valid configurations.
+figure in docs/BENCHMARKS.md); 979 feasible 2-way interactions (from `feasible_interactions_z3`). The search never listed the valid configurations.
 
 Search (the placeholders written into the plan; chosen without a measurement): Z3-backed targeted SA
 (`find_small_suite_z3`), one seed (seed 0), start size 40, 6000 moves per run, 5 restarts per size, cooling from 2.0 to
