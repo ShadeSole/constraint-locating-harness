@@ -579,9 +579,51 @@ schedule). The CASA benchmark files are not in this container, so only the hand-
 models were run.
 
 ## Open questions
-- Item 2 asks for "loadable models small enough to enumerate"; the CCAG/CASA files
-  (docs/BENCHMARKS.md) are not available in the cloud container (`../external` absent), so
-  none were run. Does the author want a small CASA instance copied somewhere reachable?
+- Low priority, not a blocker: no CASA benchmark file was run for item 2 (the CCAG files are not in
+  the cloud container, `../external` absent). The loader is already tested in tests/test_casa.py and
+  almost every benchmark is too large to enumerate (docs/BENCHMARKS.md), so this only matters once
+  solver-based handling exists (plan item 6).
+- Item 3: rows with more than 4 rules rest on fewer orderings (survivors only); see that section.
 
 ## Needs your decision
 (none yet)
+
+## Constraint-structure family: fraction of distinguishable interactions (research plan item 3)
+
+Origin: cloud run, not reproduced by the author. Base commit dbdc4ff plus `scripts/item3_constraint_family.py`
+(new; existing functions only). Deterministic: two repeat runs gave identical output.
+Command: `PYTHONPATH=. python3 scripts/item3_constraint_family.py 20 10`.
+
+Design: the parameters are fixed (the 5 binary parameters of model.json); only the forbidden rules
+change. Candidates are the 40 pair rules (one value of each of two parameters forbidden together).
+For each of 20 shuffle seeds (0-19) the candidates are put in random order and the family is the
+nested prefixes of 0 to 10 rules, so each set is the previous plus one rule. Metric: fraction
+distinguishable = ceiling / feasible 2-way interactions (t = 2, single fault; `ceiling_of`). This is
+interaction localization only; no source-code fault localization is involved.
+
+| rules | orderings n | valid (mean) | feasible (mean) | ceiling (mean) | fraction min / median / max | n with fraction < 1 |
+|---|---|---|---|---|---|---|
+| 0 | 20 | 32.0 | 40.0 | 40.0 | 1.000 / 1.000 / 1.000 | 0 |
+| 1 | 20 | 24.0 | 39.0 | 39.0 | 1.000 / 1.000 / 1.000 | 0 |
+| 2 | 20 | 18.1 | 37.7 | 35.8 | 0.892 / 0.947 / 1.000 | 13 |
+| 3 | 20 | 13.3 | 34.9 | 29.3 | 0.361 / 0.871 / 0.946 | 20 |
+| 4 | 20 | 9.4 | 30.8 | 20.2 | 0.273 / 0.655 / 0.871 | 20 |
+| 5 | 19 | 6.8 | 27.3 | 12.8 | 0.000 / 0.444 / 0.767 | 19 |
+| 6 | 18 | 4.6 | 23.3 | 5.1 | 0.000 / 0.186 / 0.536 | 18 |
+| 7 | 17 | 3.8 | 20.9 | 3.6 | 0.000 / 0.120 / 0.536 | 17 |
+| 8 | 15 | 2.9 | 17.8 | 1.7 | 0.000 / 0.048 / 0.417 | 15 |
+| 9 | 15 | 2.1 | 14.5 | 0.3 | 0.000 / 0.000 / 0.056 | 15 |
+| 10 | 14 | 1.6 | 12.5 | 0.1 | 0.000 / 0.000 / 0.056 | 14 |
+
+Observations: with 0 or 1 rules every interaction is distinguishable in all 20 orderings. From 2 rules
+on the fraction drops, and from 3 rules on it is below 1 in every ordering that still has a valid
+configuration. The spread between orderings at the same rule count is large (for example 0.361 to
+0.946 at 3 rules), so rule COUNT alone does not determine the fraction; which rules are chosen matters.
+Consistent with the existing high-constraint finding (model_high_constraints.json, 28/35 = 0.800).
+
+Caveats: (1) rows from 5 rules on drop orderings whose rules left no valid configuration, so those
+rows are survivors only and not comparable with earlier rows. (2) Mean valid counts at 8+ rules are
+under 3 configurations; those rows are degenerate (a tiny valid set separates few interactions) and say
+little about realistic models. (3) One parameter set, only pair rules, only t = 2, 20 orderings.
+(4) Did not test which rule features (shared parameter, implication chains) drive the loss; that is a
+hypothesis only.

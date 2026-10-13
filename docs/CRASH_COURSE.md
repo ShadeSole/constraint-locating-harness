@@ -109,3 +109,10 @@ their origin label, what to be skeptical of, anything left under "Open questions
   the author. SA ended 1 to 2 tests below greedy locating on all seven, always at the
   ceiling; model_8param.json varied by seed (11, 12, 11). Be skeptical: tiny hand-built
   models, three seeds, no CASA models run. Logged in PROJECT_NOTES "Open questions".
+
+- 2026-10-13, plan item 3: kept the 5 binary parameters fixed, added 0 to 10 random pair-forbidden
+  rules in nested order over 20 shuffle seeds (`scripts/item3_constraint_family.py`), and measured
+  ceiling / feasible. Cloud run, not reproduced by the author. All interactions are distinguishable at
+  0 and 1 rules; at 3 rules the median fraction is 0.871 with a range of 0.361 to 0.946, so which
+  rules you add matters, not just how many. Be skeptical: later rows keep only orderings that still
+  have a valid configuration, and the 8+ rule rows have under 3 valid configurations on average.
