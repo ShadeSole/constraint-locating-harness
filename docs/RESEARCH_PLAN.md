@@ -5,6 +5,6 @@
 - [x] 5. Warm start as an extra run instead of replacing restart 0, then compare.
 - [x] 6. Spread on the spins-derived model, part 1: cold search, 6000 moves, 5 restarts, targeted moves, seeds 0-4, using multi_seed_search. Record each seed's final size, moves and time, and the min, median and max. Seed 0 should give 30 tests; if it does not, log it under Open questions and stop this item.
 - [x] 7. Same as item 6 for seeds 5-9.
-- [ ] 8. Budget-matched comparison, seeds 0-9: cold with 6 restarts versus warm_extra with 5 restarts (5 cold runs plus 1 warm run, so the total number of runs per size is equal). Report the final size per seed for both modes and the median of each.
+- [x] 8. Budget-matched comparison, seeds 0-9: cold with 6 restarts versus warm_extra with 5 restarts (5 cold runs plus 1 warm run, so the total number of runs per size is equal). Report the final size per seed for both modes and the median of each.
 - [ ] 9. Summarize items 6 to 8 in one table in docs/PROJECT_NOTES.md and add a plain-language entry to docs/CRASH_COURSE.md. State only what the numbers show, and say that 10 seeds on one derived model is still a small sample.
 - [ ] 10. STOP FOR USER: solver-based constraint handling (Z3/SAT), multiple faults, nondeterminism, anything AI-based, comparison with published sizes.

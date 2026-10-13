@@ -139,3 +139,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   31, 31, 30, 30, 31. Across seeds 0-9: 30 tests for 4 seeds, 31 for 5, 32 for 1 (median 31); none reached 29.
   Be skeptical: ten seeds on one derived model is a small sample, and "not reached" means not found within
   5 x 6000 moves per size.
+
+- 2026-10-13, plan item 8: budget-matched warm start comparison on the spins-derived model, seeds 0-9: cold with
+  6 restarts versus warm_extra with 5 (same number of runs per size). Cloud run, not reproduced by the author.
+  Median final size 31 for cold and 30 for warm_extra; warm_extra was smaller on 4 seeds, equal on 6, larger on
+  none. Cold with 6 restarts gave the same sizes as cold with 5, so the extra restart added nothing here.
+  Be skeptical: ten seeds, one derived model, a one-test median difference with no significance test.

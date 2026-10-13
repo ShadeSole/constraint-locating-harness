@@ -745,3 +745,39 @@ reached 29 (every seed that solved 30 failed all 5 runs at 29). Timing caveat as
 together on a 4-core container and seed 9 ran alone, so seconds are order of magnitude only. Seeds 5 and 6 differ
 in total moves by 3 (50,792 vs 50,795); this is coincidence of two independent runs, not a duplicated seed.
 Ten seeds on one derived model: still a small sample.
+
+## Budget-matched warm start comparison, seeds 0-9 (research plan item 8)
+
+Origin: cloud run, not reproduced by the author. Base commit 8d4fefc, `scripts/item6_spread.py` (via
+`multi_seed_search`), examples/model_spins_core.json (DERIVED model), strength 2, targeted moves, 6000 moves
+per run, start 32. Two modes with an equal number of runs per size below the start: **cold, 6 restarts** versus
+**warm_extra, 5 restarts** (1 warm run + 5 cold runs). Commands:
+`PYTHONPATH=. python3 scripts/item6_spread.py SEED cold 6` and `... SEED extra 5`. Four searches ran at a time
+on a 4-core container, so seconds are order of magnitude only.
+
+| seed | cold, 6 restarts: size (moves) | warm_extra, 5 restarts: size (moves) |
+|---|---|---|
+| 0 | 30 (66,556) | 30 (69,550) |
+| 1 | 31 (42,737) | 31 (40,296) |
+| 2 | 32 (39,061) | 30 (46,064) |
+| 3 | 31 (54,327) | 30 (53,050) |
+| 4 | 30 (46,232) | 30 (47,333) |
+| 5 | 31 (56,792) | 31 (55,811) |
+| 6 | 31 (56,795) | 30 (46,394) |
+| 7 | 30 (74,839) | 30 (71,256) |
+| 8 | 30 (73,550) | 30 (55,661) |
+| 9 | 31 (41,012) | 30 (46,568) |
+| median final size | 31 | 30 |
+| count at 30 / 31 / 32 | 4 / 5 / 1 | 8 / 2 / 0 |
+| total moves, 10 seeds | 551,901 | 531,983 |
+
+Observations: with equal runs per size, warm_extra ended at a smaller size than cold on 4 seeds, equal on 6 seeds, and larger on none. The
+four seeds where it was smaller are 2 (30 vs 32), 3 (30 vs 31), 6 (30 vs 31) and 9 (30 vs 31). Cold with a sixth
+restart gave the same final sizes as cold with five (item 6 and 7 tables) on all ten seeds, so the extra cold
+restart bought nothing in this sample, while the warm run did. Total moves were similar (531,983 vs 551,901);
+wall time was not compared strictly.
+
+Caveats: ten seeds, one derived model (not the benchmark `spins`), one budget, one warm temperature (0.3);
+a size counted as failed means not found within budget. The medians differ by one test; with 10 seeds this
+is suggestive and not a tested difference (no significance test was run). Only the warm run's seed differs from
+the cold runs' seeds, so luck in that single run per size can matter. Not a general statement about warm start.
