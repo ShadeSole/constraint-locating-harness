@@ -1130,3 +1130,65 @@ the size of a locating suite, and says nothing about whether 40 is close to the 
 
 Next steps are not in the plan yet; choosing a new start size should rest on measurements (best cost at several sizes and
 budgets), not a guess. Item 19 is marked STOP FOR USER.
+
+## Z3 stage 3, items 19 to 21: choosing the spins start size from measurements (research plan items 19, 20, 21)
+
+Origin: cloud run, not reproduced by the author. Base commit 5d94a8d, scripts `scripts/item19_run.py` (new) and
+`scripts/item17_spins.py`, z3-solver 5.1.0.0, original CCAG `spins` model (clone outside the repo; 2,002,944 valid
+configurations, 979 feasible 2-way interactions), Z3-backed targeted SA, seed 0 throughout. Items 19 to 22 were added
+to the plan by the research session after item 17's start size of 40 turned out to be an unmeasured placeholder.
+
+**Item 19, one run of 6000 moves per size** (cooling 2.0 to 0.05 over the run; the five runs of items 19 and 20 shared a
+4-core container, so seconds are approximate). Command: `PYTHONPATH=. python3 scripts/item19_run.py BENCH_DIR SIZE 6000`.
+
+| size | solved (cost 0) | moves used | seconds |
+|---|---|---|---|
+| 56 | yes | 231 | 12.1 |
+| 52 | yes | 856 | 36.3 |
+| 48 | yes | 1,755 | 66.7 |
+| 44 | yes | 3,286 | 114.8 |
+| 40 (item 17: best of 5 runs of 6000 moves) | no, cost 3 | 30,000 | 960.6 |
+
+For each solved run an independent check on the returned suite found all tests valid under the rules and 979 of 979
+feasible interactions covered. The number of moves needed rose as the size fell (231, 856, 1,755, 3,286); that is four
+points on one seed and does not by itself show a trend for other seeds.
+
+**Item 20, size 40, one run of 30,000 moves** (same total moves as item 17's five runs, one slower cooling schedule):
+not solved; final cost 4 (0 uncovered, 4 avoidable collisions), 945.4 s, tests valid, 979 of 979 covered. Item 17's best of
+five shorter runs was cost 3. One seed each: this does not show that a long run is worse, only that spending the same moves
+in one run did not reach zero at size 40 either, so more moves per run alone is not what separates 40 from 44.
+
+**Item 21, shrinking search from the smallest size solved in item 19 (44)**, 5 restarts of 6000 moves per size, cap 7,200 s
+(not reached). Command: `PYTHONPATH=. python3 scripts/item17_spins.py BENCH_DIR 0 44 6000 5 7200`.
+
+| size | result | runs used | moves | best cost if unsolved |
+|---|---|---|---|---|
+| 44 | solved | 1 of 5 | 3,286 | - |
+| 43 | solved | 1 of 5 | 4,134 | - |
+| 42 | not solved | 5 of 5 | 30,000 | 1 (0 uncovered, 1 avoidable collision) |
+
+**Smallest size at which cost zero was reached: 43 tests** (seed 0, this budget). Total 37,420 moves, 1,207.2 s, 19,282
+distinct Z3 cost queries with 891,891 cache hits (12.2 s inside them). The 43-test suite, checked independently of the
+cost code: all tests valid, 979 of 979 interactions covered, and 969 of 979 interactions have a signature (set of tests
+containing them) that no other interaction shares. Z3 reports that the other 10 cannot be separated by any valid test
+(that is what cost zero means here); I did not compute the ceiling independently for the full model. For information, the
+derived 9-parameter model's ceiling gap in these notes is also 10 interactions (239 feasible, 229 localizable); that the two
+sets of 10 are the same interactions was not checked.
+
+What the three items show: on this model with this seed the cost at the unsolved sizes falls as the size rises (4 and 3 at 40,
+1 at 42), cost zero is reached at 43 and above in the runs made, and the final answer at the placeholder size of 40 in item 17
+was a size problem more than a budget problem (a 5x longer single run did no better). What they do not show: that 43 is the
+smallest possible (42 failed all 5 runs within budget; more moves or other seeds may solve it), the spread over seeds (one
+seed), or anything about published sizes (not compared, by instruction). The sizes found here are not comparable with the
+derived model's 30 to 32 tests, which is a different model.
+
+## Summary of research plan items 19 to 21 (research plan item 22)
+
+Origin: cloud run, not reproduced by the author; numbers copied from the section above, none new.
+- One seed, original spins, same cooling: cost zero in one 6000-move run at sizes 56, 52, 48 and 44 (231, 856, 1,755 and
+  3,286 moves); not at 40 (best cost 3 over five runs, 4 in one run of 30,000 moves).
+- The shrinking search from 44 reached cost zero at 44 and 43 and failed all five runs at 42 (best cost 1): smallest size
+  found 43, with 979/979 coverage and 969/979 interactions uniquely identified by the suite, tests all valid.
+- This gives the start-size question a measured answer for seed 0: 43 was reached, 40 and 42 were not within the budget.
+  Whether 42 or fewer is possible, and how much the answer varies by seed, is open; a multi-seed spread like items 6 to 8
+  on the derived model is the obvious next step and is not in the plan yet.

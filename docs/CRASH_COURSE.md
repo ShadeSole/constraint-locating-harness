@@ -226,3 +226,13 @@ their origin label, what to be skeptical of, anything left under "Open questions
   reported for that model, and the start size of 40 was a placeholder, not a measured choice. A simple counting argument
   says at least 16 tests are needed just to cover every pair, which is a floor for coverage only. Cloud run, not
   reproduced by the author. Be skeptical: one seed, one model, one effort level.
+
+- 2026-10-13, plan items 19-22 (plain language): My earlier start size of 40 for the full SPIN simulator model was a guess, so I
+  measured instead. With seed 0 and about 3,000 moves, a perfect suite (every pair covered, every separable pair separated)
+  was found at 44, 48, 52 and 56 tests; at 40 it was not found, and five times as many moves in one long run did not fix that,
+  so the size, not the effort, was the problem. Then I shrank from 44: 44 and 43 worked, 42 failed all five tries (one pair
+  still not separated). The smallest suite found is therefore 43 tests, all valid, covering all 979 possible pairs, and
+  identifying 969 of them uniquely (the other 10 cannot be told apart by any allowed test). Cloud run, not reproduced by the
+  author. Be skeptical: one seed; 42 failing means "not found with this effort", not impossible; and these 43 tests are for
+  the full model, so they are not comparable with the 30 to 32 for the smaller derived model. Not compared with any published
+  size. The natural next step, several seeds as for the derived model, is not in the plan yet.
