@@ -1056,7 +1056,7 @@ Z3 suites contained only valid tests.
 
 Where no exact minimum is recorded (the four lower rows) the sizes are what the searches FOUND, not shown minimal.
 The enumeration-based sizes also agree with the earlier item 2 table (same settings). Timings: the three seeds ran
-at the same time on a 4-core container, so seconds are approximate. Z3-backed search took about 2.5 to 7.5 times as
+at the same time on a 4-core container, so seconds are approximate. Z3-backed search took about 3 to 9 times as
 long as the enumeration-based one on these models. Most of the Z3 time is not in the cost queries: those took 0.1 to
 1.2 s per search (item 15's cache answers nearly all of them; Z3 cache misses 139 to 2,957, hits 57,198 to 300,455);
 the rest is in generating moves and starting tests, whose Z3 calls are not separately counted here.
