@@ -903,3 +903,54 @@ What this shows: Z3 was slower on every model here, though the gap shrinks as th
 spins core, tens of times on the smallest; one run each, and the first call may include Z3 start-up). The cost of the
 Z3 route depends on the number of candidate value pairs, not on the number of valid configurations, which is the
 property that matters for models too large to enumerate; that was NOT tested. Models are tiny.
+
+## Z3 stage 1, item 13: timing table, enumeration versus Z3 (research plan item 13)
+
+Origin: cloud run, not reproduced by the author. Base commit e76550a plus \`scripts/item13_timing.py\` (new),
+z3-solver 5.1.0.0, all 8 example models, 3 repeats per cell, run alone on the container, no warm-up (repeat 1
+includes any first-call cost). Command: \`PYTHONPATH=. python3 scripts/item13_timing.py\`. Tasks:
+- **validity** (item 10): decide validity of every configuration of the full product: \`core.is_valid\` per
+  configuration versus \`solver.is_valid\` per configuration (which rebuilds the solver on each call);
+- **listing** (item 11): \`valid_configurations\` versus \`valid_configurations_z3\`;
+- **pairs** (item 12): \`feasible_interactions(valid_configurations(...))\` versus \`feasible_interactions_z3\`.
+Sampling (item 11) has no enumeration counterpart and is not in this table (its timing is in the item 11 section).
+
+Median of 3 repeats, seconds; the Z3 column "range" is the fastest to slowest of its 3 repeats:
+
+| model | task | enumeration median | Z3 median | Z3 range | Z3 / enumeration (medians) |
+|---|---|---|---|---|---|
+| model | validity | 0.0001 | 0.0794 | 0.0777 to 0.0885 | 1442.6x |
+| model | listing | 0.0001 | 0.0216 | 0.0186 to 0.0295 | 386.1x |
+| model | pairs | 0.0003 | 0.0088 | 0.0084 to 0.0096 | 27.5x |
+| model_6param | validity | 0.0001 | 0.1516 | 0.1388 to 0.1964 | 1975.3x |
+| model_6param | listing | 0.0001 | 0.0279 | 0.0274 to 0.0283 | 233.1x |
+| model_6param | pairs | 0.0003 | 0.0118 | 0.0118 to 0.0127 | 35.7x |
+| model_8param | validity | 0.0003 | 0.6147 | 0.6136 to 0.6879 | 1798.6x |
+| model_8param | listing | 0.0005 | 0.1107 | 0.1074 to 0.1563 | 245.4x |
+| model_8param | pairs | 0.0017 | 0.0204 | 0.0204 to 0.0206 | 12.0x |
+| model_high_constraints | validity | 0.0001 | 0.0664 | 0.0652 to 0.0678 | 1177.6x |
+| model_high_constraints | listing | 0.0001 | 0.0117 | 0.0116 to 0.0118 | 167.1x |
+| model_high_constraints | pairs | 0.0001 | 0.0085 | 0.0084 to 0.0086 | 64.7x |
+| model_low_constraints | validity | 0.0000 | 0.0444 | 0.0434 to 0.0448 | 4515.6x |
+| model_low_constraints | listing | 0.0000 | 0.0201 | 0.0198 to 0.0206 | 766.7x |
+| model_low_constraints | pairs | 0.0001 | 0.0079 | 0.0078 to 0.0080 | 62.8x |
+| model_multivalue | validity | 0.0001 | 0.0826 | 0.0815 to 0.0843 | 1261.0x |
+| model_multivalue | listing | 0.0001 | 0.0217 | 0.0211 to 0.0218 | 177.6x |
+| model_multivalue | pairs | 0.0002 | 0.0093 | 0.0093 to 0.0099 | 44.8x |
+| model_spins_core | validity | 0.0168 | 19.2902 | 19.2612 to 19.4159 | 1145.1x |
+| model_spins_core | listing | 0.0209 | 0.9307 | 0.9263 to 0.9581 | 44.6x |
+| model_spins_core | pairs | 0.0299 | 0.0525 | 0.0493 to 0.0539 | 1.8x |
+| my_model | validity | 0.0000 | 0.0548 | 0.0535 to 0.0813 | 1631.7x |
+| my_model | listing | 0.0000 | 0.0189 | 0.0189 to 0.0196 | 474.6x |
+| my_model | pairs | 0.0001 | 0.0082 | 0.0080 to 0.0084 | 70.8x |
+
+What the measurements show: in all 24 cells Z3 was slower than enumeration. The gap is largest for per-configuration
+validity (about 1,100 to 4,500 times; this reflects rebuilding a solver per call, a property of this
+implementation, not of Z3) and for listing (about 45 to 770 times). For feasible pairs it is smallest (about 2 to 71
+times) and shrinks as the model grows: 1.8 times on model_spins_core.json (the largest, 978 valid configurations),
+the only cell near parity. Z3 repeats were mostly stable (within about 10 percent of the median), except the first
+repeat of some validity cells, which ran up to about 50 percent above it (my_model 0.0813 s vs median 0.0548 s); enumeration times below about 0.0001 s are at the timer's printed resolution,
+so ratios in rows where the enumeration median prints as 0.0000 or 0.0001 (for example validity on
+model_low_constraints, 4,515.6 times) are unreliable and only the direction is meaningful.
+What it does not show: how either approach behaves on models too large to enumerate (none was tried), and nothing
+here supports "Z3 is faster"; at this model size it is not. Single machine, 8 tiny models.

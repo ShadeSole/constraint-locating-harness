@@ -174,3 +174,10 @@ their origin label, what to be skeptical of, anything left under "Open questions
   models the result equals the existing enumeration exactly (for example 38 for model.json, 239 for the spins-
   derived model). Z3 was slower on these tiny models, though the gap narrowed on the largest. Be skeptical: the
   reason to use Z3 is models too big to enumerate, and none was tried yet.
+
+- 2026-10-13, plan item 13: timed plain enumeration against Z3 for the three jobs from items 10 to 12 (check every
+  configuration, list the valid ones, find the feasible pairs) on all 8 example models, 3 repeats each. Cloud run, not
+  reproduced by the author. Z3 was slower in all 24 cells. The gap was smallest for finding feasible pairs, and on the
+  largest example (the spins-derived model, 978 valid configurations) Z3 took 0.0525 s against 0.0299 s, about 1.8
+  times slower. Be skeptical: all models are tiny, so this says nothing yet about models too big to enumerate; and
+  the very large ratios in the one-at-a-time validity check come from rebuilding the solver on each call.
