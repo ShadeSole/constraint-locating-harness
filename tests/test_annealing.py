@@ -12,6 +12,7 @@ from cla_harness.annealing import (
     drop_least_useful_test,
     exact_minimum_suite_size,
     find_small_suite,
+    multi_seed_search,
     suite_cost,
     unavoidable_pairs,
 )
@@ -374,6 +375,96 @@ class TargetedMoveBehaviour(unittest.TestCase):
         with self.assertRaises(ValueError):
             anneal_suite(self.configs, self.interactions, self.unavoidable, 2,
                          seed=0, neighbor="magic")
+
+
+class MultiSeedSearchByHand(unittest.TestCase):
+    """Two binary parameters, strength 1: every seed must end at the hand-verified minimum of 3."""
+
+    def setUp(self):
+        self.configs, self.interactions = two_binary()
+        self.unavoidable = unavoidable_pairs(self.configs, self.interactions)
+
+    def run_seeds(self, seeds=(0, 1, 2, 3), **kwargs):
+        kwargs.setdefault("restarts", 3)
+        kwargs.setdefault("steps_per_restart", 200)
+        return multi_seed_search(self.configs, self.interactions, self.unavoidable,
+                                 4, seeds, **kwargs)
+
+    def test_one_record_per_seed_in_order(self):
+        result = self.run_seeds(seeds=(5, 6, 7))
+        self.assertEqual([r["seed"] for r in result["runs"]], [5, 6, 7])
+        self.assertEqual(result["summary"]["n_runs"], 3)
+
+    def test_every_seed_reaches_the_proven_minimum(self):
+        result = self.run_seeds()
+        self.assertEqual([r["size"] for r in result["runs"]], [3, 3, 3, 3])
+        summary = result["summary"]
+        self.assertEqual((summary["min"], summary["median"], summary["max"]), (3, 3, 3))
+        self.assertEqual(summary["histogram"], {3: 4})
+        self.assertEqual(summary["failed_at_start"], 0)
+
+    def test_each_run_matches_a_single_find_small_suite_call(self):
+        # The wrapper must add nothing but bookkeeping.
+        result = self.run_seeds(seeds=(2, 9))
+        for record in result["runs"]:
+            single = find_small_suite(self.configs, self.interactions, self.unavoidable, 4,
+                                      seed=record["seed"], restarts=3, steps_per_restart=200)
+            self.assertEqual(record["size"], single["size"])
+            self.assertEqual(record["attempts"], single["attempts"])
+            self.assertEqual(record["total_moves"], single["total_moves"])
+
+    def test_same_arguments_give_the_same_result(self):
+        self.assertEqual(self.run_seeds(), self.run_seeds())
+
+    def test_seeds_that_fail_at_the_start_size_are_counted_not_averaged(self):
+        # Start at 2 tests: impossible here (minimum is 3), so no seed finds a suite.
+        result = multi_seed_search(self.configs, self.interactions, self.unavoidable,
+                                   2, [0, 1], restarts=2, steps_per_restart=50)
+        self.assertEqual([r["size"] for r in result["runs"]], [None, None])
+        summary = result["summary"]
+        self.assertEqual(summary["failed_at_start"], 2)
+        self.assertEqual(summary["histogram"], {})
+        self.assertIsNone(summary["min"])
+        self.assertIsNone(summary["median"])
+        self.assertIsNone(summary["max"])
+
+    def test_summary_statistics_by_hand(self):
+        # Fake the per-seed results so the arithmetic is checked independently of the search.
+        sizes = iter([30, 29, 30, 31, None])
+
+        def fake(configs, interactions, unavoidable, start, seed=0, **kwargs):
+            size = next(sizes)
+            return {"suite": None, "size": size, "attempts": [], "total_moves": 10}
+
+        with mock.patch.object(annealing, "find_small_suite", fake):
+            result = multi_seed_search(self.configs, self.interactions, self.unavoidable,
+                                       4, [0, 1, 2, 3, 4])
+        summary = result["summary"]
+        self.assertEqual(summary["histogram"], {29: 1, 30: 2, 31: 1})
+        self.assertEqual((summary["min"], summary["median"], summary["max"]), (29, 30, 31))
+        self.assertEqual(summary["failed_at_start"], 1)
+        self.assertEqual(summary["n_runs"], 5)
+
+    def test_empty_seed_list_is_rejected(self):
+        with self.assertRaises(ValueError):
+            self.run_seeds(seeds=())
+
+
+class MultiSeedAgainstExactMinimum(unittest.TestCase):
+    """On a real small model no seed may go below the proven minimum, and none should miss it."""
+
+    def test_my_model_every_seed_lands_on_the_exact_minimum(self):
+        parameters, forbidden = load_model(EXAMPLES / "my_model.json")
+        configs = valid_configurations(parameters, forbidden)
+        interactions = feasible_interactions(configs, 2)
+        unavoidable = unavoidable_pairs(configs, interactions)
+        exact = exact_minimum_suite_size(configs, interactions, unavoidable, 8)
+        self.assertEqual(exact["n"], 8)
+        result = multi_seed_search(configs, interactions, unavoidable, 10, [0, 1, 2],
+                                   restarts=5, steps_per_restart=3000, neighbor="targeted")
+        for record in result["runs"]:
+            self.assertGreaterEqual(record["size"], exact["n"])  # never below the proof
+        self.assertEqual(result["summary"]["min"], exact["n"])
 
 
 if __name__ == "__main__":

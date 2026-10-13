@@ -434,6 +434,54 @@ def find_small_suite(
     }
 
 
+def multi_seed_search(
+    configs: List[Config],
+    interactions: Iterable[Interaction],
+    unavoidable: Set[Pair],
+    start_size: int,
+    seeds: Iterable[int],
+    **search_kwargs,
+) -> dict:
+    """Run find_small_suite once per base seed and summarise the spread of final sizes.
+
+    One seed is an anecdote. This repeats the whole shrinking search with different base
+    seeds (everything else identical, passed through search_kwargs) so that a result such
+    as "29 tests" can be reported as a distribution: how often each size is reached, and
+    the minimum, median and maximum.
+
+    A run whose search fails even at start_size has size None. It is counted in
+    "failed_at_start" and left out of the size statistics, because it found no suite.
+
+    Returns {"runs": one record per seed (seed, size, total_moves, attempts),
+             "summary": {"n_runs", "failed_at_start", "min", "median", "max", "histogram"}}.
+    The histogram maps each size reached to the number of seeds that reached it.
+    """
+    import statistics
+
+    seeds = list(seeds)
+    if not seeds:
+        raise ValueError("need at least one seed")
+    runs = []
+    for seed in seeds:
+        found = find_small_suite(configs, interactions, unavoidable, start_size,
+                                 seed=seed, **search_kwargs)
+        runs.append({"seed": seed, "size": found["size"],
+                     "total_moves": found["total_moves"], "attempts": found["attempts"]})
+    sizes = [r["size"] for r in runs if r["size"] is not None]
+    histogram = {}
+    for size in sorted(sizes):
+        histogram[size] = histogram.get(size, 0) + 1
+    summary = {
+        "n_runs": len(runs),
+        "failed_at_start": len(runs) - len(sizes),
+        "min": min(sizes) if sizes else None,
+        "median": statistics.median(sizes) if sizes else None,
+        "max": max(sizes) if sizes else None,
+        "histogram": histogram,
+    }
+    return {"runs": runs, "summary": summary}
+
+
 def main(argv=None):
     """Try annealing at one suite size on one model: python -m cla_harness.annealing MODEL N"""
     import argparse
@@ -458,6 +506,9 @@ def main(argv=None):
     parser.add_argument("--warm-temp", type=float, default=0.3,
                         help="with --warm-start: starting temperature of the warm run")
     parser.add_argument("--seed", type=int, default=0, help="with --shrink: base seed")
+    parser.add_argument("--multi-seed", type=int, default=0, metavar="K",
+                        help="repeat the --shrink search for K base seeds (seed, seed+1, ...) "
+                             "and report the spread of final sizes")
     parser.add_argument("--exact", action="store_true",
                         help="also find the true minimum suite size by trying every subset (small models only)")
     args = parser.parse_args(argv)
@@ -476,6 +527,35 @@ def main(argv=None):
         else:
             print(f"Exact search: smallest possible suite has {exact['n']} tests "
                   f"({exact['count']} such suites exist)")
+    if args.multi_seed:
+        if args.multi_seed < 1:
+            parser.error("--multi-seed must be at least 1")
+        print(f"Multi-seed shrink from {args.n_tests} tests: {args.multi_seed} seeds "
+              f"({args.seed}..{args.seed + args.multi_seed - 1}), up to {args.restarts} runs of "
+              f"{args.steps} moves per size, {args.neighbor} moves"
+              f"{', warm start' if args.warm_start else ''}")
+        runs = []
+        for seed in range(args.seed, args.seed + args.multi_seed):
+            start = time.perf_counter()
+            one = multi_seed_search(configs, interactions, unavoidable, args.n_tests, [seed],
+                                    restarts=args.restarts, steps_per_restart=args.steps,
+                                    neighbor=args.neighbor, warm_start=args.warm_start,
+                                    warm_start_temp=args.warm_temp)
+            seconds = time.perf_counter() - start
+            run = one["runs"][0]
+            runs.append(run)
+            print(f"  seed {seed}: smallest suite {run['size']} tests, "
+                  f"total moves {run['total_moves']}, time {seconds:.2f}s", flush=True)
+        sizes = [r["size"] for r in runs if r["size"] is not None]
+        if sizes:
+            import statistics
+            counts = ", ".join(f"{n} tests x{sizes.count(n)}" for n in sorted(set(sizes)))
+            print(f"Spread over {len(runs)} seeds: min {min(sizes)}, "
+                  f"median {statistics.median(sizes):g}, max {max(sizes)}  ({counts}); "
+                  f"ceiling {ceiling}")
+        else:
+            print("No seed found a suite even at the start size")
+        return
     if args.shrink:
         start = time.perf_counter()
         found = find_small_suite(configs, interactions, unavoidable, args.n_tests,
