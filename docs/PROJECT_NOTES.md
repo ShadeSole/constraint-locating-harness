@@ -627,3 +627,38 @@ under 3 configurations; those rows are degenerate (a tiny valid set separates fe
 little about realistic models. (3) One parameter set, only pair rules, only t = 2, 20 orderings.
 (4) Did not test which rule features (shared parameter, implication chains) drive the loss; that is a
 hypothesis only.
+
+## Strength-3 measurements on the small models (research plan item 4)
+
+Origin: cloud run, not reproduced by the author. Base commit 85e808d plus `scripts/item4_strength3.py`
+(new; same as item2_sizes.py with t = 3). Command: `PYTHONPATH=. python3 scripts/item4_strength3.py SEED 3`,
+seeds 0, 1, 2. SA settings as in the item 2 section (targeted, 3 restarts x 3000 moves per size, started at the
+greedy locating size). Here the fault is one feasible 3-way interaction and only 3-way interactions are
+considered (2-way interactions are not in the set). Interaction localization only. The strength-2 columns are
+from the item 2 section.
+
+| model | valid | feasible 3-way | ceiling | greedy cover | greedy locate (localized) | SA size, seeds 0/1/2 (localized) | t=2 greedy / SA sizes |
+|---|---|---|---|---|---|---|---|
+| model.json | 18 | 68 | 60 | 12 | 17 (60/68) | 17/17/17 (60/68) | 11 / 9 |
+| model_6param.json | 36 | 144 | 136 | 15 | 24 (136/144) | 22/22/22 (136/144) | 11 / 10 |
+| model_8param.json | 144 | 424 | 416 | 18 | 30 (416/424) | 28/28/28 (416/424) | 13 / 11-12 |
+| model_high_constraints.json | 11 | 55 | 25 | 10 | 11 (25/55) | 11/11/11 (25/55) | 11 / 9 |
+| model_low_constraints.json | 32 | 80 | 80 | 12 | 17 (80/80) | 15/15/15 (80/80) | 9 / 8 |
+| model_multivalue.json | 30 | 91 | 87 | 17 | 23 (87/91) | 22/22/22 (87/91) | 12 / 11 |
+| my_model.json | 24 | 74 | 74 | 13 | 17 (74/74) | 17/17/17 (74/74) | 9 / 8 |
+
+Times (single measurements, seconds, seed 0): greedy locating 0.04 to 0.8 s on the six smaller models and
+73.9 s on model_8param.json (2.8 s at t = 2); SA 3.7 to 18.6 s on the six smaller models and 117.0 s on
+model_8param.json (9.8 s at t = 2). Seeds 1 and 2 were within about 25 s of these.
+
+Observations: (1) Every suite, greedy and SA, covered all feasible 3-way interactions and reached the ceiling.
+(2) Moving from t = 2 to t = 3 lowers the ceiling fraction on several models: model.json 60/68, model_6param
+136/144, model_8param 416/424, model_multivalue 87/91 (all 1.0 at t = 2), and model_high_constraints 25/55
+(28/35 at t = 2). model_low_constraints and my_model stay at 1.0. So unconstrained-looking gaps appear at
+t = 3 from constraints alone; mechanism not investigated. (3) SA is 0 to 2 tests below greedy; it equals greedy on
+model.json, my_model.json and model_high_constraints.json. On model_high_constraints.json the 11 tests are all the
+valid configurations, so no smaller suite exists to find. SA size did not vary across the three seeds.
+
+Caveats: 3 seeds, small hand-built models, untuned schedule, a failed smaller size means "not found in the
+budget", not proof of minimality (no exact search at t = 3 was run). Suite sizes grow faster than the number of
+interactions suggests, and runtime at t = 3 is 10 to 12 times that at t = 2 on model_8param.json.

@@ -116,3 +116,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   0 and 1 rules; at 3 rules the median fraction is 0.871 with a range of 0.361 to 0.946, so which
   rules you add matters, not just how many. Be skeptical: later rows keep only orderings that still
   have a valid configuration, and the 8+ rule rows have under 3 valid configurations on average.
+
+- 2026-10-13, plan item 4: repeated the greedy-vs-SA comparison at strength 3 on the seven small models
+  (`scripts/item4_strength3.py`, seeds 0-2). Cloud run, not reproduced by the author. All suites reached the
+  ceiling; SA was 0 to 2 tests below greedy and identical across seeds. The ceiling fraction drops at t = 3 on
+  five models (for example model.json 60/68). Be skeptical: no exact minimum at t = 3, SA equal to greedy on
+  three models, tiny hand-built models only.
