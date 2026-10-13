@@ -724,3 +724,24 @@ ceiling by construction of the search). A "failed" size means not found within 5
 impossible. Greedy locating needed 32 tests on this model (see the suite-size search section). Five seeds
 on one derived model: no general claim. Items 7 and 8 extend this to seeds 5-9 and a budget-matched
 comparison.
+
+## Spread on the spins-derived model, part 2: cold search, seeds 5-9 (research plan item 7)
+
+Origin: cloud run, not reproduced by the author. Same script, model and settings as the item 6 section
+(`scripts/item6_spread.py`, base commit 1b41b8d, cold, 5 restarts, 6000 moves per run, targeted, start 32).
+Command: `PYTHONPATH=. python3 scripts/item6_spread.py SEED cold` for seeds 5-9.
+
+| seed | final size | total moves | seconds | sizes solved | first size that failed all 5 runs |
+|---|---|---|---|---|---|
+| 5 | 31 | 50,792 | 238.4 | 32, 31 | 30 |
+| 6 | 31 | 50,795 | 236.3 | 32, 31 | 30 |
+| 7 | 30 | 68,839 | 313.4 | 32, 31, 30 | 29 |
+| 8 | 30 | 67,550 | 311.5 | 32, 31, 30 | 29 |
+| 9 | 31 | 35,012 | 159.2 | 32, 31 | 30 |
+
+Seeds 5-9 alone: min 30, median 31, max 31 (histogram 30: 2, 31: 3). Seeds 0-9 together (items 6 and 7): sizes
+30, 31, 32, 31, 30, 31, 31, 30, 30, 31, so min 30, median 31, max 32, histogram 30: 4, 31: 5, 32: 1. No seed
+reached 29 (every seed that solved 30 failed all 5 runs at 29). Timing caveat as in item 6: seeds 5-8 ran
+together on a 4-core container and seed 9 ran alone, so seconds are order of magnitude only. Seeds 5 and 6 differ
+in total moves by 3 (50,792 vs 50,795); this is coincidence of two independent runs, not a duplicated seed.
+Ten seeds on one derived model: still a small sample.

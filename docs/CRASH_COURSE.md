@@ -134,3 +134,8 @@ their origin label, what to be skeptical of, anything left under "Open questions
   30, 31, 32, 31, 30 (min 30, median 31, max 32); seed 0 gave 30 as the plan required. So the smallest suite
   found depends noticeably on the seed, which is why single-seed sizes should not be quoted alone. Be
   skeptical: five seeds, one derived model, "failed" means not found within budget. Seeds 5-9 are item 7.
+
+- 2026-10-13, plan item 7: same cold search, seeds 5-9. Cloud run, not reproduced by the author. Final sizes
+  31, 31, 30, 30, 31. Across seeds 0-9: 30 tests for 4 seeds, 31 for 5, 32 for 1 (median 31); none reached 29.
+  Be skeptical: ten seeds on one derived model is a small sample, and "not reached" means not found within
+  5 x 6000 moves per size.
