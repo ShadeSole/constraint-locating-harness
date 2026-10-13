@@ -268,6 +268,19 @@ class SolverAnnealing(unittest.TestCase):
             self.assertIn(key(other), valid)
             self.assertEqual(sum(base[n] != other[n] for n in base), 1)
 
+    def test_deadline_stops_a_run_early_and_is_reported(self):
+        import time
+        model, _ = self.model_for("model_spins_core.json")
+        past = time.perf_counter() - 1.0
+        result = solver.anneal_suite_z3(model, 5, seed=0, max_steps=10000, deadline=past)
+        self.assertTrue(result["timed_out"])
+        self.assertEqual(result["steps"], 0)
+        found = solver.find_small_suite_z3(model, 6, seed=0, restarts=2, steps_per_restart=5000, max_seconds=0.0)
+        self.assertTrue(found["timed_out"])
+        self.assertIsNone(found["size"])
+        free = solver.anneal_suite_z3(model, 5, seed=0, max_steps=3)
+        self.assertFalse(free["timed_out"])
+
     def test_deliberate_break_is_caught(self):
         # With the model's rules ignored the "valid" check below would fail: sampling from an
         # unconstrained model must produce tests the real model forbids.

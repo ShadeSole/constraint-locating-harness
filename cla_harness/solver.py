@@ -259,7 +259,7 @@ def _z3_move(model: "Z3CostModel", rng, current: List[Config], cost: dict, targe
 
 def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: int = 20000,
                     start_temp: float = 2.0, cooling: float = 0.999, weight: float = 1.0,
-                    neighbor: str = "random") -> dict:
+                    neighbor: str = "random", deadline: float = None) -> dict:
     """Simulated annealing for a suite of n_tests valid configurations, with Z3 doing the validity work.
 
     Same acceptance rule, temperature schedule and stopping rule as `annealing.anneal_suite`:
@@ -273,11 +273,14 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
                   otherwise pick an interaction in an avoidable collision and either replace a test
                   that lacks it with a valid configuration containing it, or replace a test that has
                   it with a valid configuration differing in exactly one parameter (Z3 decides).
-    Every test in every suite is valid by construction. Reproducible for a given seed.
-    Returns {"suite", "cost", "steps", "accepted", "solved"}.
+    Every test in every suite is valid by construction. Reproducible for a given seed unless
+    `deadline` (a time.perf_counter() value) is given: the run then stops early, with
+    "timed_out": True, when the clock passes it, and where it stops depends on machine speed.
+    Returns {"suite", "cost", "steps", "accepted", "solved", "timed_out"}.
     """
     import math
     import random
+    import time
     if neighbor not in ("random", "targeted"):
         raise ValueError("neighbor must be 'random' or 'targeted'")
     if n_tests < 1:
@@ -297,7 +300,11 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
     best, best_cost = list(current), current_cost
     temperature = start_temp
     steps = accepted = 0
+    timed_out = False
     while steps < max_steps and best_cost["cost"] > 0:
+        if deadline is not None and time.perf_counter() > deadline:
+            timed_out = True
+            break
         steps += 1
         position, replacement = _z3_move(model, rng, current, current_cost, targeted)
         proposal = list(current)
@@ -311,39 +318,55 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
                 best, best_cost = list(current), current_cost
         temperature *= cooling
     return {"suite": best, "cost": {k: best_cost[k] for k in ("uncovered", "avoidable_collisions", "cost")},
-            "steps": steps, "accepted": accepted, "solved": best_cost["cost"] == 0}
+            "steps": steps, "accepted": accepted, "solved": best_cost["cost"] == 0,
+            "timed_out": timed_out}
 
 
 def find_small_suite_z3(model: "Z3CostModel", start_size: int, seed: int = 0, restarts: int = 5,
                         steps_per_restart: int = 20000, start_temp: float = 2.0, end_temp: float = 0.05,
-                        neighbor: str = "targeted", min_size: int = 1) -> dict:
+                        neighbor: str = "targeted", min_size: int = 1, max_seconds: float = None,
+                        on_attempt=None) -> dict:
     """Cold shrinking search with `anneal_suite_z3`, mirroring `annealing.find_small_suite` (no warm start).
 
     Solve at start_size, then try one test fewer, until a size fails all `restarts` runs of
     `steps_per_restart` moves (not proof of impossibility). Cooling falls from start_temp to
     end_temp over exactly steps_per_restart moves. Restart seeds come from
-    `annealing._restart_seed`. Returns {"suite", "size", "attempts", "total_moves"}.
+    `annealing._restart_seed`. With `max_seconds`, the whole search stops when that much wall-clock
+    time has passed (the run in progress ends early); the result then has "timed_out": True and the
+    attempt in progress is recorded as unsolved. `on_attempt(record)` is called after each size.
+    Returns {"suite", "size", "attempts", "total_moves",
+    "timed_out"}.
     """
+    import time
     from .annealing import _restart_seed
     if restarts < 1 or steps_per_restart < 1 or start_size < 1 or min_size < 1 or not 0 < end_temp <= start_temp:
         raise ValueError("invalid search settings")
     cooling = (end_temp / start_temp) ** (1.0 / steps_per_restart)
-    best_suite, attempts, total_moves, n = None, [], 0, start_size
-    while n >= min_size:
-        solved, moves, used = None, 0, 0
+    deadline = None if max_seconds is None else time.perf_counter() + max_seconds
+    best_suite, attempts, total_moves, n, timed_out = None, [], 0, start_size, False
+    while n >= min_size and not timed_out:
+        solved, moves, used, best_cost = None, 0, 0, None
         for restart in range(restarts):
             used += 1
             result = anneal_suite_z3(model, n, _restart_seed(seed, n, restart), steps_per_restart,
-                                     start_temp, cooling, neighbor=neighbor)
+                                     start_temp, cooling, neighbor=neighbor, deadline=deadline)
             moves += result["steps"]
+            if best_cost is None or result["cost"]["cost"] < best_cost["cost"]:
+                best_cost = result["cost"]
             if result["solved"]:
                 solved = result["suite"]
                 break
+            if result["timed_out"]:
+                timed_out = True
+                break
         total_moves += moves
-        attempts.append({"n": n, "solved": solved is not None, "restarts_used": used, "moves": moves})
+        attempts.append({"n": n, "solved": solved is not None, "restarts_used": used, "moves": moves,
+                         "best_cost": best_cost})
+        if on_attempt is not None:
+            on_attempt(attempts[-1])
         if solved is None:
             break
         best_suite = solved
         n -= 1
     return {"suite": best_suite, "size": len(best_suite) if best_suite is not None else None,
-            "attempts": attempts, "total_moves": total_moves}
+            "attempts": attempts, "total_moves": total_moves, "timed_out": timed_out}
