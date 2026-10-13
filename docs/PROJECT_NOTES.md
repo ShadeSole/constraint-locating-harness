@@ -781,3 +781,32 @@ Caveats: ten seeds, one derived model (not the benchmark `spins`), one budget, o
 a size counted as failed means not found within budget. The medians differ by one test; with 10 seeds this
 is suggestive and not a tested difference (no significance test was run). Only the warm run's seed differs from
 the cold runs' seeds, so luck in that single run per size can matter. Not a general statement about warm start.
+
+## Summary of research plan items 6 to 8 (research plan item 9)
+
+Origin: cloud run, not reproduced by the author. All numbers are copied from the three sections above (items 6, 7
+and 8), none new. Model: examples/model_spins_core.json (DERIVED from the CCAG `spins` benchmark, not the benchmark),
+strength 2, targeted moves, 6000 moves per run, start size 32; greedy locating needs 32 tests on this model.
+Final size = smallest size at which some run reached cost zero before a size failed all its runs.
+
+| search mode (runs per size below 32) | seeds | final size 30 / 31 / 32 | median | min / max | total moves | source section |
+|---|---|---|---|---|---|---|
+| cold, 5 restarts | 0-4 | 2 / 2 / 1 | 31 | 30 / 32 | 218,913 | item 6 |
+| cold, 5 restarts | 5-9 | 2 / 3 / 0 | 31 | 30 / 31 | 272,988 | item 7 |
+| cold, 5 restarts | 0-9 | 4 / 5 / 1 | 31 | 30 / 32 | 491,901 | items 6 + 7 |
+| cold, 6 restarts | 0-9 | 4 / 5 / 1 | 31 | 30 / 32 | 551,901 | item 8 |
+| warm_extra, 5 restarts (1 warm + 5 cold = 6 runs) | 0-9 | 8 / 2 / 0 | 30 | 30 / 31 | 531,983 | item 8 |
+
+What the numbers show:
+- Final size depends on the seed: the same cold search ended at 30, 31 or 32 tests depending on the seed
+  (4, 5 and 1 of ten seeds). A single-seed size should not be quoted alone.
+- No search on any of the 10 seeds found a suite smaller than 30.
+- Adding a sixth cold restart changed no final size on these 10 seeds, and cost 60,000 more moves in total.
+- With the same number of runs per size, warm_extra ended smaller than cold on 4 of 10 seeds, equal on 6, and
+  larger on none; the medians are 30 and 31.
+
+What they do not show: that warm_extra is better in general. Ten seeds on one derived model is still a small
+sample; the median difference is one test and no significance test was run; one warm temperature (0.3) and one
+budget; a size marked failed means not found within budget, not impossible; the model is a projection of
+`spins`, so nothing here is a result on the benchmark itself. Timings were not compared (several searches shared
+a 4-core container).

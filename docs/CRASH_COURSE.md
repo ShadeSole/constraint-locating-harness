@@ -66,7 +66,8 @@ settings occurs together, for example "encryption = on" together with
 | Greedy locating suite on that model | 32 tests | PROJECT_NOTES |
 | SA, seed 0, 6,000 moves per run | 30 tests, 60,556 moves | reproduced locally |
 | SA, seed 0, 20,000 moves per run | 29 tests; 28 not found within 100,000 moves | reproduced locally |
-| Multi-seed spread on that model | not measured yet | n/a |
+| Multi-seed spread on that model, cold search, 10 seeds | final sizes 30 (4 seeds), 31 (5), 32 (1); median 31 | cloud run, not reproduced by the author |
+| Same, warm_extra with equal runs per size, 10 seeds | final sizes 30 (8 seeds), 31 (2); median 30 | cloud run, not reproduced by the author |
 
 How to read this: SA found a smaller suite than greedy on this one model with one seed.
 That is encouraging but is not yet evidence of a general advantage.
@@ -145,3 +146,12 @@ their origin label, what to be skeptical of, anything left under "Open questions
   Median final size 31 for cold and 30 for warm_extra; warm_extra was smaller on 4 seeds, equal on 6, larger on
   none. Cold with 6 restarts gave the same sizes as cold with 5, so the extra restart added nothing here.
   Be skeptical: ten seeds, one derived model, a one-test median difference with no significance test.
+
+- 2026-10-13, plan item 9 (summary of items 6-8, plain language): The same search run with ten different random
+  seeds does not always stop at the same suite size. On the spins-derived model the cold search ended at 30
+  tests for four seeds, 31 for five and 32 for one, so quoting one seed's size would mislead. Giving the
+  search a sixth restart changed nothing. Giving it one extra "warm" run (start from the previous solution with
+  one test removed) (without removing any cold restart) ended at 30 for eight seeds and 31 for two, with about the same total
+  number of moves. That points toward warm_extra helping, but it is a one-test median difference over ten seeds on
+  one derived model with no significance test, so treat it as a lead to check, not a result. Cloud run, not
+  reproduced by the author. Full table: PROJECT_NOTES, "Summary of research plan items 6 to 8".
