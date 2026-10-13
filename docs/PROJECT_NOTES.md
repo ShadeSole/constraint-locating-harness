@@ -545,3 +545,43 @@ heuristic. Candidate V0.3 order:
    CLA sizes only where the same benchmark is used.
 
 This does not belong in V0.2. It is recorded here so it is not lost.
+
+## Greedy vs SA sizes on the enumerable example models (research plan item 2)
+
+Origin: cloud run, not reproduced by the author. Base commit fd4ff84 plus
+`scripts/item2_sizes.py` (new; calls existing functions only). t = 2, 7 models in
+`examples/` (`model_spins_core.json` excluded as slow). SA = `find_small_suite`,
+targeted moves, started at the greedy locating size, 3 restarts x 3000 moves per
+size, base seeds 0, 1, 2 (three data points per model, not a distribution). Times are
+single wall-clock measurements on a cloud container, greedy and SA on the same machine.
+Command: `PYTHONPATH=. python3 scripts/item2_sizes.py SEED`.
+
+| model | valid | feasible | ceiling | greedy cover | greedy locate (localized) | SA size, seeds 0/1/2 (localized) | SA time s, seeds 0/1/2 |
+|---|---|---|---|---|---|---|---|
+| model.json | 18 | 38 | 38 | 6 | 11 (38/38) | 9/9/9 (38/38) | 2.1/2.1/2.4 |
+| model_6param.json | 36 | 58 | 58 | 7 | 11 (58/58) | 10/10/10 (58/58) | 4.6/3.9/4.1 |
+| model_8param.json | 144 | 110 | 110 | 7 | 13 (110/110) | 11/12/11 (110/110) | 9.8/8.8/15.6 |
+| model_high_constraints.json | 11 | 35 | 28 | 7 | 11 (28/35) | 9/9/9 (28/35) | 1.9/2.0/2.1 |
+| model_low_constraints.json | 32 | 40 | 40 | 6 | 9 (40/40) | 8/8/8 (40/40) | 2.4/2.0/2.2 |
+| model_multivalue.json | 30 | 46 | 46 | 9 | 12 (46/46) | 11/11/11 (46/46) | 3.3/3.2/3.1 |
+| my_model.json | 24 | 39 | 39 | 7 | 9 (39/39) | 8/8/8 (39/39) | 2.1/2.2/2.0 |
+
+Greedy times (locating, seed-independent algorithm, three runs): 0.02 to 0.10 s on the
+small models, about 2.7 to 2.8 s on model_8param.json; covering greedy at most 0.01 s.
+
+Observations: in every run SA ended with full coverage and localization equal to the
+ceiling, one or two tests below greedy locating. On model_8param.json the seeds
+disagreed (11, 12, 11), so a single seed would mislead there. Sizes for model.json,
+model_high_constraints.json and my_model.json (9, 9, 8) equal the proven minima recorded
+above; whether the others are minimal is not known (no exact search was run).
+Not supported: any general claim that SA beats greedy (7 tiny models, 3 seeds, untuned
+schedule). The CASA benchmark files are not in this container, so only the hand-built
+models were run.
+
+## Open questions
+- Item 2 asks for "loadable models small enough to enumerate"; the CCAG/CASA files
+  (docs/BENCHMARKS.md) are not available in the cloud container (`../external` absent), so
+  none were run. Does the author want a small CASA instance copied somewhere reachable?
+
+## Needs your decision
+(none yet)

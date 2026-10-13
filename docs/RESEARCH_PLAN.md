@@ -1,5 +1,5 @@
 - [x] 1. CASA-format loader (already in io.py, tested in tests/test_casa.py)
-- [ ] 2. Run greedy and SA on loadable models small enough to enumerate. Record sizes and times.
+- [x] 2. Run greedy and SA on loadable models small enough to enumerate. Record sizes and times.
 - [ ] 3. Constraint-structure experiment: a model family that varies only the constraints; measure the fraction of distinguishable interactions.
 - [ ] 4. Strength-3 measurements on small models.
 - [ ] 5. Warm start as an extra run instead of replacing restart 0, then compare.

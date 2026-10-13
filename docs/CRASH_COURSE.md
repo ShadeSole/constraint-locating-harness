@@ -103,3 +103,9 @@ Format for each entry: date, plan item, what was done, command run, key numbers 
 their origin label, what to be skeptical of, anything left under "Open questions" or
 "Needs your decision" in docs/PROJECT_NOTES.md.
 
+
+- 2026-10-13, plan item 2: ran greedy and SA (targeted, 3x3000 moves, seeds 0-2) on the
+  seven small example models with `scripts/item2_sizes.py`. Cloud run, not reproduced by
+  the author. SA ended 1 to 2 tests below greedy locating on all seven, always at the
+  ceiling; model_8param.json varied by seed (11, 12, 11). Be skeptical: tiny hand-built
+  models, three seeds, no CASA models run. Logged in PROJECT_NOTES "Open questions".
