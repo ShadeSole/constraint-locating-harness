@@ -1013,7 +1013,7 @@ caching, a deliberate break that treats every colliding pair as avoidable and is
 
 Timings are single runs; the Z3 column is cumulative for the 200 suites, so the cache fills as it goes (later suites
 cost less). What it shows: the Z3 cost agrees with the enumeration-based cost exactly, and is slower on these models
-(about 4 to 23 times for 200 suites), with almost all of the time in Z3 queries; on spins core about 0.4 ms per query
+(about 3 to 23 times for 200 suites), with almost all of the time in Z3 queries; on spins core about 0.4 ms per query
 (15,968 misses in 6.47 s). What it does not show: behaviour on a model too large to enumerate (item 17), where the
 number of distinct colliding pairs, and so of Z3 queries, is the thing to watch; or inside an SA loop, where suites
 change one test at a time and the cache hit rate may differ from random suites. Random suites are not the suites SA
