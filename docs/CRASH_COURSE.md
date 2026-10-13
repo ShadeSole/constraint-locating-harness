@@ -155,3 +155,10 @@ their origin label, what to be skeptical of, anything left under "Open questions
   number of moves. That points toward warm_extra helping, but it is a one-test median difference over ten seeds on
   one derived model with no significance test, so treat it as a lead to check, not a result. Cloud run, not
   reproduced by the author. Full table: PROJECT_NOTES, "Summary of research plan items 6 to 8".
+
+- 2026-10-13, plan item 10: Z3 is a solver that can answer "is this combination allowed?" from the rules directly,
+  instead of listing every combination first. Added it as an optional extra (the core stays standard library only)
+  in `cla_harness/solver.py`. Cloud run, not reproduced by the author. On all 8 example models, Z3's yes/no for
+  every possible configuration matched the existing enumeration; the new tests skip if Z3 is not installed.
+  Nothing in the search uses Z3 yet. Be skeptical: the models are tiny, and this one-at-a-time check rebuilds the
+  solver each call, so it is slow. Speed is item 13's job.

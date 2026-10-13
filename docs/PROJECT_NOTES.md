@@ -810,3 +810,32 @@ sample; the median difference is one test and no significance test was run; one 
 budget; a size marked failed means not found within budget, not impossible; the model is a projection of
 `spins`, so nothing here is a result on the benchmark itself. Timings were not compared (several searches shared
 a 4-core container).
+
+## Z3 stage 1, item 10: optional Z3 dependency and `is_valid` cross-check (research plan item 10)
+
+Origin: cloud run, not reproduced by the author. Base commit d77a8eb. Installed `z3-solver` 5.1.0.0 with pip in the
+cloud container (version printed by `z3.get_version_string()`: 5.1.0).
+
+What was added (no existing function changed):
+- `cla_harness/solver.py`: `build_solver` and `is_valid(parameters, forbidden, config)`. One Z3 integer per
+  parameter (value index); each forbidden rule becomes Not(And(...)); a rule naming an unknown parameter or value
+  is never violated, as in `Forbidden.violated_by`. A config with a missing parameter or an unlisted value raises
+  ValueError (the enumeration-based `core.is_valid` does no such check). The module imports Z3 at the top, so
+  importing it without Z3 raises ImportError with an install hint; nothing else imports it.
+- `tests/test_solver.py` (6 tests, `unittest.skipUnless` Z3 is installed). With Z3 hidden (a stub `z3.py` that raises
+  ImportError) all 6 are skipped and the module imports cleanly.
+- CLAUDE.md now says standard library only with Z3 as an optional extra; `pyproject.toml` has an optional
+  extra `z3`; `requirements.txt` lists it as a comment.
+
+Cross-check result: on all 8 models in `examples/`, Z3's `is_valid` agreed with membership in
+`valid_configurations` for every configuration of the full product (the products are 32, 64, 256, 32, 32, 48,
+4096 and 32 configurations; none exceeds the 50,000 limit, so the seeded-random-5,000 branch was not needed on
+the examples). The random-sampling branch is implemented in the test helper and exercised separately on a synthetic
+20-binary-parameter model (product 1,048,576, 300 seeded samples, two rules; both valid and invalid samples occurred,
+and all agreed). A deliberate break (checking with no rules) is caught by a test. Full suite with Z3: 118 tests, OK,
+3 skipped (the 3 earlier gated skips); the new file alone took 22.0 s.
+
+Timing note, not a benchmark: `is_valid` rebuilds the solver on every call, so the 6 tests take about 22 s
+mostly on that (the largest model is 4096 calls). Item 13 will do the timing comparison properly.
+Caveat: agreement on 8 small models and one synthetic model supports that the encoding is right for pair-or-larger
+partial-assignment rules of this kind; it does not prove it for the CASA files, whose clauses are larger.

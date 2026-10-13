@@ -2,7 +2,7 @@
 
 Research prototype for constrained combinatorial interaction testing: build
 test suites that cover feasible t-way interactions AND can localize the
-failure-inducing one. Python 3.10+, standard library only. Active branch:
+failure-inducing one. Python 3.10+, standard library only (Z3 via `z3-solver` is an optional extra, used only by `cla_harness/solver.py`). Active branch:
 `v0.3-development` (simulated annealing for constrained locating arrays).
 
 ## Accuracy rules (most important)
@@ -29,6 +29,7 @@ failure-inducing one. Python 3.10+, standard library only. Active branch:
 - `cla_harness/experiment.py`: V0.2 runner; `ceiling_of`, `coverage_of`
 - `cla_harness/annealing.py` (large): `suite_cost`, `anneal_suite`, `find_small_suite`,
   `exact_minimum_suite_size`, `multi_seed_search`, CLI `main`
+- `cla_harness/solver.py`: optional Z3 backend (`is_valid`; needs `pip install z3-solver`)
 - `cla_harness/cli.py`: `cla-harness build|demo`
 - `examples/*.json`: 8 models (`model_spins_core.json` is slow; needs `--include-slow`)
 - `tests/`: unittest suites (~19 s; exact-search tests are slowest)

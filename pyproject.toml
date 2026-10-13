@@ -9,6 +9,9 @@ version = "0.2.0"
 description = "Constraint-aware combinatorial test generation and interaction fault localization"
 requires-python = ">=3.10"
 
+[project.optional-dependencies]
+z3 = ["z3-solver"]
+
 [project.scripts]
 cla-harness = "cla_harness.cli:main"
 

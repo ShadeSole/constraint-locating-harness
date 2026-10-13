@@ -1,0 +1,80 @@
+import glob
+import random
+import unittest
+from itertools import product
+from math import prod
+from pathlib import Path
+
+from cla_harness.core import Forbidden, all_configurations, valid_configurations
+from cla_harness.io import load_model
+
+try:
+    from cla_harness import solver
+except ImportError:  # Z3 not installed: the tests below are skipped
+    solver = None
+
+EXAMPLES = sorted(glob.glob(str(Path(__file__).resolve().parent.parent / "examples" / "*.json")))
+PRODUCT_LIMIT = 50_000
+SAMPLE_SIZE = 5_000
+
+
+def configs_to_check(parameters, product_limit=PRODUCT_LIMIT, sample_size=SAMPLE_SIZE, seed=0):
+    """The full product when it is small, else `sample_size` seeded random configurations."""
+    if prod(len(v) for v in parameters.values()) <= product_limit:
+        return all_configurations(parameters)
+    rng = random.Random(seed)
+    return [{n: rng.choice(v) for n, v in parameters.items()} for _ in range(sample_size)]
+
+
+def key(config):
+    return tuple(sorted(config.items()))
+
+
+@unittest.skipUnless(solver is not None, "z3-solver is not installed")
+class SolverIsValid(unittest.TestCase):
+    def test_example_models_found(self):
+        self.assertEqual(len(EXAMPLES), 8)
+
+    def test_agrees_with_enumeration_on_every_example_model(self):
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            valid = {key(c) for c in valid_configurations(parameters, forbidden)}
+            for config in configs_to_check(parameters):
+                self.assertEqual(solver.is_valid(parameters, forbidden, config),
+                                 key(config) in valid, (path, config))
+
+    def test_sampling_branch_for_a_product_over_the_limit(self):
+        parameters = {f"P{i}": ["0", "1"] for i in range(20)}   # 1,048,576 > limit
+        forbidden = [Forbidden.from_dict({"P0": "1", "P1": "1"}),
+                     Forbidden.from_dict({"P2": "0", "P3": "1", "P4": "1"})]
+        sample = configs_to_check(parameters, product_limit=1000, sample_size=300, seed=1)
+        self.assertEqual(len(sample), 300)
+        from cla_harness.core import is_valid as enumerated_is_valid
+        results = [solver.is_valid(parameters, forbidden, c) for c in sample]
+        self.assertEqual(results, [enumerated_is_valid(c, forbidden) for c in sample])
+        self.assertIn(True, results)
+        self.assertIn(False, results)
+
+    def test_rule_naming_unknown_parameter_or_value_is_never_violated(self):
+        parameters = {"A": ["x", "y"], "B": ["u", "v"]}
+        forbidden = [Forbidden.from_dict({"A": "x", "Z": "q"}), Forbidden.from_dict({"B": "nope"})]
+        for config in all_configurations(parameters):
+            self.assertTrue(solver.is_valid(parameters, forbidden, config))
+
+    def test_config_with_unlisted_value_or_missing_parameter_raises(self):
+        parameters = {"A": ["x", "y"], "B": ["u", "v"]}
+        with self.assertRaises(ValueError):
+            solver.is_valid(parameters, [], {"A": "x", "B": "w"})
+        with self.assertRaises(ValueError):
+            solver.is_valid(parameters, [], {"A": "x"})
+
+    def test_deliberate_break_is_caught(self):
+        # A checker that ignores the rules must disagree with the enumeration on model.json.
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        valid = {key(c) for c in valid_configurations(parameters, forbidden)}
+        wrong = [c for c in all_configurations(parameters) if solver.is_valid(parameters, [], c) != (key(c) in valid)]
+        self.assertGreater(len(wrong), 0)
+
+
+if __name__ == "__main__":
+    unittest.main()
