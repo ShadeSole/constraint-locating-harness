@@ -1065,3 +1065,37 @@ What this shows: with Z3 supplying the moves and the cost, SA behaves like the e
 models (same final sizes, valid tests, the proven minima reached). What it does not show: any benefit at this scale
 (it is slower), anything on a model too large to enumerate (item 17), or that the two searches visit the same suites
 (move counts differ because the random draws differ). Seven models, three seeds.
+
+## Z3 stage 2, item 17: first model too large to enumerate, original spins (research plan item 17)
+
+Origin: cloud run, not reproduced by the author. Base commit f598c4b, `scripts/item17_spins.py`, z3-solver 5.1.0.0.
+Benchmark files: CCAG (GIST-NJU/CCAG, public, read access via the session's git proxy), cloned shallow into
+`/home/user/gist-nju/ccag` OUTSIDE this repository; no CCAG file is committed. Model: `benchmark/spins.model` and
+`spins.constraints`, loaded with `load_casa_model`. Command:
+`PYTHONPATH=. python3 scripts/item17_spins.py /home/user/gist-nju/ccag/benchmark 0 40 6000 5 7200`.
+
+Model facts (measured): 18 parameters, 46 values, 13 rules; 2,002,944 valid configurations (computed as 978 valid
+configurations of the 9-parameter constrained core times 2,048 combinations of the 9 free parameters, which matches the
+figure in docs/BENCHMARKS.md); 979 feasible 2-way interactions (from `feasible_interactions_z3`; 239 of them involve only
+the 9 core parameters, as in the derived model). The search never listed the valid configurations.
+
+Search (the placeholders written into the plan; chosen without a measurement): Z3-backed targeted SA
+(`find_small_suite_z3`), one seed (seed 0), start size 40, 6000 moves per run, 5 restarts per size, cooling from 2.0 to
+0.05 over each run, shrinking one test at a time, wall-clock cap 7,200 s.
+
+**Result: cost zero was NOT reached at the start size of 40.** All 5 runs at size 40 (30,000 moves in 960.6 s of wall
+time) ended with cost above zero; the best run had 0 uncovered interactions and 3 avoidable collisions (cost 3.0), so
+the best 40-test suite covered all 979 feasible interactions but still left 3 pairs of interactions that some valid test
+could separate. No final suite size is recorded, because the plan allows recording one only if cost zero was reached.
+The cap was not hit (the search stopped because size 40 failed). Per the plan the start size was not raised.
+
+Z3 use in the cost function: 16,941 distinct pair queries (cache misses) and 934,952 cache hits, 9.9 s inside those
+queries out of 960.6 s total; so about 32 ms per move overall, almost all of it outside the cost queries (move and
+starting-test generation, and the Python cost loop), as in the item 16 comparison.
+
+What this shows: the solver-backed search runs end to end on a model with about 2 million valid configurations that the
+enumeration-based code was never run on, with every test a Z3-drawn valid configuration, and in 960 s reached full
+coverage but not cost zero at 40 tests. What it does not show: whether 40 is too small for this budget, too small in
+principle, or just needs more moves (the 9-parameter derived model needed 30 to 32 tests, which says nothing certain
+about the full model); anything about suite sizes in the literature (not compared, by instruction); anything beyond one
+seed and one budget. A failed size means not found within 5 x 6000 moves, not impossible.

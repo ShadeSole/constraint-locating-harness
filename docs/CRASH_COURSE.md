@@ -206,3 +206,12 @@ their origin label, what to be skeptical of, anything left under "Open questions
   7 models and 3 seeds it ended at the same size as the old search every time (21 of 21). It was slower here (about 3
   to 9 times). Cloud run, not reproduced by the author. Be skeptical: the models are tiny, so this shows the new
   search is correct, not that it is useful; that needs a model too big to list (item 17).
+
+- 2026-10-13, plan item 17: first run on a model too big to list. The full SPIN simulator benchmark (spins) has
+  18 settings with 2,002,944 allowed configurations, and the code never listed them; Z3 supplied every test and decided
+  every question about allowed combinations. With the starting size I picked (40 tests), one seed and 30,000 moves
+  (16 minutes), the search did not reach a perfect suite: it covered every pair of settings that can occur together
+  (979) but still left 3 pairs of interactions that some allowed test could tell apart. So no suite size is
+  reported for this model. Cloud run, not reproduced by the author. Be skeptical: the start size and budget were
+  placeholders, not measured, so this does not say 40 is too small in principle; it says it was not found within this
+  effort. Nothing here is compared with published sizes.
