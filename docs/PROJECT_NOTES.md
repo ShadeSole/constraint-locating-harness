@@ -1098,3 +1098,35 @@ coverage but not cost zero at 40 tests. What it does not show: whether 40 is too
 principle, or just needs more moves (the 9-parameter derived model needed 30 to 32 tests, which says nothing certain
 about the full model); anything about suite sizes in the literature (not compared, by instruction); anything beyond one
 seed and one budget. A failed size means not found within 5 x 6000 moves, not impossible.
+
+## Summary of research plan items 15 to 17: Z3 stage 2 (research plan item 18)
+
+Origin: cloud run, not reproduced by the author. Every number is copied from the three sections above; none is new
+except the one marked "computed for this summary". z3-solver 5.1.0.0. The suite has 138 tests, OK, 3 skipped.
+
+| item | what was built (`cla_harness/solver.py`) | check | result | cost compared with the enumeration-based code |
+|---|---|---|---|---|
+| 15 | `Z3CostModel`: lazy, cached, solver-backed `suite_cost` | 200 seeded random suites on each of the 8 example models vs `annealing.suite_cost`, including the detail lists | identical on 1,600 of 1,600 suites (185 to 200 suites per model had avoidable collisions) | Z3 slower: about 3 to 23 times for 200 suites; most time inside Z3 queries |
+| 16 | `anneal_suite_z3` (random and targeted Z3 moves) and `find_small_suite_z3` (cold shrinking search) | exact minima 9, 8, 9 at the same budgets as the existing tests; 7 non-slow models x seeds 0 to 2 against `find_small_suite` | minima reached with both moves; final size equal to the enumeration-based search in 21 of 21 runs; all tests valid | Z3 slower: about 3 to 9 times; cost queries 0.1 to 1.2 s per search, the rest in move generation |
+| 17 | (no new search code; `deadline`/`max_seconds` cap and progress callback added to the Z3 functions) | original `spins` (2,002,944 valid configurations, 979 feasible 2-way interactions), seed 0, start 40, 6000 moves x 5 restarts | cost zero NOT reached at 40: best run 0 uncovered, 3 avoidable collisions; no size recorded | 30,000 moves in 960.6 s (about 32 ms per move); 9.9 s in cost queries |
+
+What the three items establish: the Z3-backed cost and the Z3-backed search agree with the enumeration-based ones on every
+small model checked (same costs, same final sizes, valid tests, the proven minima), and the search can run on a model whose
+2 million valid configurations were never listed.
+
+What they do not establish:
+- Any speed benefit: Z3 was slower in every comparison, on models small enough to enumerate.
+- Any suite size for `spins`: the one run did not reach cost zero at its placeholder start size of 40. That says nothing
+  yet about whether 40 is too small in principle, too small for this budget, or what the smallest size is. One seed, one
+  budget, one model; not compared with published sizes.
+- That the Z3 and enumeration searches visit the same suites (the random draws differ), or any property of the sampler's
+  distribution (reproducible, not uniform).
+- Strengths other than 2, other CASA models, or multiple faults.
+
+Computed for this summary (not part of items 15 to 17; script-free, from `feasible_interactions_z3` on the loaded
+`spins` model): the largest number of feasible value pairs for any single pair of parameters is 16 (P13 with P16), so no
+suite of fewer than 16 tests can cover every feasible 2-way interaction. This is a coverage bound only, not a bound on
+the size of a locating suite, and says nothing about whether 40 is close to the minimum.
+
+Next steps are not in the plan yet; choosing a new start size should rest on measurements (best cost at several sizes and
+budgets), not a guess. Item 19 is marked STOP FOR USER.

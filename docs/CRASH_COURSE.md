@@ -215,3 +215,14 @@ their origin label, what to be skeptical of, anything left under "Open questions
   reported for this model. Cloud run, not reproduced by the author. Be skeptical: the start size and budget were
   placeholders, not measured, so this does not say 40 is too small in principle; it says it was not found within this
   effort. Nothing here is compared with published sizes.
+
+- 2026-10-13, plan item 18 (summary of items 15-17, plain language): The search now has a version that never needs a list
+  of all allowed configurations. Z3 scores a suite, proposes new tests, and says which pairs of interactions an allowed
+  test could still separate. On the small example models it matched the old search exactly: the same scores on 1,600 of
+  1,600 random suites, and the same final suite size in 21 of 21 runs, including the three known best sizes (9, 8
+  and 9). It was 3 to 23 times slower there, because those models are small enough to list. On the full SPIN simulator
+  model (about 2 million allowed configurations, never listed) one 16-minute run starting at 40 tests did not reach a
+  perfect suite: it covered every possible pair but 3 pairs of interactions were still not separated. So no suite size is
+  reported for that model, and the start size of 40 was a placeholder, not a measured choice. A simple counting argument
+  says at least 16 tests are needed just to cover every pair, which is a floor for coverage only. Cloud run, not
+  reproduced by the author. Be skeptical: one seed, one model, one effort level.
