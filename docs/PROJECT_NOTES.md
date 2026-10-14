@@ -1261,7 +1261,7 @@ independently to contain only valid tests and to cover all feasible interactions
 
 The locating columns equal the item 16 results for the same models and seeds. What this shows: on these seven small models
 the distinguishable-signature requirement cost 2 to 5 extra tests over the smallest covering suite the search found, i.e.
-about 1.3 to 1.8 times the covering size (8 over 6 on low_constraints up to 11 over 6 on 6param; e.g. 9 vs 5 on model.json),
+about 1.3 to 1.8 times the covering size (8 vs 6 on low_constraints and my_model, 9 vs 5 on model.json),
 and the covering size itself was stable across seeds (the locating size varied only on model_8param). The SA covering size was
 at or below the greedy covering size on every model (equal on model_8param and model_low_constraints; one to two tests below
 on the rest). What it does not show: that the covering sizes are minimal (search results at a fixed budget; no exact covering
