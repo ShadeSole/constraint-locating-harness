@@ -1267,3 +1267,42 @@ at or below the greedy covering size on every model (equal on model_8param and m
 on the rest). What it does not show: that the covering sizes are minimal (search results at a fixed budget; no exact covering
 minimum was computed), anything about larger models (items 26 and 27), or anything about strengths other than 2. Seven tiny
 hand-built models, three seeds.
+
+## Covering-only baseline versus locating, derived spins model, seeds 0 to 9 (research plan item 26)
+
+Origin: cloud run, not reproduced by the author. Base commit ddd0a23, `scripts/item26_cover.py` (new), z3-solver 5.1.0.0.
+Model: `examples/model_spins_core.json` (DERIVED from the CCAG `spins` benchmark, not the benchmark; 978 valid
+configurations, 239 feasible 2-way interactions). Z3-backed cold shrinking search in cover-only mode, targeted moves, start 32,
+6000 moves, 5 restarts per size, exactly as the locating runs of items 6 and 7 (which used the enumeration-based
+`find_small_suite`; the same settings, different code path, so move counts are not comparable). Command:
+`PYTHONPATH=. python3 scripts/item26_cover.py SEED cover`. Four seeds ran at a time on a 4-core container, so seconds are
+approximate. For every seed the returned suite was checked independently: all tests valid and all 239 feasible interactions
+covered (10 of 10 True).
+
+| seed | covering size | locating size (items 6 and 7) | difference | covering moves | covering seconds |
+|---|---|---|---|---|---|
+| 0 | 18 | 30 | 12 | 40,746 | 290.9 |
+| 1 | 18 | 31 | 13 | 39,332 | 286.0 |
+| 2 | 18 | 32 | 14 | 39,607 | 284.5 |
+| 3 | 18 | 31 | 13 | 39,928 | 286.3 |
+| 4 | 18 | 30 | 12 | 40,288 | 241.6 |
+| 5 | 18 | 31 | 13 | 38,734 | 231.6 |
+| 6 | 18 | 31 | 13 | 39,877 | 235.6 |
+| 7 | 18 | 30 | 12 | 37,311 | 221.3 |
+| 8 | 18 | 30 | 12 | 39,748 | 237.0 |
+| 9 | 18 | 31 | 13 | 40,504 | 242.5 |
+
+Over the ten seeds: covering size 18 for every seed (min = median = max = 18); locating size min 30, median 31, max 32;
+difference (locating minus covering) min 12, median 13, max 14; locating about 1.67 to 1.78 times the covering size. In every
+covering search the size that failed all five runs was 17.
+Computed for this section (not a run of the search): the largest number of feasible value pairs for any single pair of
+parameters in this model is 16 (P13/P14, P13/P15, P14/P15), so no suite of fewer than 16 tests can cover every feasible
+interaction; the search found 18 for all ten seeds and failed at 17 for all ten. A gap of 2 above that bound is a fact about
+these runs; whether 16 or 17 is attainable was not tested.
+
+What this shows: on this derived model, making interactions distinguishable cost about 12 to 14 additional tests over the
+smallest covering suite the search found, and the covering size was the same for all ten seeds whereas the locating size varied
+by seed. What it does not show: that 18 is the true covering minimum (a failed size means not found within 5 x 6000 moves);
+anything about the real `spins` benchmark (item 27); anything beyond one derived model and ten seeds. The two sets of runs used
+different code (enumeration-based locating, Z3-backed covering); on the small models of item 25 the two code paths gave the
+same locating sizes, so this is not expected to matter, but it was not tested on this model.

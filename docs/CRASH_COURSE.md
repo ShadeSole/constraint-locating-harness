@@ -249,3 +249,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   and once scoring coverage plus separation. Locating needed 2 to 5 more tests (for example 9 versus 5 on model.json, 8 versus 6 on
   low_constraints), the same on every seed apart from one model. Cloud run, not reproduced by the author. Be skeptical: tiny models,
   three seeds, and neither size is proven smallest. Larger models are items 26 and 27.
+
+- 2026-10-14, plan item 26: on the smaller SPIN-derived model the smallest covering suite the search found had 18 tests for every one
+  of ten seeds, while the locating suite needed 30 to 32 (median 31). So being able to tell interactions apart cost about 13 extra
+  tests (12 to 14) over merely covering them, roughly 1.7 times the size. A simple counting argument says at least 16 tests are
+  needed to cover this model, so 18 is close to that floor. Cloud run, not reproduced by the author. Be skeptical: one derived
+  model, 18 is a found size not a proven smallest, and the two sets of runs used different code paths.
