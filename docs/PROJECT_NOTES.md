@@ -1192,3 +1192,41 @@ Origin: cloud run, not reproduced by the author; numbers copied from the section
 - This gives the start-size question a measured answer for seed 0: 43 was reached, 40 and 42 were not within the budget.
   Whether 42 or fewer is possible, and how much the answer varies by seed, is open; a multi-seed spread like items 6 to 8
   on the derived model is the obvious next step and is not in the plan yet.
+
+## Spread on the original spins model, seeds 0 to 9 (research plan items 23 and 24)
+
+Origin: cloud run, not reproduced by the author. Base commit 57aec1f, `scripts/item17_spins.py`, z3-solver 5.1.0.0, CCAG
+`spins` (clone outside the repo; 2,002,944 valid configurations, 979 feasible 2-way interactions). Z3-backed targeted shrinking
+search exactly as in item 21: start size 44, 6000 moves per run, 5 restarts per size, cap 7,200 s per seed (never reached).
+Seed 0 is the item 21 run (same code, run alone with one other job); seeds 1 to 9 ran up to four at a time on a 4-core
+container, so seconds are approximate. Command: `PYTHONPATH=. python3 scripts/item17_spins.py BENCH_DIR SEED 44 6000 5 7200`.
+Items 23 and 24 were added to the plan by the research session, because on the derived model the final size varied by seed.
+
+| seed | smallest size with cost zero | sizes solved | first failed size | its best cost | total moves | seconds |
+|---|---|---|---|---|---|---|
+| 0 | 43 | 44, 43 | 42 | 1 | 37,420 | 1,207.2 |
+| 1 | 42 | 44, 43, 42 | 41 | 1 | 62,409 | 2,030.3 |
+| 2 | 43 | 44, 43 | 42 | 1 | 44,145 | 1,462.5 |
+| 3 | 43 | 44, 43 | 42 | 1 | 51,099 | 1,693.9 |
+| 4 | 43 | 44, 43 | 42 | 1 | 43,466 | 1,422.5 |
+| 5 | 42 | 44, 43, 42 | 41 | 1 | 98,419 | 3,201.2 |
+| 6 | 43 | 44, 43 | 42 | 1 | 63,680 | 2,086.0 |
+| 7 | 44 | 44 | 43 | 1 | 34,295 | 1,106.0 |
+| 8 | 43 | 44, 43 | 42 | 1 | 51,783 | 1,688.6 |
+| 9 | 42 | 44, 43, 42 | 41 | 1 | 48,477 | 1,580.2 |
+
+Over seeds 0 to 9: smallest sizes 42, 43, 44 reached by 3, 6 and 1 seeds (min 42, median 43, max 44); 535,193 moves in
+total. No seed failed at the start size of 44. For every seed the returned suite was checked independently of the cost code:
+all tests valid under the rules, 979 of 979 interactions covered, and 969 of 979 interactions uniquely identified by the suite
+(the same 969 for all ten), and the cost model reports cost zero. In all ten searches the first size to fail had best cost 1 (no
+uncovered interaction, one avoidable collision).
+
+**Summary (item 24).** What the numbers show: on the original spins model with this budget, the smallest suite with cost zero
+varies with the seed over 42 to 44 tests (median 43), so a single seed would have given 42, 43 or 44 depending on the draw; this
+repeats the pattern seen on the derived model (30 to 32). The place where the search stops is consistent in one respect: every
+search ended one size below its answer with cost 1, never with a large cost. The count of uniquely identified interactions
+(969 of 979) was the same for all ten suites, which is what one would expect if the ten interactions that no test can separate
+are the same set; that they are the same set was not checked. What the numbers do not show: that 42 (or 41) is the true minimum
+or that 41 is impossible (a failed size means not found within 5 x 6000 moves; seeds 1, 5 and 9 reached 42, so a larger budget or
+more seeds might reach lower); anything about a general advantage of the method; any comparison with published sizes (not made,
+by instruction). Ten seeds on one model is still a small sample.

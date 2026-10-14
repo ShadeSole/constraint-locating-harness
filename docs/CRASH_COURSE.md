@@ -236,3 +236,10 @@ their origin label, what to be skeptical of, anything left under "Open questions
   author. Be skeptical: one seed; 42 failing means "not found with this effort", not impossible; and these 43 tests are for
   the full model, so they are not comparable with the 30 to 32 for the smaller derived model. Not compared with any published
   size. The natural next step, several seeds as for the derived model, is not in the plan yet.
+
+- 2026-10-14, plan items 23-24 (plain language): I repeated the full-SPIN-model search with ten different random seeds, all
+  starting from 44 tests. The smallest perfect suite found was 42 tests for three seeds, 43 for six and 44 for one (median 43), so the
+  answer depends on the seed, as it did for the smaller derived model. Every one of the ten suites used only allowed
+  configurations, covered all 979 possible pairs, and identified 969 of them uniquely; the search always stopped one size below
+  its answer with a single pair left unseparated. Cloud run, not reproduced by the author. Be skeptical: "failed at 41 or 42" means
+  not found with this effort, not impossible; ten seeds on one model is a small sample; no comparison with published sizes was made.
