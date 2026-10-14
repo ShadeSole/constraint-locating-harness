@@ -243,3 +243,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   configurations, covered all 979 possible pairs, and identified 969 of them uniquely; the search always stopped one size below
   its answer with a single pair left unseparated. Cloud run, not reproduced by the author. Be skeptical: "failed at 41 or 42" means
   not found with this effort, not impossible; ten seeds on one model is a small sample; no comparison with published sizes was made.
+
+- 2026-10-14, plan item 25 (the research question measured directly): the question is how many more tests it takes to be able to tell
+  interactions apart than to merely cover them all. On the seven small models I ran the same search twice, once scoring only coverage
+  and once scoring coverage plus separation. Locating needed 2 to 5 more tests (for example 9 versus 5 on model.json, 8 versus 6 on
+  low_constraints), the same on every seed apart from one model. Cloud run, not reproduced by the author. Be skeptical: tiny models,
+  three seeds, and neither size is proven smallest. Larger models are items 26 and 27.

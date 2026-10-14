@@ -1230,3 +1230,40 @@ are the same set; that they are the same set was not checked. What the numbers d
 or that 41 is impossible (a failed size means not found within 5 x 6000 moves; seeds 1, 5 and 9 reached 42, so a larger budget or
 more seeds might reach lower); anything about a general advantage of the method; any comparison with published sizes (not made,
 by instruction). Ten seeds on one model is still a small sample.
+
+## Covering-only baseline versus locating, small models (research plan item 25)
+
+Origin: cloud run, not reproduced by the author. Base commit 56a8da9 plus `scripts/item25_compare.py` (new), z3-solver 5.1.0.0.
+Items 25 to 28 were proposed by the research session and approved by the plan author ("go"). Research question
+(Research question section above): how much extra suite size makes feasible interactions distinguishable, compared with
+ordinary constrained t-way coverage? Interaction localization only.
+
+Code: `Z3CostModel(parameters, forbidden, cover_only=True)` makes the cost the number of uncovered feasible interactions
+only (collisions neither counted nor queried); the default is unchanged. 3 new tests (cover-mode cost and uncovered list
+equal a direct count on 100 random suites per model on all 8 example models and no Z3 separability query is made; cover-only
+cost never exceeds locating cost; the cover-only search returns valid, fully covering suites no larger than the known locating
+minimum). Full suite: 141 tests OK, 3 skipped.
+
+Comparison, 7 non-slow models, seeds 0, 1 and 2, identical settings for both modes (Z3-backed cold shrinking search, targeted
+moves, 3 restarts x 3000 moves per size, start = greedy locating size). Command:
+`PYTHONPATH=. python3 scripts/item25_compare.py SEED`. Final sizes by seed 0/1/2; every cover-only suite was checked
+independently to contain only valid tests and to cover all feasible interactions (21 of 21 True):
+
+| model | valid | greedy cover | greedy locate | Z3 SA cover-only | Z3 SA locating | difference (locating - covering) |
+|---|---|---|---|---|---|---|
+| model.json | 18 | 6 | 11 | 5/5/5 | 9/9/9 | 4/4/4 |
+| model_6param.json | 36 | 7 | 11 | 6/6/6 | 10/10/10 | 4/4/4 |
+| model_8param.json | 144 | 7 | 13 | 7/7/7 | 11/12/11 | 4/5/4 |
+| model_high_constraints.json | 11 | 7 | 11 | 6/6/6 | 9/9/9 | 3/3/3 |
+| model_low_constraints.json | 32 | 6 | 9 | 6/6/6 | 8/8/8 | 2/2/2 |
+| model_multivalue.json | 30 | 9 | 12 | 7/7/7 | 11/11/11 | 4/4/4 |
+| my_model.json | 24 | 7 | 9 | 6/6/6 | 8/8/8 | 2/2/2 |
+
+The locating columns equal the item 16 results for the same models and seeds. What this shows: on these seven small models
+the distinguishable-signature requirement cost 2 to 5 extra tests over the smallest covering suite the search found, i.e.
+about 1.3 to 1.8 times the covering size (8 over 6 on low_constraints up to 11 over 6 on 6param; e.g. 9 vs 5 on model.json),
+and the covering size itself was stable across seeds (the locating size varied only on model_8param). The SA covering size was
+at or below the greedy covering size on every model (equal on model_8param and model_low_constraints; one to two tests below
+on the rest). What it does not show: that the covering sizes are minimal (search results at a fixed budget; no exact covering
+minimum was computed), anything about larger models (items 26 and 27), or anything about strengths other than 2. Seven tiny
+hand-built models, three seeds.

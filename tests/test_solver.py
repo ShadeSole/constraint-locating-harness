@@ -192,6 +192,32 @@ class SolverCost(unittest.TestCase):
         self.assertEqual(model.misses, misses)
         self.assertGreater(model.hits, 0)
 
+    def test_cover_only_cost_is_the_count_of_uncovered_interactions(self):
+        from cla_harness.core import contains_interaction
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            configs = valid_configurations(parameters, forbidden)
+            model = solver.Z3CostModel(parameters, forbidden, cover_only=True)
+            for suite in random_suites(configs, 100, seed=21):
+                uncovered = [i for i in model.interactions
+                             if not any(contains_interaction(c, i) for c in suite)]
+                got = model.suite_cost(suite, detail=True)
+                self.assertEqual(got["cost"], len(uncovered), path)
+                self.assertEqual((got["uncovered"], got["avoidable_collisions"]), (len(uncovered), 0), path)
+                self.assertEqual(got["uncovered_list"], sorted(uncovered, key=sorted), path)
+            self.assertEqual(model.misses, 0, path)          # no separability query was needed
+        # the default model is unchanged by the new option
+        parameters, forbidden = load_model(EXAMPLES[0])
+        self.assertFalse(solver.Z3CostModel(parameters, forbidden).cover_only)
+
+    def test_cover_only_never_costs_more_than_locating(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        configs = valid_configurations(parameters, forbidden)
+        cover = solver.Z3CostModel(parameters, forbidden, cover_only=True)
+        locate = solver.Z3CostModel(parameters, forbidden)
+        for suite in random_suites(configs, 100, seed=5):
+            self.assertLessEqual(cover.suite_cost(suite)["cost"], locate.suite_cost(suite)["cost"])
+
     def test_deliberate_break_is_caught(self):
         # Treating every colliding pair as avoidable overcounts on high_constraints, which has
         # indistinguishable interactions (28 of 35 localizable).
@@ -212,10 +238,21 @@ Z3_MINIMA = {"model.json": 9, "model_high_constraints.json": 9, "my_model.json":
 
 @unittest.skipUnless(solver is not None, "z3-solver is not installed")
 class SolverAnnealing(unittest.TestCase):
-    def model_for(self, name):
+    def model_for(self, name, cover_only=False):
         parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index(name)])
         valid = {key(c) for c in valid_configurations(parameters, forbidden)}
-        return solver.Z3CostModel(parameters, forbidden), valid
+        return solver.Z3CostModel(parameters, forbidden, cover_only=cover_only), valid
+
+    def test_cover_only_search_solves_with_valid_tests_and_needs_no_more_tests_than_locating(self):
+        from cla_harness.core import contains_interaction
+        for name, n in Z3_MINIMA.items():
+            model, valid = self.model_for(name, cover_only=True)
+            found = solver.find_small_suite_z3(model, n, seed=0, restarts=3, steps_per_restart=2000)
+            self.assertIsNotNone(found["size"], name)
+            self.assertLessEqual(found["size"], n, name)       # a locating suite of size n also covers
+            self.assertTrue(all(key(c) in valid for c in found["suite"]))
+            self.assertTrue(all(any(contains_interaction(c, i) for c in found["suite"])
+                                for i in model.interactions), name)
 
     def test_every_test_in_every_suite_is_valid_and_cost_is_consistent(self):
         for name in ("model.json", "model_spins_core.json"):

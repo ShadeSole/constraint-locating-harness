@@ -139,9 +139,15 @@ class Z3CostModel:
     suite could separate it). Answers are cached per unordered pair, so a pair costs at most
     one decision however many suites are scored. `hits`, `misses` and `seconds` count cache
     use and the time spent in Z3 queries, so a slow run is visible.
+
+    With cover_only=True the cost is only the number of uncovered feasible interactions (ordinary
+    t-way coverage): collisions are neither counted nor queried, so no Z3 separability query is made.
+    The default (False) is unchanged.
     """
 
-    def __init__(self, parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden]):
+    def __init__(self, parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden],
+                 cover_only: bool = False):
+        self.cover_only = cover_only
         self.parameters = parameters
         self.solver, self.variables = build_solver(parameters, forbidden)
         self.interactions = sorted(feasible_interactions_z3(parameters, forbidden), key=sorted)
@@ -183,8 +189,9 @@ class Z3CostModel:
                 groups[signature].append(interaction)
             else:
                 uncovered_list.append(interaction)
-        avoidable = [(a, b) for group in groups.values() if len(group) > 1
-                     for a, b in combinations(group, 2) if self.separable(a, b)]
+        avoidable = [] if self.cover_only else [
+            (a, b) for group in groups.values() if len(group) > 1
+            for a, b in combinations(group, 2) if self.separable(a, b)]
         result = {
             "uncovered": len(uncovered_list),
             "avoidable_collisions": len(avoidable),
