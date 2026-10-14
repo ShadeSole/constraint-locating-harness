@@ -255,3 +255,11 @@ their origin label, what to be skeptical of, anything left under "Open questions
   tests (12 to 14) over merely covering them, roughly 1.7 times the size. A simple counting argument says at least 16 tests are
   needed to cover this model, so 18 is close to that floor. Cloud run, not reproduced by the author. Be skeptical: one derived
   model, 18 is a found size not a proven smallest, and the two sets of runs used different code paths.
+
+- 2026-10-14, plan items 27-28 (summary of the covering-versus-locating comparison): The research question asks how many more tests it takes
+  to be able to tell interactions apart than just to cover them. Across the three kinds of model the answer was always "more, but
+  within a factor of about 1.3 to 1.9". Small hand-built models: 2 to 5 more tests. The SPIN-derived model: about 13 more (18 to cover,
+  30 to 32 to distinguish). The full SPIN model: about 18 to 20 more (23 to 25 to cover, 42 to 44 to distinguish). The covering suites
+  by themselves told apart only about half of the interactions (457 to 566 of 979 on the full model, against 969 for the locating
+  suites). Cloud run, not reproduced by the author. Be skeptical: every size is what a fixed-effort search found, not a proven smallest;
+  one real benchmark; no comparison with published sizes; strengths above 2 were not tried here.

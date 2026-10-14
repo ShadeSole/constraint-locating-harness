@@ -1306,3 +1306,73 @@ by seed. What it does not show: that 18 is the true covering minimum (a failed s
 anything about the real `spins` benchmark (item 27); anything beyond one derived model and ten seeds. The two sets of runs used
 different code (enumeration-based locating, Z3-backed covering); on the small models of item 25 the two code paths gave the
 same locating sizes, so this is not expected to matter, but it was not tested on this model.
+
+## Covering-only baseline versus locating, original spins, seeds 0 to 9 (research plan item 27)
+
+Origin: cloud run, not reproduced by the author. Base commit 781cab5, `scripts/item19_run.py` and `scripts/item17_spins.py` (both
+given an optional trailing `cover` argument), z3-solver 5.1.0.0, original CCAG `spins` (clone outside the repo; 2,002,944
+valid configurations, 979 feasible 2-way interactions). Z3-backed cold shrinking search in cover-only mode, targeted moves,
+6000 moves per run, 5 restarts per size, cap 7,200 s per seed (never reached), four seeds at a time on a 4-core container (seconds
+approximate). A first attempt at the ten-seed search was killed when the sandbox restarted (about 430 s in, no results) and was
+rerun from the start; only the rerun is reported.
+
+**Start size from a sweep (seed 0, one run of 6000 moves per size, cover mode):** 36, 32 and 28 reached cost zero (76, 495 and
+2,667 moves); 24 did not (2 interactions uncovered); 20 did not (16 uncovered). The smallest solved, 28, was the start size.
+Each solved suite was checked independently (all tests valid, 979 of 979 covered). Commands:
+`scripts/item19_run.py BENCH_DIR SIZE 6000 0 cover` and
+`PYTHONPATH=. python3 scripts/item17_spins.py BENCH_DIR SEED 28 6000 5 7200 cover`.
+
+| seed | covering size | locating size (item 23) | difference | first failed size, best cost (uncovered) | covering moves | covering seconds |
+|---|---|---|---|---|---|---|
+| 0 | 25 | 43 | 18 | 24, 1 | 44,770 | 1,378.3 |
+| 1 | 24 | 42 | 18 | 23, 4 | 54,789 | 1,656.9 |
+| 2 | 25 | 43 | 18 | 24, 1 | 49,818 | 1,527.6 |
+| 3 | 24 | 43 | 19 | 23, 3 | 52,602 | 1,581.8 |
+| 4 | 23 | 43 | 20 | 22, 4 | 73,045 | 2,174.9 |
+| 5 | 24 | 42 | 18 | 23, 2 | 58,364 | 1,788.7 |
+| 6 | 24 | 43 | 19 | 23, 3 | 51,775 | 1,579.5 |
+| 7 | 24 | 44 | 20 | 23, 1 | 53,920 | 1,650.0 |
+| 8 | 23 | 43 | 20 | 22, 4 | 94,740 | 2,919.9 |
+| 9 | 24 | 42 | 18 | 23, 1 | 50,408 | 1,546.5 |
+
+Covering sizes over the ten seeds: 23, 24 and 25 reached by 2, 6 and 2 seeds (min 23, median 24, max 25). Difference
+(locating minus covering): min 18, median 18.5, max 20; locating/covering per seed 1.72 to 1.87. Total 584,231 covering moves; no
+seed hit the cap. For every seed the covering suite was checked independently: all tests valid and 979 of 979 interactions covered.
+As a by-product, the same checks show how much distinguishing the covering suites achieved by accident: only 457 to 566 of 979
+interactions had a signature no other interaction shares (against 969 for the locating suites of item 23).
+
+What it shows: on the original spins model, making interactions distinguishable cost about 18 to 20 more tests than the smallest
+covering suite the search found (covering 23 to 25, locating 42 to 44), roughly 1.7 to 1.9 times the size, and the covering size
+varied by seed only over a range of 2. What it does not show: that the covering sizes are minimal (a failed size means not found within
+5 x 6000 moves; the covering suite is above the bound of 16 computed in the item 18 notes, so 16 to 22 were not excluded); anything
+about other benchmarks; a comparison with published sizes (not made). Ten seeds on one model.
+
+## Summary of research plan items 25 to 27: extra tests needed to distinguish interactions (research plan item 28)
+
+Origin: cloud run, not reproduced by the author; every number is copied from the items 25, 26, 27 sections above (locating sizes
+from items 6, 7, 16 and 23); none is new. Interaction localization only (single deterministic fault, t = 2). Sizes are what the
+search found within a fixed budget, not proven minima.
+
+| model or group | seeds | covering size (search) | locating size (search) | extra tests (locating - covering) | locating / covering |
+|---|---|---|---|---|---|
+| model.json | 3 | 5/5/5 | 9/9/9 | 4/4/4 | 1.8 |
+| model_6param.json | 3 | 6/6/6 | 10/10/10 | 4/4/4 | 1.67 |
+| model_8param.json | 3 | 7/7/7 | 11/12/11 | 4/5/4 | 1.57 to 1.71 |
+| model_high_constraints.json | 3 | 6/6/6 | 9/9/9 | 3/3/3 | 1.5 |
+| model_low_constraints.json | 3 | 6/6/6 | 8/8/8 | 2/2/2 | 1.33 |
+| model_multivalue.json | 3 | 7/7/7 | 11/11/11 | 4/4/4 | 1.57 |
+| my_model.json | 3 | 6/6/6 | 8/8/8 | 2/2/2 | 1.33 |
+| model_spins_core.json (derived from spins) | 10 | 18 for all (median 18) | 30 to 32 (median 31) | 12 to 14 (median 13) | 1.67 to 1.78 |
+| spins (original, CCAG) | 10 | 23 to 25 (median 24) | 42 to 44 (median 43) | 18 to 20 (median 18.5) | 1.72 to 1.87 |
+
+What the numbers show: in every model and every seed the smallest suite that made interactions distinguishable was larger than the
+smallest covering suite the search found, by 2 to 5 tests on the seven small models, 12 to 14 on the derived spins model and 18 to
+20 on the original spins model; as a ratio, 1.33 to 1.87 across all rows. The extra count grew with model size across these three
+groups, while the ratio stayed in a narrower band (1.33 to 1.87); with three groups of very different models this is an
+observation, not a fitted trend. On the two spins models the covering size was nearly constant across seeds (18 for all; 23 to 25)
+while the locating size varied by 2 (30 to 32; 42 to 44).
+What they do not show: that any covering or locating size is the true minimum; that the ratio is stable on other models or at other
+strengths (t = 3, d > 1 were not measured here); anything about how the covering and locating sizes compare with published ones (not
+compared, by instruction). Seven tiny hand-built models with 3 seeds, one derived model and one real benchmark with 10 seeds is a
+small sample. The covering runs used the Z3-backed search and some locating runs the enumeration-based one; where both were run
+on the same model and seed (items 16 and 25) the locating sizes were identical.
