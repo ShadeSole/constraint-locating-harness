@@ -269,3 +269,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   way of listing everything on all 8 example models for sizes 1, 2 and 3, and it scored 1,600 random suites at triples exactly like
   the old scorer. No search has been run on triples yet (items 30 and 31). Cloud run, not reproduced by the author. The test suite
   now takes about 6.5 minutes, mostly because of these triple checks.
+
+- 2026-10-15, plan item 30: repeated the covering-versus-locating comparison for triples of settings on the seven small models. Cloud run, not
+  reproduced by the author. Telling triples apart needed 2 to 15 more tests than merely covering them (a factor of 1.2 to 2.1), against 2 to 5
+  more (1.3 to 1.8) for pairs, and both sizes grew a lot going from pairs to triples (for example 5 to 12 to cover and 9 to 17 to locate on
+  model.json). The new Z3-based search agreed with the old one in 20 of 21 runs. Be skeptical: tiny models, three seeds, sizes are
+  found-not-proven, and the biggest ratio comes from a model where one seed differs.

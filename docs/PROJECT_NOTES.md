@@ -1401,3 +1401,38 @@ exercise with 200 suites and many separability queries.
 Not shown: any search result at t = 3 (items 30 and 31), speed at larger models, or the original spins model at t = 3 (which has at
 most 13,328 candidate 3-way interactions, against 992 pairs and 1,520 for the derived model; item 33 reserves a faster cost
 evaluation for a decision by the plan author).
+
+## Strength 3: covering-only versus locating, small models (research plan item 30)
+
+Origin: cloud run, not reproduced by the author. Base commit aa67773 plus `scripts/item30_compare.py` (new), z3-solver 5.1.0.0.
+Strength 3: the hidden fault is one feasible 3-way interaction and only 3-way interactions are counted (interaction localization only).
+Same settings as item 25 (Z3-backed cold shrinking search, targeted moves, 3 restarts x 3000 moves per size, start = greedy locating
+size at t = 3), seeds 0, 1 and 2; the enumeration-based locating search (`find_small_suite`, same settings and seeds) was also rerun
+as a direct consistency check. Three seeds ran at the same time on a 4-core container, seconds approximate. Command:
+`PYTHONPATH=. python3 scripts/item30_compare.py SEED 3`. Every covering suite was checked independently (21 of 21: tests valid and
+all feasible 3-way interactions covered). Final sizes, seeds 0/1/2:
+
+| model | valid | feasible 3-way | greedy cover | greedy locate | Z3 cover-only | Z3 locating | enumeration locating | extra tests (Z3 locating - covering) | locating / covering | (t = 2: cover, locating) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| model.json | 18 | 68 | 12 | 17 | 12/12/12 | 17/17/17 | 17/17/17 | 5/5/5 | 1.42 | 5, 9 |
+| model_6param.json | 36 | 144 | 15 | 24 | 12/12/12 | 22/22/22 | 22/22/22 | 10/10/10 | 1.83 | 6, 10 |
+| model_8param.json | 144 | 424 | 18 | 30 | 14/14/14 | 28/29/28 | 28/28/28 | 14/15/14 | 2.0 to 2.07 | 7, 11 to 12 |
+| model_high_constraints.json | 11 | 55 | 10 | 11 | 9/9/9 | 11/11/11 | 11/11/11 | 2/2/2 | 1.22 | 6, 9 |
+| model_low_constraints.json | 32 | 80 | 12 | 17 | 10/10/10 | 15/15/15 | 15/15/15 | 5/5/5 | 1.5 | 6, 8 |
+| model_multivalue.json | 30 | 91 | 17 | 23 | 15/15/15 | 22/22/22 | 22/22/22 | 7/7/7 | 1.47 | 7, 11 |
+| my_model.json | 24 | 74 | 13 | 17 | 10/10/10 | 17/17/17 | 17/17/17 | 7/7/7 | 1.7 | 6, 8 |
+
+(The last column repeats the t = 2 sizes from items 25 and 16 for comparison.) Consistency: the Z3-backed locating size equalled the
+enumeration-based size in 20 of 21 runs; the one difference was model_8param.json seed 1 (29 versus 28), where the two searches
+draw different random moves, so one size apart on one seed is within the seed variation already seen on that model at t = 2. The
+locating sizes also equal the item 4 enumeration-based t = 3 sizes (17, 22, 28, 11, 15, 22, 17) except that same case.
+Greedy covering sizes were at or above the SA covering size on every model (equal on model.json: 12 and 12); on
+model_high_constraints.json the locating size, 11, equals the number of valid configurations, so no smaller locating suite exists
+there (which also caps the difference at 2).
+
+What this shows: at t = 3 on these seven small models, distinguishing 3-way interactions needed 2 to 15 more tests than covering them
+(ratio 1.22 to 2.07), against 2 to 5 more (ratio 1.33 to 1.8) at t = 2; the covering size rose roughly 1.5 to 2 times from t = 2 to
+t = 3 (for example 5 to 12 on model.json, 7 to 14 on model_8param), and the locating size rose more (9 to 17, 11 to 28). The covering
+size was identical across the three seeds on every model; the locating size varied only on model_8param. What it does not show: that
+any size is minimal (search results at a fixed budget); anything about larger models or the derived spins model (item 31); a
+statement about how the ratio behaves at other strengths. Seven tiny models, three seeds.
