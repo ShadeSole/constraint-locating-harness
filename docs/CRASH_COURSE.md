@@ -289,3 +289,6 @@ their origin label, what to be skeptical of, anything left under "Open questions
   down for others, so no trend is shown. The real SPIN model was not run at triples (that needs a code change you must approve, item 33).
   Cloud run, not reproduced by the author. Be skeptical: few seeds (3 and 5), found sizes are not proven smallest, four of five
   derived-model locating runs were stopped by the time cap.
+
+## Faster cost evaluation (plan items 34 and 35)
+The search repeatedly scores a suite by checking which tests contain which interactions. The new FastZ3CostModel remembers, for each test, which interactions it contains, so scoring a suite no longer rescans every interaction. It gives the same scores as the old code (checked on all 8 example models at pairs and triples). On the derived spins model at triples, a repeat scoring took 0.0040 s instead of 0.0184 s in locating mode (one suite size, one seed). Scoring a suite for the first time is still dominated by Z3 questions about whether two interactions can be told apart, and the new class does not change that. Nothing yet says whether the original spins model at triples is feasible.

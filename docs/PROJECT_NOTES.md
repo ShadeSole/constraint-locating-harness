@@ -1522,3 +1522,15 @@ Test suite before this commit (cloud run, not reproduced by the author): 146 tes
 
 ## FastZ3CostModel (research plan item 34)
 Added `FastZ3CostModel` to cla_harness/solver.py (subclass of Z3CostModel; parent unchanged). Tests (tests/test_solver.py, class FastCostModel): its cost and detail lists equal Z3CostModel and, in locating mode, annealing.suite_cost, at t = 2 and t = 3 on all 8 example models (100 random suites per model, 10 on model_spins_core.json to keep the suite time down). Full suite in this session: 149 tests OK, 3 skipped (cloud run, not reproduced by the author). No speed measurement yet: that is item 35. The search functions were not yet run with the fast model beyond a small smoke test.
+
+## Cost-evaluation timing, FastZ3CostModel versus Z3CostModel, strength 3, derived spins (research plan item 35)
+Cloud run, not reproduced by the author. model_spins_core.json, t = 3, 1,313 feasible 3-way interactions, 5 random suites of 32 valid tests (seed 0), mean seconds per `suite_cost` call, python 3.13 / z3 5.3.0.0. One model, one suite size, one seed.
+
+| model class | mode | build (s) | first evaluation (s) | repeat evaluation, same suites (s) | Z3 queries (misses) | Z3 time (s) |
+|---|---|---|---|---|---|---|
+| Z3CostModel | cover | 1.61 | 0.0190 | 0.0184 | 0 | 0 |
+| Z3CostModel | locate | 0.57 | 1.5667 | 0.0184 | 12210 | 7.61 |
+| FastZ3CostModel | cover | 0.45 | 0.0025 | 0.0005 | 0 | 0 |
+| FastZ3CostModel | locate | 0.39 | 1.4168 | 0.0040 | 12210 | 6.99 |
+
+What this shows: the repeat evaluation (collision answers cached) is faster with the fast model (0.0040 s versus 0.0184 s locating; 0.0005 s versus 0.0184 s covering). The first locating evaluation on new suites is dominated by Z3 collision queries, which are the same for both classes (12,210 queries), so the fast model changes little there. Not measured: time per move inside a real search, the cache hit rate over a full run, and anything on the original spins model (the CCAG clone was not used in this step). Whether item 33 (original spins, t = 3) is feasible is therefore not settled by this table; the next step would be to time a short search run and one cost evaluation on the original model.
