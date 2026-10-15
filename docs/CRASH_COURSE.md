@@ -275,3 +275,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   more (1.3 to 1.8) for pairs, and both sizes grew a lot going from pairs to triples (for example 5 to 12 to cover and 9 to 17 to locate on
   model.json). The new Z3-based search agreed with the old one in 20 of 21 runs. Be skeptical: tiny models, three seeds, sizes are
   found-not-proven, and the biggest ratio comes from a model where one seed differs.
+
+- 2026-10-15, plan item 31 (plain language): I repeated the covering-versus-telling-apart comparison for triples of settings on the
+  smaller SPIN-derived model. Cloud run, not reproduced by the author. Covering all possible triples took 71 tests on every one of five
+  seeds; making the triples distinguishable took 110 to 112, about 39 to 41 more (1.55 to 1.58 times). For pairs the same model needed
+  18 and 30 to 32. Four of the five locating searches stopped because of the 2-hour time cap, so those sizes could probably be pushed
+  a little lower with more time. Be skeptical: five seeds, one derived model (not the real benchmark), found sizes are not proven smallest.

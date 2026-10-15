@@ -1436,3 +1436,54 @@ t = 3 (for example 5 to 12 on model.json, 7 to 14 on model_8param), and the loca
 size was identical across the three seeds on every model; the locating size varied only on model_8param. What it does not show: that
 any size is minimal (search results at a fixed budget); anything about larger models or the derived spins model (item 31); a
 statement about how the ratio behaves at other strengths. Seven tiny models, three seeds.
+
+## Strength 3 on the derived spins model (research plan item 31)
+
+Origin: cloud run, not reproduced by the author. Base commit 22dbdda plus the existing scripts `scripts/item31_probe.py`,
+`item31_run.py` and `item31_search.py` (z3-solver 5.3.0, Python 3.11, 4-core container, up to 4 processes at a time, so timings are
+approximate). Model: `examples/model_spins_core.json` (DERIVED from spins; it is not the benchmark), strength 3, 1,313 feasible
+3-way interactions (the plan said at most 1,520 candidates). Interaction localization only; no source-code fault localization.
+
+Timing (probe, 1 run each; 60-move targeted runs, 20 random suites): cost evaluation took 0.022 s (size 30) and 0.032 s (size 45) in
+covering mode, and 1.0 s (size 30, the first evaluation 1.4 s, includes Z3 queries) and 0.17 s (size 45) in locating mode; a move
+took 0.026 to 0.044 s (covering) and 0.057 to 0.114 s (locating) over those 60 moves. A 6000-move run therefore projects to well
+under the 15-minute limit; measured full 6000-move runs took 154 to 323 s (covering, sizes 30 to 70) and 329 to 445 s (locating,
+sizes 70 to 100), so the item continued.
+
+Size sweep, seed 0, one 6000-move run per size, targeted moves, cooling 2.0 to 0.05 (`item31_run.py`; every returned suite had
+valid tests and the independent coverage count matched):
+
+| mode | size | uncovered | avoidable collisions | solved | moves | seconds |
+|---|---|---|---|---|---|---|
+| cover | 30 / 40 / 50 / 60 / 70 | 149 / 68 / 29 / 11 / 1 | 0 | no | 6000 | 154 / 199 / 238 / 280 / 323 |
+| cover | 80 / 100 / 120 | 0 | 0 | yes | 345 / 64 / 37 | 21 / 5 / 4 |
+| locate | 70 / 80 / 90 / 100 | 20 / 18 / 1 / 0 | 258 / 149 / 52 / 17 | no | 6000 | 329 / 366 / 407 / 445 |
+| locate | 120 / 200 / 300 / 450 | 0 | 0 | yes | 1415 / 61 / 3 / 0 | 124 / 11 / 3 / 3 |
+
+Start sizes chosen from the sweep (smallest size solved): covering 80, locating 120 (sizes between 100 and 120 were not swept).
+
+Shrinking search, seeds 0 to 4, cold, targeted moves, 5 restarts x 6000 moves per size, cap 7,200 s per seed (`item31_search.py`;
+every final suite checked: tests valid, all 1,313 interactions covered). "Capped" = the wall-clock cap ended the search; the cost
+shown for the first failed size comes from an attempt the cap may have cut short.
+
+| seed | covering size | locating size | difference | ratio | locating run | cost at first failed locating size (uncovered 0 in all) |
+|---|---|---|---|---|---|---|
+| 0 | 71 | 110 | 39 | 1.549 | capped at 7200 s while trying 109 | 1 |
+| 1 | 71 | 112 | 41 | 1.577 | capped at 7200 s while trying 111 | 1 |
+| 2 | 71 | 110 | 39 | 1.549 | finished, 6150 s, failed at 109 | 1 |
+| 3 | 71 | 111 | 40 | 1.563 | capped at 7200 s while trying 110 | 2 |
+| 4 | 71 | 110 | 39 | 1.549 | capped at 7200 s while trying 109 | 1 |
+
+Covering searches finished without the cap (2,681 to 3,073 s, 45,565 to 50,606 moves); each failed at size 70 with 1 uncovered
+interaction. Median covering 71, median locating 110, median difference 39 (range 39 to 41). Z3 queries in the locating searches:
+12,564 to 14,034 misses and 13.4 to 15.7 million cache hits per seed. The locating sizes of seeds 0, 1, 3 and 4 are upper bounds
+from a capped search (a smaller suite might have been found with more time).
+
+What this shows: on this derived model at t = 3, the search found covering suites of 71 tests for all five seeds and locating suites
+of 110 to 112, about 39 to 41 more tests (1.55 to 1.58 times). At t = 2 on the same model the found sizes were 18 (covering) and 30 to
+32 (locating), so both grew with strength and the extra cost grew from about 13 to about 39 tests (ratio about 1.7 to about 1.55,
+from items 26 and 28). The covering size was the same on all five seeds. What it does not show: that any size is minimal (search
+results at a fixed budget; four of the five locating runs were capped); anything about the original spins model (item 33 is for
+the plan author); a comparison with published sizes. Five seeds, one derived model.
+
+Test suite before this commit (cloud run, not reproduced by the author): 146 tests, OK, 3 skipped, 420 s.
