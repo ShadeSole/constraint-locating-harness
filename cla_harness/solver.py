@@ -207,6 +207,63 @@ class Z3CostModel:
         return result
 
 
+class FastZ3CostModel(Z3CostModel):
+    """Z3CostModel with a faster `suite_cost` (research plan item 33 prerequisite). Same results.
+
+    Instead of testing every interaction against every test, each configuration is mapped once
+    (memoized) to the ids of the interactions it contains: a configuration contains exactly one
+    value combination per parameter subset of size t, so that is C(n, t) dictionary lookups.
+    A suite's cost then groups interaction ids by the set of tests covering them. Collision
+    classification still goes through `separable` (Z3, cached). The cost, the uncovered count and
+    the detail lists are identical to `Z3CostModel.suite_cost`; the parent class is unchanged.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from itertools import combinations
+        self._names = list(self.parameters)
+        self._subsets = list(combinations(range(len(self._names)), self.strength))
+        self._ids = {}
+        for k, interaction in enumerate(self.interactions):
+            terms = {n: v for n, v in interaction}
+            idx = tuple(sorted(self._names.index(n) for n in terms))
+            self._ids[(idx, tuple(terms[self._names[i]] for i in idx))] = k
+        self._covered: Dict[tuple, tuple] = {}
+
+    def _covered_ids(self, config: Config) -> tuple:
+        key = tuple(config[n] for n in self._names)
+        found = self._covered.get(key)
+        if found is None:
+            ids = self._ids
+            found = tuple(k for k in (ids.get((sub, tuple(key[i] for i in sub))) for sub in self._subsets)
+                          if k is not None)
+            self._covered[key] = found
+        return found
+
+    def suite_cost(self, suite: List[Config], weight: float = 1.0, detail: bool = False) -> dict:
+        from itertools import combinations
+        covering: Dict[int, list] = {}
+        for t, config in enumerate(suite):
+            for k in self._covered_ids(config):
+                covering.setdefault(k, []).append(t)
+        groups: Dict[tuple, list] = {}
+        for k, tests in covering.items():
+            groups.setdefault(tuple(tests), []).append(self.interactions[k])
+        uncovered_list = [self.interactions[k] for k in range(len(self.interactions)) if k not in covering]
+        avoidable = [] if self.cover_only else [
+            (a, b) for group in groups.values() if len(group) > 1
+            for a, b in combinations(group, 2) if self.separable(a, b)]
+        result = {
+            "uncovered": len(uncovered_list),
+            "avoidable_collisions": len(avoidable),
+            "cost": weight * len(uncovered_list) + len(avoidable),
+        }
+        if detail:
+            result["uncovered_list"] = sorted(uncovered_list, key=sorted)
+            result["colliding_list"] = sorted({i for pair in avoidable for i in pair}, key=sorted)
+        return result
+
+
 # ---------------------------------------------------------------------------
 # Solver-backed simulated annealing. These are NEW functions; annealing.anneal_suite and
 # find_small_suite are unchanged. The search state is a list of configuration dicts (not

@@ -1519,3 +1519,6 @@ model, none on original spins); anything about the original spins model at t = 3
 instruction); behaviour at other strengths or with more than one fault.
 
 Test suite before this commit (cloud run, not reproduced by the author): 146 tests, OK, 3 skipped, 393 s (z3-solver 5.3.0).
+
+## FastZ3CostModel (research plan item 34)
+Added `FastZ3CostModel` to cla_harness/solver.py (subclass of Z3CostModel; parent unchanged). Tests (tests/test_solver.py, class FastCostModel): its cost and detail lists equal Z3CostModel and, in locating mode, annealing.suite_cost, at t = 2 and t = 3 on all 8 example models (100 random suites per model, 10 on model_spins_core.json to keep the suite time down). Full suite in this session: 149 tests OK, 3 skipped (cloud run, not reproduced by the author). No speed measurement yet: that is item 35. The search functions were not yet run with the fast model beyond a small smoke test.

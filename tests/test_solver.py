@@ -383,5 +383,41 @@ class SolverStrengthT(unittest.TestCase):
                             feasible_interactions(configs, 3))
 
 
+@unittest.skipUnless(solver is not None, "z3-solver is not installed")
+class FastCostModel(unittest.TestCase):
+    def test_fast_cost_identical_to_z3_cost_and_suite_cost_at_t2_and_t3(self):
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            configs = valid_configurations(parameters, forbidden)
+            for t in (2, 3):
+                interactions = feasible_interactions(configs, t)
+                unavoidable = unavoidable_pairs(configs, interactions)
+                for cover_only in (False, True):
+                    slow = solver.Z3CostModel(parameters, forbidden, cover_only=cover_only, strength=t)
+                    fast = solver.FastZ3CostModel(parameters, forbidden, cover_only=cover_only, strength=t)
+                    self.assertEqual(fast.interactions, slow.interactions, (path, t))
+                    for suite in random_suites(configs, 10 if "spins_core" in path else 100, seed=33):
+                        self.assertEqual(fast.suite_cost(suite, detail=True),
+                                         slow.suite_cost(suite, detail=True), (path, t, cover_only))
+                        if not cover_only:
+                            self.assertEqual(fast.suite_cost(suite, detail=True),
+                                             suite_cost(suite, interactions, unavoidable, detail=True), (path, t))
+
+    def test_fast_model_usable_by_search(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        model = solver.FastZ3CostModel(parameters, forbidden)
+        found = solver.find_small_suite_z3(model, 12, seed=0, restarts=3, steps_per_restart=2000)
+        self.assertIsNotNone(found["size"])
+
+    def test_deliberate_break_is_caught(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        configs = valid_configurations(parameters, forbidden)
+        fast = solver.FastZ3CostModel(parameters, forbidden, strength=3)
+        slow = solver.Z3CostModel(parameters, forbidden, strength=3)
+        suite = configs[:3]
+        self.assertEqual(fast.suite_cost(suite), slow.suite_cost(suite))
+        self.assertNotEqual(fast.suite_cost(suite[:2]), slow.suite_cost(suite))
+
+
 if __name__ == "__main__":
     unittest.main()
