@@ -586,7 +586,7 @@ models were run.
 - Item 3: rows with more than 4 rules rest on fewer orderings (survivors only); see that section.
 
 ## Needs your decision
-(none yet)
+- Item 33 (STOP FOR USER): original spins at t = 3 needs a faster cost evaluation (code change to approve); see the item 32 summary.
 
 ## Constraint-structure family: fraction of distinguishable interactions (research plan item 3)
 
@@ -1487,3 +1487,35 @@ results at a fixed budget; four of the five locating runs were capped); anything
 the plan author); a comparison with published sizes. Five seeds, one derived model.
 
 Test suite before this commit (cloud run, not reproduced by the author): 146 tests, OK, 3 skipped, 420 s.
+
+## Summary of research plan items 29 to 31: strength 2 versus strength 3 (research plan item 32)
+
+Origin: cloud run, not reproduced by the author; every number is copied from the items 28, 30 and 31 sections above; none is new.
+Interaction localization only (single deterministic fault); no source-code fault localization. Sizes are what a fixed-budget search
+found, not proven minima.
+
+| model or group | seeds at t = 3 | t = 2 cover / locate / extra / ratio | t = 3 cover / locate / extra / ratio |
+|---|---|---|---|
+| model.json | 3 | 5 / 9 / 4 / 1.8 | 12 / 17 / 5 / 1.42 |
+| model_6param.json | 3 | 6 / 10 / 4 / 1.67 | 12 / 22 / 10 / 1.83 |
+| model_8param.json | 3 | 7 / 11 to 12 / 4 to 5 / 1.57 to 1.71 | 14 / 28 to 29 / 14 to 15 / 2.0 to 2.07 |
+| model_high_constraints.json | 3 | 6 / 9 / 3 / 1.5 | 9 / 11 / 2 / 1.22 |
+| model_low_constraints.json | 3 | 6 / 8 / 2 / 1.33 | 10 / 15 / 5 / 1.5 |
+| model_multivalue.json | 3 | 7 / 11 / 4 / 1.57 | 15 / 22 / 7 / 1.47 |
+| my_model.json | 3 | 6 / 8 / 2 / 1.33 | 10 / 17 / 7 / 1.7 |
+| model_spins_core.json (derived, not the benchmark) | t = 2: 10; t = 3: 5 | 18 / 30 to 32 (median 31) / 12 to 14 (median 13) / 1.67 to 1.78 | 71 / 110 to 112 (median 110) / 39 to 41 (median 39) / 1.549 to 1.577 |
+| spins (original, CCAG) | t = 2: 10; t = 3: not run | 23 to 25 / 42 to 44 / 18 to 20 / 1.72 to 1.87 | not run (item 33, plan author's decision) |
+
+What the numbers show: on the seven small models the covering size went up from t = 2 to t = 3 on every model (for example 5 to 12 on
+model.json), the locating size went up on every model, and the extra tests (locating minus covering) went up on every model except
+model_high_constraints.json, where the t = 3 locating size, 11, equals the number of valid configurations, which caps the difference
+at 2. The ratio went up on four small models and down on three (model.json, model_high_constraints.json, model_multivalue.json), so
+no direction of the ratio is shown for the small models. On the derived spins model the extra tests grew from 12 to 14 to 39 to 41
+while the ratio fell slightly (1.67 to 1.78 to 1.549 to 1.577). Four of five derived-model locating searches at t = 3 were stopped
+by the 7,200 s cap, so those locating sizes are upper bounds from capped searches. On the small models the Z3-backed locating size
+equalled the enumeration-based size in 20 of 21 runs (the exception, model_8param.json seed 1, 29 versus 28).
+What they do not show: that any size is minimal; ten seeds were not run at t = 3 (3 seeds on the small models, 5 on the derived
+model, none on original spins); anything about the original spins model at t = 3; any comparison with published sizes (not made, by
+instruction); behaviour at other strengths or with more than one fault.
+
+Test suite before this commit (cloud run, not reproduced by the author): 146 tests, OK, 3 skipped, 393 s (z3-solver 5.3.0).

@@ -281,3 +281,11 @@ their origin label, what to be skeptical of, anything left under "Open questions
   seeds; making the triples distinguishable took 110 to 112, about 39 to 41 more (1.55 to 1.58 times). For pairs the same model needed
   18 and 30 to 32. Four of the five locating searches stopped because of the 2-hour time cap, so those sizes could probably be pushed
   a little lower with more time. Be skeptical: five seeds, one derived model (not the real benchmark), found sizes are not proven smallest.
+
+- 2026-10-15, plan item 32 (summary of pairs versus triples): Going from pairs to triples of settings made every suite bigger. On the seven
+  small models, covering took 9 to 15 tests instead of 5 to 7, and telling triples apart took 11 to 29 instead of 8 to 12. On the
+  SPIN-derived model covering took 71 tests (18 for pairs) and telling apart took 110 to 112 (30 to 32 for pairs), so the extra
+  tests grew from about 13 to about 39 while the ratio stayed near 1.5 to 1.8. On the small models the ratio went up for some and
+  down for others, so no trend is shown. The real SPIN model was not run at triples (that needs a code change you must approve, item 33).
+  Cloud run, not reproduced by the author. Be skeptical: few seeds (3 and 5), found sizes are not proven smallest, four of five
+  derived-model locating runs were stopped by the time cap.
