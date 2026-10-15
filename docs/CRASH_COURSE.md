@@ -263,3 +263,9 @@ their origin label, what to be skeptical of, anything left under "Open questions
   by themselves told apart only about half of the interactions (457 to 566 of 979 on the full model, against 969 for the locating
   suites). Cloud run, not reproduced by the author. Be skeptical: every size is what a fixed-effort search found, not a proven smallest;
   one real benchmark; no comparison with published sizes; strengths above 2 were not tried here.
+
+- 2026-10-15, plan item 29 (plain language): Everything measured so far was about pairs of settings. I extended the Z3 part of the code so it
+  can handle triples (and any size): which triples of settings can occur together, and how to score a suite. It matched the old
+  way of listing everything on all 8 example models for sizes 1, 2 and 3, and it scored 1,600 random suites at triples exactly like
+  the old scorer. No search has been run on triples yet (items 30 and 31). Cloud run, not reproduced by the author. The test suite
+  now takes about 6.5 minutes, mostly because of these triple checks.

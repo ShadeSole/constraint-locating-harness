@@ -1376,3 +1376,28 @@ strengths (t = 3, d > 1 were not measured here); anything about how the covering
 compared, by instruction). Seven tiny hand-built models with 3 seeds, one derived model and one real benchmark with 10 seeds is a
 small sample. The covering runs used the Z3-backed search and some locating runs the enumeration-based one; where both were run
 on the same model and seed (items 16 and 25) the locating sizes were identical.
+
+## Strength-t support in the Z3 code (research plan item 29)
+
+Origin: cloud run, not reproduced by the author. Base commit 040d152, z3-solver 5.1.0.0. Items 29 to 32 were proposed by the research
+session and approved by the plan author ("go"); the reason is that the research question is not limited to pairs and the
+covering-versus-locating comparison (items 25 to 28) was strength 2 only.
+
+Changes in `cla_harness/solver.py` (nothing else changed): `feasible_interactions_z3(parameters, forbidden, strength=2)` now
+accepts any strength from 1 to the number of parameters (previously strength 2 only; the default and every existing call are
+unchanged; other values raise ValueError), and `Z3CostModel(parameters, forbidden, cover_only=False, strength=2)` passes the
+strength through. The cost code itself was already generic over interaction size.
+
+Tests (5 new, 1 old test updated: the earlier "strength 3 raises ValueError" check became "strength 0 or one above the number of
+parameters raises", because that restriction was deliberately lifted). On all 8 example models the Z3 interaction set equals
+`feasible_interactions` from the enumeration at t = 1, 2 and 3; the default strength is 2; at t = 3 the Z3 locating cost
+(including the detail lists) equals `annealing.suite_cost` on 200 seeded random suites per model (1,600 of 1,600), with avoidable
+collisions present in the comparison for every model, and the Z3 cover-only cost equals a direct count of uncovered 3-way
+interactions on the same suites; the cover-only and locating Z3 searches at t = 3 return valid suites covering every feasible
+3-way interaction on model.json; a deliberate break is caught. Full suite: 146 tests OK, 3 skipped; it now takes about 393 s
+(earlier 170 to 230 s), most of the increase from the t = 3 cost comparison on model_spins_core.json, which the strength-3 tests
+exercise with 200 suites and many separability queries.
+
+Not shown: any search result at t = 3 (items 30 and 31), speed at larger models, or the original spins model at t = 3 (which has at
+most 13,328 candidate 3-way interactions, against 992 pairs and 1,520 for the derived model; item 33 reserves a faster cost
+evaluation for a decision by the plan author).

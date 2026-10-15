@@ -110,23 +110,26 @@ def sample_valid_configurations(parameters: Dict[str, List[str]], forbidden: Ite
 
 def feasible_interactions_z3(parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden],
                              strength: int = 2):
-    """Feasible 2-way interactions: value pairs of two parameters that some valid configuration contains.
+    """Feasible t-way interactions: value combinations of `strength` parameters that some valid configuration contains.
 
     Returns a frozenset of frozensets of (parameter, value) terms, the same type as
-    `core.feasible_interactions`. One satisfiability query (solver assumptions) per candidate
-    pair, so the cost is the number of candidate pairs, not the number of valid configurations.
-    Only strength 2 is implemented (ValueError otherwise).
+    `core.feasible_interactions(configs, strength)`. One satisfiability query (solver assumptions)
+    per candidate combination, so the cost is the number of candidates (the sum over parameter
+    subsets of the product of their value counts), not the number of valid configurations.
+    `strength` must be between 1 and the number of parameters (ValueError otherwise); the default,
+    2, is the original behavior.
     """
-    from itertools import combinations
-    if strength != 2:
-        raise ValueError("feasible_interactions_z3 supports strength 2 only")
+    from itertools import combinations, product
+    if not 1 <= strength <= len(parameters):
+        raise ValueError("strength must be between 1 and the number of parameters")
     solver, variables = build_solver(parameters, forbidden)
     feasible = set()
-    for first, second in combinations(parameters, 2):
-        for i, first_value in enumerate(parameters[first]):
-            for j, second_value in enumerate(parameters[second]):
-                if solver.check(variables[first] == i, variables[second] == j) == z3.sat:
-                    feasible.add(frozenset({(first, first_value), (second, second_value)}))
+    names = list(parameters)
+    for subset in combinations(names, strength):
+        for indices in product(*(range(len(parameters[n])) for n in subset)):
+            assumptions = [variables[n] == i for n, i in zip(subset, indices)]
+            if solver.check(*assumptions) == z3.sat:
+                feasible.add(frozenset((n, parameters[n][i]) for n, i in zip(subset, indices)))
     return frozenset(feasible)
 
 
@@ -142,15 +145,16 @@ class Z3CostModel:
 
     With cover_only=True the cost is only the number of uncovered feasible interactions (ordinary
     t-way coverage): collisions are neither counted nor queried, so no Z3 separability query is made.
-    The default (False) is unchanged.
+    The default (False) is unchanged. `strength` (default 2) is the interaction strength t.
     """
 
     def __init__(self, parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden],
-                 cover_only: bool = False):
+                 cover_only: bool = False, strength: int = 2):
         self.cover_only = cover_only
+        self.strength = strength
         self.parameters = parameters
         self.solver, self.variables = build_solver(parameters, forbidden)
-        self.interactions = sorted(feasible_interactions_z3(parameters, forbidden), key=sorted)
+        self.interactions = sorted(feasible_interactions_z3(parameters, forbidden, strength), key=sorted)
         self._separable: Dict[frozenset, bool] = {}
         self.hits = 0
         self.misses = 0
