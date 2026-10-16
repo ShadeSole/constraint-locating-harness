@@ -295,3 +295,6 @@ The search repeatedly scores a suite by checking which tests contain which inter
 
 ## Does the faster scoring help a real search? (plan item 36)
 Yes, on the one case measured. In a 600-move search on the derived spins model at triples, the faster scoring took 0.007 to 0.009 seconds per move against 0.049 to 0.077 with the old code, and both found exactly the same suite. Most of the old time was the scoring loop, not Z3. This is one seed and 600 moves, and it says nothing yet about the original spins model.
+
+## Can we run triples on the real spins model? (plan item 37)
+Timing says yes, if you accept slow runs. With the faster scoring, one 6000-move search at 100 tests took 275 s checking only coverage and 545 s checking coverage plus distinguishability, both under the 15-minute limit we set. The model has 12,835 feasible 3-way interactions. At 100 tests neither search got to a perfect suite (38 interactions still uncovered, and 197 uncovered plus 3,857 indistinguishable pairs), so 100 is too small and we don't know the right size yet. The next step would be a size sweep, then a shrinking search, which is item 33 and still needs your go-ahead.

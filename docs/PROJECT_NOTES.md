@@ -1546,3 +1546,18 @@ Cloud run, not reproduced by the author. model_spins_core.json (derived, not the
 | locate | 110 | FastZ3CostModel | 5.3 | 0.009 | 14 / 85 | 164,597 / 1,399 |
 
 For both modes the two classes returned the identical suite and cost, with the same number of accepted moves (392 and 36). In these 600-move runs the fast class took about one seventh (cover) and one ninth (locate) of the time per move. Not measured: whole 6000-move runs or a shrinking search with the fast class, and anything on the original spins model (plan item 37). The Z3 query time was about 1 s of the 46 s in the locating run, so in a search the cost loop, not Z3, dominated here; item 35's first-evaluation timing was a different situation (new suites, many fresh queries).
+
+## Original spins at t = 3: timing with the fast cost model (research plan item 37)
+Cloud run, not reproduced by the author. Model: original CCAG `spins` (clone at depth 1 in a folder outside this repository; nothing from it committed), strength 3, FastZ3CostModel, python 3.13 / z3 5.3.0.0. One size (100 tests), seed 0, targeted moves, cooling for a 6000-move run. The size 100 is a placeholder chosen without a size sweep, so the final costs say nothing about the achievable size. No seed search was started (item 33 stays with the plan author).
+
+- Feasible 3-way interactions: 12,835 (the plan said at most 13,328 candidates). Model build: 4.6 s (covering), 4.5 s (locating).
+- Cost evaluation on 3 random valid suites of 100 tests: covering 0.1809 s first, 0.0415 s repeat; locating 8.9042 s first (35,173 Z3 queries, 25.8 s Z3 time over the 3 suites), 0.0529 s repeat.
+- 300-move targeted runs: covering 15.2 s (0.051 s per move, 123 accepted, final 150 uncovered); locating 69.6 s (0.232 s per move, 53 accepted, final 242 uncovered and 5,304 avoidable collisions; 101,470 Z3 misses, 1,969,703 cache hits, Z3 time reported as 70.8 s, slightly above the wall time, so treat Z3 time as approximate).
+- Full 6000-move targeted runs, started together in two processes (4-core container, so timings are approximate), cap 900 s:
+
+| mode | size | moves | accepted | seconds | final uncovered | final avoidable collisions | Z3 misses / hits |
+|---|---|---|---|---|---|---|---|
+| cover | 100 | 6000 | 488 | 275.4 | 38 | 0 | 0 / 0 |
+| locate | 100 | 6000 | 116 | 544.6 | 197 | 3,857 | 152,136 / 28,347,311 |
+
+Neither run reached the 900 s cap, so a 6000-move run on original spins at t = 3 fits under 15 minutes in both modes at size 100 (measured, one size, two runs running at the same time). Neither reached cost zero at size 100, so size 100 is below what these runs could solve; a size sweep (as in items 19 and 27) is the next step, then a shrinking search. Not measured: larger sizes (cost per move grows with size in the earlier derived-model runs), a shrinking search, other seeds. Interaction localization only.
