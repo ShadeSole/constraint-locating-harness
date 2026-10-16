@@ -578,6 +578,25 @@ Not supported: any general claim that SA beats greedy (7 tiny models, 3 seeds, u
 schedule). The CASA benchmark files are not in this container, so only the hand-built
 models were run.
 
+## Ceiling on the original spins model (research plan item 42)
+Cloud run, not reproduced by the author. `scripts/item42_ceiling.py` (spins from a CCAG clone outside the repo, nothing committed) and `scripts/item42_check.py`; z3-solver 5.3.1 pip-installed. Strength 2, d = 1, interaction localization only (no source-code fault localization). An interaction is counted distinguishable if no other feasible interaction is inseparable from it (Jin & Tsuchiya Def. 1 / Lemma 1 as implemented by `Z3CostModel.separable`; the primary paper's definitions were not re-read in this session).
+
+Method: 400 Z3-sampled valid configurations (all checked valid) give each interaction a signature; pairs whose signatures differ are separated by some pool test and need no query. Every pair with identical signatures gets the exact Z3 query.
+
+Cross-check (same method, pool 100): on all 8 example models the Z3 count equals `experiment.ceiling_of` from full enumeration (38, 58, 110, 28, 40, 46, 229, 39 distinguishable; high_constraints 28 of 35, spins_core 229 of 239, the other six equal to their feasible count).
+
+| quantity | value |
+|---|---|
+| feasible 2-way interactions | 979 |
+| all pairs of interactions | 478,731 |
+| pairs needing a Z3 query after the pool | 9 |
+| of these, inseparable | 9 |
+| interactions in an inseparable pair | 10 |
+| distinguishable interactions (ceiling) | 969 |
+| setup time / query time | 3.1 s / under 0.05 s (30 min budget not approached) |
+
+Comparison: the locating suites of item 23 (all ten seeds, sizes 42 to 44) left 969 of 979 interactions uniquely identified (see the item 23 section), equal to this exact count. So on this model, at t = 2, d = 1, the best suites separate every interaction that any suite could separate; the 10 left over are inseparable for any suite. Not shown: anything at t = 3 or d > 1, or whether suites of items 27/40 (covering-only) matter here (their count of 457 to 566 is from item 28). One model.
+
 ## Open questions
 - Low priority, not a blocker: no CASA benchmark file was run for item 2 (the CCAG files are not in
   the cloud container, `../external` absent). The loader is already tested in tests/test_casa.py and

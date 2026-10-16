@@ -307,3 +307,6 @@ I shrank the suite one test at a time, five times with different random seeds. C
 
 ## A second big benchmark (plan item 41)
 The CCAG collection has four more named models besides SPIN (apache, bugzilla, gcc, spinv). I loaded all four and built the Z3 setup for pairs; each took under 20 seconds, so loading is not the obstacle. I then tried spinv, the one with many rules, at suite sizes 15 to 60 with one search each, and none reached a perfect suite: the guessed sizes were too small. So there is no covering-versus-locating result for a second model yet; the next step is a bigger size sweep. Cloud run, not reproduced by the author. One seed, one run per size.
+
+## How many pairs of settings can never be told apart? (plan item 42)
+Some pairs of settings in SPIN cannot be separated by any test suite, because the rules force them to appear together. I asked Z3 to count them directly instead of relying on a search. Of 979 possible pairs of settings, 10 are stuck in nine inseparable couples, so at most 969 can be told apart. The suites from the earlier ten-seed runs (42 to 44 tests) already told apart exactly 969, so for single faults on pairs they leave nothing on the table. The method also matched a brute-force count on all 8 small example models. This is one model, pairs only, one fault at a time.
