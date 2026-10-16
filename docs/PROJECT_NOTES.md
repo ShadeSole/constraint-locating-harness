@@ -1638,3 +1638,50 @@ No size reached cost zero, so the sizes I guessed were all too small for this bu
 ## Open questions (item 41)
 - spinv at t = 2: placeholder sizes 15 to 30 (cover) and 30 to 60 (locate) were all unsolved at 6000 moves. A larger sweep is needed before any covering-versus-locating run; not done in this session.
 - `benchmark_N.model` files have no `.constraints` file in the clone; whether they carry constraints another way was not checked.
+
+## spinv at t = 2: covering versus locating, seeds 0 to 2 (research plan item 41, continued; supersedes the sweep and the .constraints remark in the item 41 section above)
+Cloud run, not reproduced by the author. Written by the live session; an earlier scheduled run wrote the feasibility section above in parallel. Two points in that section disagree with this session's runs: (1) `benchmark_1` ... `benchmark_30` DO have `.constraints` files in the clone used here (`benchmark_1.constraints` etc.), and `benchmark_1` and `benchmark_20` loaded and built (benchmark_1: 97 parameters, 222 values, 24 rules, 24,350 candidate and 23,876 feasible 2-way interactions, Z3 build 4.9 s; benchmark_20: 158 parameters, 370 values, 48 rules, 67,940 candidate and 64,620 feasible, build 17.6 s); (2) its spinv sizes were all too small, while larger sizes are solved here. Scripts: `scripts/item41_probe.py`, `scripts/item39_run.py ... spinv`, `scripts/item40_shrink.py ... spinv`; t = 2, FastZ3CostModel, targeted moves, 8,741 feasible 2-way interactions, 4 cores shared by up to 6 processes (times approximate).
+
+Size sweep, seed 0, one 6000-move run per size: covering unsolved at 20 (414 uncovered), 30 (148) and 40 (30), solved at 50, 60, 70, 80; locating unsolved at 60 (17 uncovered, 174 avoidable collisions) and 80 (0 uncovered, 1 avoidable), solved at 100 (sizes 70 and 90 not run).
+
+Shrinking search (6000 moves, 5 restarts per size, cap 7,200 s per seed), covering from 50 and locating from 100:
+
+| seed | covering size | locating size | difference | ratio | covering: cost at first failed size | locating: cost at first failed size |
+|---|---|---|---|---|---|---|
+| 0 | 48 | 79 (hit the cap while trying 78) | 31 | 1.646 | 1 uncovered (at 47) | 1 avoidable collision (at 78; cap-truncated) |
+| 1 | 49 | 79 | 30 | 1.612 | 1 uncovered (at 48) | 1 avoidable (at 78) |
+| 2 | 48 | 78 | 30 | 1.625 | 1 uncovered (at 47) | 3 avoidable (at 77) |
+
+Min / median / max: covering 48 / 48 / 49; locating 78 / 79 / 79; difference 30 to 31; ratio 1.612 to 1.646. In the sweep the single run at size 80 failed (cost 1) while all three shrinking searches got below 80, so one run per size is not a reliable test of a size. Sizes are search results, not proven minima; three seeds, one model, t = 2, interaction localization only; nothing compared with published sizes.
+
+## Distinguishable-interaction ceiling by Z3 on large models (research plan item 42)
+Cloud run, not reproduced by the author. `scripts/item42_ceiling.py`, t = 2, d = 1, interaction localization only. Method: 400 seeded Z3-sampled valid configurations; pairs of interactions that some sampled test separates are separable (the test is a valid witness); every remaining pair gets the exact Z3 query "is there a valid configuration containing exactly one of them" (Jin & Tsuchiya Lemma 1). An interaction counts as distinguishable if it has no inseparable partner. This is the same quantity as `experiment.ceiling_of`: the Z3 count equals `ceiling_of` on all 8 example models (`scripts/item42_check.py`; for example model_high_constraints 28 of 35, model_spins_core 229 of 239).
+
+| model | feasible 2-way | pairs needing a query after the pool | inseparable pairs | interactions in an inseparable pair | distinguishable | query time (s) |
+|---|---|---|---|---|---|---|
+| spins | 979 | 9 | 9 | 10 | 969 | 0.0 |
+| spinv | 8,741 | 599 | 599 | 1,084 | 7,657 | 0.3 |
+| bugzilla | 5,818 | 0 | 0 | 0 | 5,818 | 0.0 |
+| benchmark_1 | 23,876 | 917 | 917 | 1,354 | 22,522 | 0.4 |
+| benchmark_20 | 64,620 | 11,039 | 11,037 | 2,931 | 61,689 | 4.8 |
+
+The all-pairs counts (for example 478,731 for spins) were never queried; the pool removed all but a few hundred to ~11,000 pairs per model. The pool is one seeded sample, so a different sample could leave a different number of pairs to query but not change the exact answers. On spins the best locating suites of items 21 to 27 reached cost zero, which by the cost definition means no avoidable collision remains, so what they leave unseparated is exactly these inseparable pairs; this is by construction, not a separate measurement. Not measured: t = 3 ceilings, the other CCAG models, d = 2.
+
+## Summary of research plan items 38 to 42 (research plan item 43)
+All numbers below are cloud runs, not reproduced by the author; each is in the section named. Sizes are search results at a fixed budget, not proven minima. Interaction localization only. Nothing is compared with published sizes.
+
+| model, strength | seeds | covering size (min / median / max) | locating size (min / median / max) | difference | ratio | section |
+|---|---|---|---|---|---|---|
+| original spins, t = 2 | 10 | 23 to 25 (median 24) | 42 to 44 (median 43) | 18 to 20 | 1.72 to 1.87 | item 28 summary |
+| original spins, t = 3 | 5 | 114 / 115 / 116 | 197 / 199 / 200 | 82 to 86 | 1.707 to 1.754 | "Original spins at t = 3: shrinking search" (item 40) |
+| spinv, t = 2 | 3 | 48 / 48 / 49 | 78 / 79 / 79 | 30 to 31 | 1.612 to 1.646 | "spinv at t = 2" (item 41) |
+
+(The first row is copied from the item 28 summary; rows 2 and 3 are this session's runs.)
+
+Indistinguishable interactions (t = 2, d = 1, Z3), from the item 42 section: spins 10 of 979 interactions in an inseparable pair, spinv 1,084 of 8,741, bugzilla 0 of 5,818, benchmark_1 1,354 of 23,876, benchmark_20 2,931 of 64,620.
+
+What the numbers show: on the two large benchmarks tried, a suite that distinguishes interactions needed about 1.6 to 1.9 times the tests of a suite that only covers them (original spins t = 2: 1.72 to 1.87; t = 3: 1.707 to 1.754; spinv t = 2: 1.612 to 1.646), at the budgets used. What they do not show: whether this holds on other models, at other budgets (the t = 3 locating searches ended within 3 tests of their start size 200), or against published sizes. The literature check (docs/LITERATURE_CHECK.md section 6) found Garvin et al. (constrained covering arrays by meta-heuristic) and Konishi et al. (SA, unconstrained locating arrays) but no constrained-locating-array metaheuristic paper in three excerpt-only searches; that is a weak negative, not a novelty claim.
+
+## Needs your decision (added by item 43)
+- Comparison with published sizes: needs the primary papers' definitions read first (Jin & Tsuchiya 2020; Konishi et al.), then a model and strength where definitions match.
+- Whether to extend: more seeds on spinv or benchmark_20, a longer or restarted-from-larger t = 3 locating search (sizes were near the start size), d = 2, nondeterminism, anything AI-based.
