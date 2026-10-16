@@ -1534,3 +1534,15 @@ Cloud run, not reproduced by the author. model_spins_core.json, t = 3, 1,313 fea
 | FastZ3CostModel | locate | 0.39 | 1.4168 | 0.0040 | 12210 | 6.99 |
 
 What this shows: the repeat evaluation (collision answers cached) is faster with the fast model (0.0040 s versus 0.0184 s locating; 0.0005 s versus 0.0184 s covering). The first locating evaluation on new suites is dominated by Z3 collision queries, which are the same for both classes (12,210 queries), so the fast model changes little there. Not measured: time per move inside a real search, the cache hit rate over a full run, and anything on the original spins model (the CCAG clone was not used in this step). Whether item 33 (original spins, t = 3) is feasible is therefore not settled by this table; the next step would be to time a short search run and one cost evaluation on the original model.
+
+## Search-level timing, fast versus Z3 cost model, derived spins at t = 3 (research plan item 36)
+Cloud run, not reproduced by the author. model_spins_core.json (derived, not the benchmark), t = 3, targeted moves, seed 0, 600 moves, cooling for a 6000-move run, python 3.13 / z3 5.3.0.0. One seed, one run per row.
+
+| mode | size | model class | seconds | seconds per move | final uncovered / avoidable collisions | Z3 cache hits / misses |
+|---|---|---|---|---|---|---|
+| cover | 71 | Z3CostModel | 29.6 | 0.049 | 15 / 0 | 0 / 0 |
+| cover | 71 | FastZ3CostModel | 4.3 | 0.007 | 15 / 0 | 0 / 0 |
+| locate | 110 | Z3CostModel | 46.3 | 0.077 | 14 / 85 | 164,597 / 1,399 |
+| locate | 110 | FastZ3CostModel | 5.3 | 0.009 | 14 / 85 | 164,597 / 1,399 |
+
+For both modes the two classes returned the identical suite and cost, with the same number of accepted moves (392 and 36). In these 600-move runs the fast class took about one seventh (cover) and one ninth (locate) of the time per move. Not measured: whole 6000-move runs or a shrinking search with the fast class, and anything on the original spins model (plan item 37). The Z3 query time was about 1 s of the 46 s in the locating run, so in a search the cost loop, not Z3, dominated here; item 35's first-evaluation timing was a different situation (new suites, many fresh queries).

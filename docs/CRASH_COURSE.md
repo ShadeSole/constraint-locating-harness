@@ -292,3 +292,6 @@ their origin label, what to be skeptical of, anything left under "Open questions
 
 ## Faster cost evaluation (plan items 34 and 35)
 The search repeatedly scores a suite by checking which tests contain which interactions. The new FastZ3CostModel remembers, for each test, which interactions it contains, so scoring a suite no longer rescans every interaction. It gives the same scores as the old code (checked on all 8 example models at pairs and triples). On the derived spins model at triples, a repeat scoring took 0.0040 s instead of 0.0184 s in locating mode (one suite size, one seed). Scoring a suite for the first time is still dominated by Z3 questions about whether two interactions can be told apart, and the new class does not change that. Nothing yet says whether the original spins model at triples is feasible.
+
+## Does the faster scoring help a real search? (plan item 36)
+Yes, on the one case measured. In a 600-move search on the derived spins model at triples, the faster scoring took 0.007 to 0.009 seconds per move against 0.049 to 0.077 with the old code, and both found exactly the same suite. Most of the old time was the scoring loop, not Z3. This is one seed and 600 moves, and it says nothing yet about the original spins model.
