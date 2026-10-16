@@ -304,3 +304,6 @@ I tried eight suite sizes with one 6000-move search each. All of them worked: co
 
 ## Original SPIN at triples: how many tests? (plan item 40)
 I shrank the suite one test at a time, five times with different random seeds. Covering every triple of settings ended at 114 to 116 tests (median 115). Telling every triple apart ended at 197 to 200 tests (median 199), which is 82 to 86 more tests, about 1.7 times as many. For pairs on the same model the earlier numbers were far smaller (see items 23 and 27), so triples cost much more. Cloud run, not reproduced by the author. Be skeptical: five seeds, one model, sizes are what the search found (not proven smallest), and the telling-apart searches started at 200 and barely moved from it, so those sizes may be limited by where I started.
+
+## A second big benchmark (plan item 41)
+The CCAG collection has four more named models besides SPIN (apache, bugzilla, gcc, spinv). I loaded all four and built the Z3 setup for pairs; each took under 20 seconds, so loading is not the obstacle. I then tried spinv, the one with many rules, at suite sizes 15 to 60 with one search each, and none reached a perfect suite: the guessed sizes were too small. So there is no covering-versus-locating result for a second model yet; the next step is a bigger size sweep. Cloud run, not reproduced by the author. One seed, one run per size.
