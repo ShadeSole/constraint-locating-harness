@@ -586,7 +586,7 @@ models were run.
 - Item 3: rows with more than 4 rules rest on fewer orderings (survivors only); see that section.
 
 ## Needs your decision
-- Item 33 (STOP FOR USER): original spins at t = 3 needs a faster cost evaluation (code change to approve); see the item 32 summary.
+- Item 33 approved in the live session (carried out as items 39 and 40). Still yours: comparison with published sizes (needs the primary papers' definitions read first), multiple faults, nondeterminism, anything AI-based.
 
 ## Constraint-structure family: fraction of distinguishable interactions (research plan item 3)
 
