@@ -1590,3 +1590,32 @@ Cloud run, not reproduced by the author. `scripts/item40_shrink.py`, original CC
 | 4 | 114 | 200 | 86 | 1.754 | 1 (at 113) | 3 (at 199) | 2,574 | 1,815 |
 
 Min / median / max over seeds 0 to 4: covering 114 / 115 / 116; locating 197 / 199 / 200; difference 82 / 83 / 86; ratio 1.707 to 1.754. Locating-mode failures had 0 uncovered interactions; their remaining cost was all avoidable collisions. No seed was capped. Locating seed 4 failed at the very first shrink step (200 to 199), and locating sizes sit within 3 of the start size 200 for every seed, so these locating sizes lie close to the start size chosen from item 39; the start size, not only the search, may limit what is found, and a restart from a larger or smaller start was not run. Item 39 solved locating size 200 only after 5,492 of 6,000 moves, consistent with 200 being near this budget's limit, but that is one run. Not measured: other seeds beyond 0 to 4, longer budgets, strength 2 for comparison on the same budget (items 23 and 27 are strength 2 with different budgets), anything compared with published sizes. Five seeds on one model is a small sample. Interaction localization only.
+
+## Second large CCAG benchmark: feasibility check (research plan item 41)
+Cloud run, not reproduced by the author. `scripts/item41_probe.py` (load + `FastZ3CostModel` build at t = 2), CCAG cloned outside the repo (shallow clone of GIST-NJU/ccag, not committed). Strength 2, interaction localization only. z3-solver 5.3.1 was pip-installed into the container for this run. The clone has 5 named models (apache, bugzilla, gcc, spins, spinv) plus `benchmark_1` to `benchmark_30` (`.model` files only, no `.constraints` files, so not loadable by `load_casa_model` as called here; not tried).
+
+| model | parameters | values | rules | candidate 2-way | feasible 2-way | load s | Z3 build s |
+|---|---|---|---|---|---|---|---|
+| apache | 172 | 367 | 7 | 66,930 | 66,927 | 0.0 | 11.9 |
+| bugzilla | 52 | 109 | 5 | 5,822 | 5,818 | 0.0 | 0.8 |
+| gcc | 199 | 408 | 40 | 82,809 | 82,770 | 0.0 | 18.4 |
+| spinv | 55 | 134 | 49 | 8,797 | 8,741 | 0.0 | 1.9 |
+
+All four load and build in well under 5 minutes, so the setup condition of the item is met. I chose spinv (most rules per parameter, small build) for a covering-versus-locating run at t = 2.
+
+Size sweep on spinv, seed 0, ONE run of 6000 targeted moves per size (`scripts/item39_run.py ... spinv`, 6 processes on 4 cores so times are inflated; cap 900 s):
+
+| mode | size | solved | uncovered | avoidable collisions | moves | seconds |
+|---|---|---|---|---|---|---|
+| cover | 15 | no | 768 | 0 | 6,000 | 517 |
+| cover | 20 | no | 414 | 0 | 6,000 | 527 |
+| cover | 30 | no | 148 | 0 | 6,000 | 545 |
+| locate | 30 | no (hit 900 s cap) | 313 | 9,003 | 4,189 | 900 |
+| locate | 45 | no | 96 | 1,325 | 6,000 | 651 |
+| locate | 60 | no | 17 | 174 | 6,000 | 603 |
+
+No size reached cost zero, so the sizes I guessed were all too small for this budget and no shrinking search or covering-versus-locating comparison was run. Not measured: the size at which spinv is solved. Cost fell with size in every mode, but this is one run each and nothing is extrapolated. Per-move cost is high (about 0.09 s per move in covering at these sizes with oversubscribed cores), which makes a seed search on spinv a long job.
+
+## Open questions (item 41)
+- spinv at t = 2: placeholder sizes 15 to 30 (cover) and 30 to 60 (locate) were all unsolved at 6000 moves. A larger sweep is needed before any covering-versus-locating run; not done in this session.
+- `benchmark_N.model` files have no `.constraints` file in the clone; whether they carry constraints another way was not checked.
