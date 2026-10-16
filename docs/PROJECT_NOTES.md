@@ -1577,3 +1577,16 @@ Cloud run, not reproduced by the author. `scripts/item39_run.py`, original CCAG 
 | locate | 400 | yes | 41 | 5.5 | 378 / 14,785 |
 
 Every run reached cost zero with all tests valid, so all eight sizes were solved; the sweep did not find where solving stops, and the smallest solved sizes (covering 120, locating 200) are therefore only upper bounds on what this budget can reach. The moves used fall as the size grows, and the two smallest sizes used most of the 6000 moves (5,333 and 5,492). Item 37's size 100 did not reach cost zero (covering: 38 uncovered after 6000 moves), so the covering threshold for this budget lies between 100 and 120 in these two runs (different seeds of the run are not compared; one run each). Not measured: anything between the sizes. Item 40 starts the shrinking search at 120 (covering) and 200 (locating).
+
+## Original spins at t = 3: shrinking search, seeds 0 to 4 (research plan item 40)
+Cloud run, not reproduced by the author. `scripts/item40_shrink.py`, original CCAG spins (clone outside the repo), t = 3, FastZ3CostModel, `find_small_suite_z3`, targeted moves, 6000 moves per run, 5 restarts per size, cap 7,200 s per seed (never reached), start 120 (covering) and 200 (locating) from item 39, shrinking one test at a time, 4 processes at a time on 4 cores (times approximate). 12,835 feasible 3-way interactions. Sizes are what the search found, not proven minima.
+
+| seed | covering size | locating size | difference | ratio | covering: best cost at first failed size (uncovered) | locating: best cost at first failed size (avoidable collisions) | covering s | locating s |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 114 | 199 | 85 | 1.746 | 5 (at 113) | 1 (at 198) | 3,686 | 2,060 |
+| 1 | 115 | 197 | 82 | 1.713 | 1 (at 114) | 2 (at 196) | 2,509 | 3,563 |
+| 2 | 116 | 199 | 83 | 1.716 | 2 (at 115) | 2 (at 198) | 2,554 | 3,955 |
+| 3 | 116 | 198 | 82 | 1.707 | 1 (at 115) | 2 (at 197) | 2,111 | 2,986 |
+| 4 | 114 | 200 | 86 | 1.754 | 1 (at 113) | 3 (at 199) | 2,574 | 1,815 |
+
+Min / median / max over seeds 0 to 4: covering 114 / 115 / 116; locating 197 / 199 / 200; difference 82 / 83 / 86; ratio 1.707 to 1.754. Locating-mode failures had 0 uncovered interactions; their remaining cost was all avoidable collisions. No seed was capped. Locating seed 4 failed at the very first shrink step (200 to 199), and locating sizes sit within 3 of the start size 200 for every seed, so these locating sizes lie close to the start size chosen from item 39; the start size, not only the search, may limit what is found, and a restart from a larger or smaller start was not run. Item 39 solved locating size 200 only after 5,492 of 6,000 moves, consistent with 200 being near this budget's limit, but that is one run. Not measured: other seeds beyond 0 to 4, longer budgets, strength 2 for comparison on the same budget (items 23 and 27 are strength 2 with different budgets), anything compared with published sizes. Five seeds on one model is a small sample. Interaction localization only.
