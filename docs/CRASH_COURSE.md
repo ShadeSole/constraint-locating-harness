@@ -298,3 +298,6 @@ Yes, on the one case measured. In a 600-move search on the derived spins model a
 
 ## Can we run triples on the real spins model? (plan item 37)
 Timing says yes, if you accept slow runs. With the faster scoring, one 6000-move search at 100 tests took 275 s checking only coverage and 545 s checking coverage plus distinguishability, both under the 15-minute limit we set. The model has 12,835 feasible 3-way interactions. At 100 tests neither search got to a perfect suite (38 interactions still uncovered, and 197 uncovered plus 3,857 indistinguishable pairs), so 100 is too small and we don't know the right size yet. The next step would be a size sweep, then a shrinking search, which is item 33 and still needs your go-ahead.
+
+## Original SPIN at triples: how big a suite is enough? (plan item 39)
+I tried eight suite sizes with one 6000-move search each. All of them worked: covering every triple at 120, 140, 160 and 200 tests, and also telling every triple apart at 200, 260, 320 and 400 tests. So these sizes are comfortably large for this search; the smallest working ones, 120 and 200, are only upper bounds. The earlier size-100 try did not finish covering. Cloud run, not reproduced by the author. Be skeptical: one seed, one run per size, and the sizes were my guesses. The next step (item 40) shrinks from 120 and 200 to find the real limit.

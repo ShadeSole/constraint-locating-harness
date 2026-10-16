@@ -1561,3 +1561,19 @@ Cloud run, not reproduced by the author. Model: original CCAG `spins` (clone at 
 | locate | 100 | 6000 | 116 | 544.6 | 197 | 3,857 | 152,136 / 28,347,311 |
 
 Neither run reached the 900 s cap, so a 6000-move run on original spins at t = 3 fits under 15 minutes in both modes at size 100 (measured, one size, two runs running at the same time). Neither reached cost zero at size 100, so size 100 is below what these runs could solve; a size sweep (as in items 19 and 27) is the next step, then a shrinking search. Not measured: larger sizes (cost per move grows with size in the earlier derived-model runs), a shrinking search, other seeds. Interaction localization only.
+
+## Original spins at t = 3: size sweep (research plan item 39)
+Cloud run, not reproduced by the author. `scripts/item39_run.py`, original CCAG spins (clone outside the repo), t = 3, FastZ3CostModel, targeted moves, seed 0, ONE run of up to 6000 moves per size (cooling 2.0 to 0.05 over 6000 moves), cap 3,600 s, 4 processes at a time on a 4-core machine (times approximate), 12,835 feasible 3-way interactions. One seed.
+
+| mode | size | solved | moves used | seconds | Z3 cost queries (misses / hits) |
+|---|---|---|---|---|---|
+| cover | 120 | yes | 5,333 | 157.4 | 0 / 0 |
+| cover | 140 | yes | 1,773 | 58.5 | 0 / 0 |
+| cover | 160 | yes | 402 | 14.1 | 0 / 0 |
+| cover | 200 | yes | 92 | 5.0 | 0 / 0 |
+| locate | 200 | yes | 5,492 | 210.6 | 9,103 / 2,188,489 |
+| locate | 260 | yes | 737 | 33.6 | 1,483 / 281,229 |
+| locate | 320 | yes | 158 | 10.1 | 548 / 60,201 |
+| locate | 400 | yes | 41 | 5.5 | 378 / 14,785 |
+
+Every run reached cost zero with all tests valid, so all eight sizes were solved; the sweep did not find where solving stops, and the smallest solved sizes (covering 120, locating 200) are therefore only upper bounds on what this budget can reach. The moves used fall as the size grows, and the two smallest sizes used most of the 6000 moves (5,333 and 5,492). Item 37's size 100 did not reach cost zero (covering: 38 uncovered after 6000 moves), so the covering threshold for this budget lies between 100 and 120 in these two runs (different seeds of the run are not compared; one run each). Not measured: anything between the sizes. Item 40 starts the shrinking search at 120 (covering) and 200 (locating).
