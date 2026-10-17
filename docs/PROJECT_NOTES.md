@@ -1685,3 +1685,28 @@ What the numbers show: on the two large benchmarks tried, a suite that distingui
 ## Needs your decision (added by item 43)
 - Comparison with published sizes: needs the primary papers' definitions read first (Jin & Tsuchiya 2020; Konishi et al.), then a model and strength where definitions match.
 - Whether to extend: more seeds on spinv or benchmark_20, a longer or restarted-from-larger t = 3 locating search (sizes were near the start size), d = 2, nondeterminism, anything AI-based.
+
+## Comparison with published CLA sizes (research plan item 44)
+Origin: cloud run, not reproduced by the author. Scripts `scripts/item44_run.py` (search, saves the final suite) and `scripts/item44_verify.py` (checks a saved suite); suites in `docs/item44_suites/`. Interaction localization only. t = 2, d = 1.
+
+**Definitions checked (Jin & Tsuchiya 2020, arXiv 1801.06041, text obtained via a PDF-to-markdown fetch; wording and table figures should be checked against the PDF before quoting).** Their experiments generate (1bar,2)-CLAs: every valid 2-way interaction is covered, and every pair of valid interactions that is distinguishable (Definition 1 / Lemma 1) is separated by some test (their SMT section: coverage constraint plus, for each distinguishable pair, a row covering only one of them). That is the same condition as `cost == 0` in `FastZ3CostModel` (0 uncovered, 0 avoidable collisions). Table 1 columns that match this repo's own numbers: valid 2-way interactions Spins 979, Spinv 8,741, Bugzilla 5,818, and indistinguishable pairs Spins 9, Spinv 599, Bugzilla 0 (the verifier below left exactly 9, 599, 0 inseparable pairs).
+
+**Published heuristic (their Table 1, 10 runs each; min to max over runs; C++, CIT-BACH 3-way covering array then row deletion, 3.2 GHz Xeon):** Spins 49 to 53 (1 s), Bugzilla 41 to 48 (about 9 s), Spinv 91 to 97 (about 58 s). Their SMT method timed out on all three.
+
+**This repo's search (Z3-backed targeted SA, start size shown, 6000 moves x 5 restarts per size, shrink by one; times on a 4-core shared container):**
+
+| model | seed | start | final size | verified (item44_verify) | first failed size: best cost | total moves | time (s) |
+|---|---|---|---|---|---|---|---|
+| spins | 0 | 44 | 43 | yes | not recorded here | 37,420 | 265 |
+| spins | 1 | 44 | 42 | yes | not recorded here | 62,409 | 450 |
+| spins | 2 | 44 | 43 | yes | not recorded here | 44,145 | 325 |
+| bugzilla | 0 | 60 | 37 | yes | 36: 5 avoidable collisions | 74,164 | 2,986 |
+| spinv | 0 | 90 | 79 | yes | 78: 1 avoidable collision | 99,012 | 5,893 |
+| spinv | 1 | 90 | 79 | yes | 78: 1 avoidable collision | 84,271 | 4,833 |
+
+Verification: `item44_verify.py` rechecks each saved suite with its own Z3 encoding (it shares only the .model/.constraints loader with the search): all tests valid, 0 uncovered, 0 avoidable collisions, so each is a (1bar,2)-CLA by the definition above. Reproducibility: spins seed 0 gave 43 tests and 37,420 moves, identical to the item 21 / 23 record.
+
+**What this shows:** on these three CCAG models, at this budget, this search found valid (1bar,2)-CLAs smaller than the sizes in the published table (spins 42 to 43 against 49 to 53; bugzilla 37 against 41 to 48; spinv 79 against 91 to 97). **What it does not show:** that the method is better. The two use different algorithms and very different compute (published heuristic: seconds; this search: 4 to 98 minutes per run), different hardware, and the published numbers are read from a converted PDF. Seeds: 3, 1 and 2, so bugzilla is one data point. Sizes are search results, not proven minima. Not run: apache, gcc, the CitLab/literature benchmarks 1 to 25, t = 3 against anything published (they evaluated only t = 2, d = 1), and a time-matched comparison.
+
+## Needs your decision (added by item 44)
+- Item 44 found sizes below the published heuristic's on spins, bugzilla and spinv. Before this goes in a paper: (a) check Table 1 against the PDF (figures were read from a converted copy); (b) decide whether to run a time-matched comparison (limit our search to their seconds-scale budgets) and whether to add apache, gcc and the CitLab benchmarks; (c) ask whether the authors' CLA tool or SA4LA can be run on the same machine for a like-for-like size comparison.
