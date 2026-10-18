@@ -1710,3 +1710,36 @@ Verification: `item44_verify.py` rechecks each saved suite with its own Z3 encod
 
 ## Needs your decision (added by item 44)
 - Item 44 found sizes below the published heuristic's on spins, bugzilla and spinv. Before this goes in a paper: (a) check Table 1 against the PDF (figures were read from a converted copy); (b) decide whether to run a time-matched comparison (limit our search to their seconds-scale budgets) and whether to add apache, gcc and the CitLab benchmarks; (c) ask whether the authors' CLA tool or SA4LA can be run on the same machine for a like-for-like size comparison.
+
+## Comparison with published CLA sizes, continued (research plan item 45)
+Cloud run, not reproduced by the author. Same scripts and definition as item 44; all suites in `docs/item44_suites/`; every suite below was checked by `scripts/item44_verify.py` (valid tests, 0 uncovered, 0 avoidable collisions). t = 2, d = 1, interaction localization only. Runs shared 4 cores with up to 4 other searches, so times are approximate.
+
+**Table 1 cross-check.** A second rendering (arXiv HTML v2, answered by a direct-quote query) gives the same first two numeric columns as the PDF conversion: Apache 89 / 85, Bugzilla 48 / 41, GCC 68 / 61, Spins 53 / 49, Spinv 97 / 91, and the same valid-pair and indistinguishable-pair columns (the HTML table's column headers were garbled, so these are max / min of the heuristic as in the PDF conversion). This is two conversions agreeing, not the printed PDF; the journal version (J. Syst. Softw. 170, 2020) may differ.
+
+**All runs (final size; "cap" = stopped by the 7,200 s wall-clock cap while still shrinking, so the size is where it was, not where it fails):**
+
+| model | published heuristic, 10 runs (min to max) | this search, seed: size | notes |
+|---|---|---|---|
+| spins | 49 to 53 | 0:43, 1:42, 2:43 | start 44 |
+| bugzilla | 41 to 48 | 0:37, 1:36, 2:36, 3:37 | seed 0 start 60, seeds 1 to 3 start 45; size 35 not recorded for seeds 1 to 3, size 36 failed for seed 0 with 5 avoidable collisions |
+| spinv | 91 to 97 | 0:79, 1:79, 2:78 | seeds 0, 1 start 90; seed 2 start 85; the next size failed with 1, 1 and 3 avoidable collisions |
+| apache | 85 to 89 | 0:82 (cap), 1:82 (cap) | start 100 and 90; size 81 (seed 1) in progress at the cap with 11 avoidable left |
+| gcc | 61 to 68 | 0:63 (cap), 1:61 (cap) | start 75 and 70; ends at the cap, sizes 62 and 60 not completed (12 and 9 avoidable left) |
+
+Median over seeds of the final sizes: spins 43, bugzilla 36.5, spinv 79, apache 82, gcc 62. The inseparable-pair counts left by the verifier equal the paper's column: spins 9, spinv 599, bugzilla 0, apache 0, gcc 46.
+
+**Time-capped runs (same search, wall-clock cap on the whole run, model build excluded, seeds 0 to 2, start 60 for bugzilla and 53 for spins):**
+
+| model | cap | sizes reached | published heuristic (size, time) |
+|---|---|---|---|
+| bugzilla | 60 s | 48, 48, 47 | 41 to 48, about 9 s |
+| bugzilla | 600 s | 39, 39, 40 | same |
+| spins | 10 s | 52, 53, 52 | 49 to 53, about 0.6 s |
+
+**Time to reach sizes (from the logs of the uncapped runs, seed 0):** bugzilla 48 at 49 s, 41 at 302 s, 37 at 1,685 s.
+
+**What the numbers show:** at wall-clock budgets about 7 to 17 times their reported times (bugzilla 60 s, spins 10 s) this search lands inside the published range, not below it. Below the published minimum appears only with budgets of about 10 to 1,000 times theirs, on spins, bugzilla, spinv and apache; on gcc the best size (61, seed 1) only equals the published minimum (61), and both gcc runs were cut off by the cap. **What they do not show:** equal-hardware timing (their machine, language and generator differ from this container, and CPU shares here varied); that the search would beat their method given their own time; anything about the CitLab and literature benchmarks 1 to 25 (not run) or other strengths. Seeds: 2 to 4 per model, so spread is only indicated.
+
+## Needs your decision (added by item 45)
+- Item 46 (STOP FOR USER): to compare at equal time and hardware we would have to run the authors' own tool (the CLA generator, or SA4LA for unconstrained arrays) in this container. That means downloading and executing third-party code; I did not do it. Also the CitLab/literature benchmarks 1 to 25 need their source files.
+- Paper framing: the defensible statement from the data is "at 10 to 1,000 times the published run time, a solver-backed SA reaches smaller (1bar,2)-CLAs on five CCAG benchmarks (verified), and at about 10 times their time it matches their range". A speed or quality win is NOT shown.
