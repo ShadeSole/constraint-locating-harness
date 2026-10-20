@@ -1743,3 +1743,6 @@ Median over seeds of the final sizes: spins 43, bugzilla 36.5, spinv 79, apache 
 ## Needs your decision (added by item 45)
 - Item 46 (STOP FOR USER): to compare at equal time and hardware we would have to run the authors' own tool (the CLA generator, or SA4LA for unconstrained arrays) in this container. That means downloading and executing third-party code; I did not do it. Also the CitLab/literature benchmarks 1 to 25 need their source files.
 - Paper framing: the defensible statement from the data is "at 10 to 1,000 times the published run time, a solver-backed SA reaches smaller (1bar,2)-CLAs on five CCAG benchmarks (verified), and at about 10 times their time it matches their range". A speed or quality win is NOT shown.
+
+## Needs your decision (added by item 46)
+- Item 46 (STOP FOR USER): a time-matched comparison on the same machine needs the authors' CLA tool or SA4LA (external download and run), and the 25 CitLab/literature benchmarks need a source for the files. Both are decisions about third-party code and data.
