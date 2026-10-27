@@ -1781,3 +1781,21 @@ So "10 to 1,000 times the published run time" is wrong for apache: both apache s
 ## Needs your decision (added by item 47)
 - SA4LA run (item 52): needs a permission rule that allows building and running third-party Java code in the session, or a run on your machine.
 - Literature benchmarks (item 53): add zenodo.org to the environment's allowed domains, or download the archive yourself and put it outside the repo.
+
+## Multiple faults: how far are d = 1 suites from the (bar2,2) condition? (research plan item 48)
+Cloud run, not reproduced by the author. `scripts/item48_sets.py` (new; no library change; z3-solver 5.3.2.0 installed in this session via `python3 -m pip`). Interaction localization only. t = 2, one seed (0).
+Suites: the item 25 locating search re-run (Z3-backed cold shrinking, targeted, 3 restarts x 3000 moves, start = greedy locating size, seed 0); the sizes equal item 25's seed-0 locating column (9, 10, 9 for high_constraints, 8, 11, 8), so the same suites were found again. Sets = every single feasible interaction plus every pair of distinct feasible interactions; a set's signature is the tests (or valid configurations) that contain at least one interaction of the set. Counts are by brute force over bit masks. "Unavoidable" = equal signature over all valid configurations (enumerated); avoidable = colliding minus unavoidable. Command: `PYTHONPATH=. python3 scripts/item48_sets.py`.
+
+| model | valid configs | suite size | interactions | sets (size 1 or 2) | set pairs | colliding pairs | unavoidable | avoidable |
+|---|---|---|---|---|---|---|---|---|
+| model.json | 18 | 9 | 38 | 741 | 274,170 | 1,013 | 406 | 607 |
+| model_6param.json | 36 | 10 | 58 | 1,711 | 1,462,905 | 4,912 | 648 | 4,264 |
+| model_8param.json | 144 | - | 110 | 6,105 | 18,632,460 | skipped (over 5,000,000 set pairs) | | |
+| model_high_constraints.json | 11 | 9 | 35 | 630 | 198,135 | 1,753 | 1,297 | 456 |
+| model_low_constraints.json | 32 | 8 | 40 | 820 | 335,790 | 2,280 | 60 | 2,220 |
+| model_multivalue.json | 30 | 11 | 46 | 1,081 | 583,740 | 1,393 | 261 | 1,132 |
+| my_model.json | 24 | 8 | 39 | 780 | 303,810 | 1,998 | 198 | 1,800 |
+
+Sanity check built into the script: among pairs of single interactions, none were colliding-but-avoidable on any of the six models (all 0), as expected for suites with cost 0.
+What this shows: on these six small models, the d = 1 suites leave every set pair of size 1 or 2 mostly unseparated in the avoidable sense (456 to 4,264 avoidable colliding pairs per model), so a d = 1 suite is not a d = 2 suite; the count says how far, nothing about how many extra tests a d = 2 suite needs. What it does not show: sizes of d = 2 suites (no search run), results on model_8param (skipped by the rule), larger models, or any seed other than 0.
+Test status before commit: 149 tests OK, 3 skipped (z3 installed; before installing, 40 skipped).
