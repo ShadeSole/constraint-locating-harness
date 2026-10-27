@@ -337,3 +337,6 @@ Two small experiments were repeated from scratch in this session and gave exactl
 
 ## The paper's other benchmarks (plan item 53)
 We downloaded 20 of the paper's 25 smaller benchmarks and checked they are the same models (18 of 20 match the paper's counts exactly; the 2 that do not were left out). On those 18, our search ended below the paper's smallest size on 14, tied on 3 and was above on 1, and an independent checker confirmed every suite. The catch is time: our runs took roughly 10 to 1,800 times longer than theirs, and on the two models where the time gap was smallest we did not beat them. So this says our search finds smaller arrays when given much more time, not that it is a better method.
+
+## A fair race against the other group's tool (plan item 52)
+We finally ran SA4LA, the other group's annealing tool, on the same computer and gave our search exactly the same time it took. SA4LA cannot handle constraints, so both ran on the four big models with the constraints switched off. SA4LA won every race clearly: for example 35 tests against our 43 to 45 on spins, and 51 to 52 against our 66 to 68 on spinv. So our earlier "smaller than published" results come from running much longer, not from a faster method. The honest paper story is about handling constraints and what extra time buys, not speed.

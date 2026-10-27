@@ -1948,3 +1948,19 @@ median below published min: 14, equal: 3, above: 1
 **What the numbers show.** Median size below the published heuristic minimum on 14 of 18 models, equal on 3 (Concurrency, Storage1, Insurance), above on 1 (Storage5, capped at 350 against 344). Where their SMT method finished, our sizes were equal (Concurrency 7, Storage1 22, Storage2 30) or smaller (Banking1 22 against 23, Healthcare1 40 to 41 against 42). Our runs used about 11 to 1,841 times their average time; on the two models nearest to equal time (Insurance about 11 times, Storage5 about 16 times) the search did not go below their minimum.
 
 **What they do not show.** That this search beats their heuristic at equal time or hardware; minimum sizes (search results at a fixed budget); anything for Table 1 rows 1 to 5, ProcessorComm2 or Storage4. Three seeds per model.
+
+## Same-machine, equal-time comparison with SA4LA, constraints removed (research plan item 52)
+Live session (sandbox), 2026-10-27, after the plan author committed `.claude/settings.json` allowing javac/java. Interaction localization only; t = 2, d = 1; seeds 0 to 2.
+
+**What was run.** SA4LA (github.com/tatsuhirotsuchiya/SA4LA, commit 07fdcb0, Konishi et al.) built from source outside the repo (never committed). Its sources mix UTF-8-with-BOM and Shift-JIS (one file, comments only), so a copy was re-encoded to plain UTF-8 before `javac`; no code was changed. The source was checked for network, process and file-write calls (none besides its optional output file). Default settings (temperature 4.0, cooling 0.999, 4,096 iterations, 3 retries), seeds 0 to 2, 3,600 s cap. SA4LA cannot express constraints, so all four CCAG models (spins, bugzilla, spinv, apache) were run with their constraints **removed** (the .model file is SA4LA's input format; spins matched SA4LA's own `spin-s-2` input exactly). Then `scripts/item44_run.py` (Z3-backed targeted SA, unchanged) on the same unconstrained models, same seeds, **wall-clock cap = SA4LA's own run time for that model and seed** (3,600 s for apache), start size = the upper bound SA4LA printed for that model. Both phases ran 4 processes at a time on the same 4-core container. Our model build (0.2 s spins to 8.8 s apache) is outside our cap. `scripts/item52_parse.py` turns SA4LA's printed array into suite JSON; every array below passed `scripts/item44_verify.py` (valid, 0 uncovered, 0 avoidable collisions). Suites in `docs/item52_suites/`.
+
+| model (unconstrained) | SA4LA size, seeds 0/1/2 | SA4LA time (s) | this search, same cap | this search start |
+|---|---|---|---|---|
+| spins | 35 / 35 / 35 | 31.9 / 30.2 / 40.5 | 45 / 44 / 43 (capped) | 62 |
+| bugzilla | 32 / 32 / 32 | 191.2 / 158.2 / 197.4 | 43 / 44 / 43 (capped) | 73 |
+| spinv | 51 / 51 / 52 | 408.3 / 421.3 / 380.2 | 66 / 68 / 67 (capped) | 74 |
+| apache | cut off at 3,600 s; log shows 63 / 63 / 64 rows reached (not printed, not verified) | 3,600 (cap) | 89 / 90 / 90 (capped) | 147 |
+
+**What the numbers show.** At equal wall-clock time on the same machine, SA4LA's arrays are smaller on every model and seed: by 8 to 10 rows on spins, 11 to 12 on bugzilla, 14 to 17 on spinv, and (unverified for SA4LA) about 26 on apache. Every one of our runs was still shrinking when it hit the cap. A single seed-0 spins run of SA4LA alone took 24.8 s (35 rows), so the parallel load slowed SA4LA too.
+
+**What they do not show.** Anything about constrained models (SA4LA cannot run them); minimum sizes; behaviour at our item 44 budgets. Likely contributors, not tested: SA4LA binary-searches the size between bounds while this search shrinks by one test from the start; Java versus Python; SA4LA's incremental cost evaluation. Implication for the paper: the size results of items 44, 45 and 53 rest on much larger time budgets, and at equal time this search's engine is clearly slower than SA4LA's on unconstrained arrays. Any claim must be about constrained arrays and must state the time budgets.
