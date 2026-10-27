@@ -1799,3 +1799,97 @@ Suites: the item 25 locating search re-run (Z3-backed cold shrinking, targeted, 
 Sanity check built into the script: among pairs of single interactions, none were colliding-but-avoidable on any of the six models (all 0), as expected for suites with cost 0.
 What this shows: on these six small models, the d = 1 suites leave every set pair of size 1 or 2 mostly unseparated in the avoidable sense (456 to 4,264 avoidable colliding pairs per model), so a d = 1 suite is not a d = 2 suite; the count says how far, nothing about how many extra tests a d = 2 suite needs. What it does not show: sizes of d = 2 suites (no search run), results on model_8param (skipped by the rule), larger models, or any seed other than 0.
 Test status before commit: 149 tests OK, 3 skipped (z3 installed; before installing, 40 skipped).
+
+## Flaky failures: how often does exact localization survive? (research plan item 49)
+Cloud run, not reproduced by the author. `scripts/item49_flaky.py` (new; library unchanged; `rank_noisy` not used, so I did not need to read it for this item). Interaction localization only. t = 2, one seed (0) for the suite search and for the random failures (`random.Random(0)`, one stream per model).
+Suites: the item 25 locating search re-run per model (Z3-backed cold shrinking, targeted, 3 restarts x 3000 moves, start = greedy locating size, seed 0). All 7 non-slow models, including model_8param.json (item 48 skipped it for set-pair count; this item does not need pairs). Fault model: every feasible interaction is the single fault, 20 trials each; a test that contains it fails with probability p in each of r repeats, and is reported failing if it failed in any repeat; tests without it never fail. `localize_exact` is run on the reported outcomes. exact = it returned exactly the true interaction; empty = empty list; wrong = non-empty but not exactly the true one (includes ambiguous lists). Command: `PYTHONPATH=. python3 scripts/item49_flaky.py`.
+
+| model | suite size | interactions | p | r | exact | empty | wrong |
+|---|---|---|---|---|---|---|---|
+| model.json | 9 | 38 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model.json | 9 | 38 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model.json | 9 | 38 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model.json | 9 | 38 | 0.9 | 1 | 0.7934 | 0.1079 | 0.0987 |
+| model.json | 9 | 38 | 0.9 | 2 | 0.9868 | 0.0039 | 0.0092 |
+| model.json | 9 | 38 | 0.9 | 3 | 0.9947 | 0.0000 | 0.0053 |
+| model.json | 9 | 38 | 0.7 | 1 | 0.4526 | 0.2711 | 0.2763 |
+| model.json | 9 | 38 | 0.7 | 2 | 0.8053 | 0.1184 | 0.0763 |
+| model.json | 9 | 38 | 0.7 | 3 | 0.9289 | 0.0421 | 0.0289 |
+| model.json | 9 | 38 | 0.5 | 1 | 0.2013 | 0.4447 | 0.3539 |
+| model.json | 9 | 38 | 0.5 | 2 | 0.5395 | 0.2289 | 0.2316 |
+| model.json | 9 | 38 | 0.5 | 3 | 0.7395 | 0.1395 | 0.1211 |
+| model_6param.json | 10 | 58 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model_6param.json | 10 | 58 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model_6param.json | 10 | 58 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_6param.json | 10 | 58 | 0.9 | 1 | 0.7991 | 0.0991 | 0.1017 |
+| model_6param.json | 10 | 58 | 0.9 | 2 | 0.9647 | 0.0181 | 0.0172 |
+| model_6param.json | 10 | 58 | 0.9 | 3 | 0.9983 | 0.0000 | 0.0017 |
+| model_6param.json | 10 | 58 | 0.7 | 1 | 0.4190 | 0.3388 | 0.2422 |
+| model_6param.json | 10 | 58 | 0.7 | 2 | 0.7828 | 0.1043 | 0.1129 |
+| model_6param.json | 10 | 58 | 0.7 | 3 | 0.9276 | 0.0241 | 0.0483 |
+| model_6param.json | 10 | 58 | 0.5 | 1 | 0.1836 | 0.5069 | 0.3095 |
+| model_6param.json | 10 | 58 | 0.5 | 2 | 0.5034 | 0.2664 | 0.2302 |
+| model_6param.json | 10 | 58 | 0.5 | 3 | 0.7276 | 0.1345 | 0.1379 |
+| model_8param.json | 11 | 110 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model_8param.json | 11 | 110 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model_8param.json | 11 | 110 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_8param.json | 11 | 110 | 0.9 | 1 | 0.7495 | 0.1173 | 0.1332 |
+| model_8param.json | 11 | 110 | 0.9 | 2 | 0.9732 | 0.0086 | 0.0182 |
+| model_8param.json | 11 | 110 | 0.9 | 3 | 0.9968 | 0.0018 | 0.0014 |
+| model_8param.json | 11 | 110 | 0.7 | 1 | 0.3959 | 0.2700 | 0.3341 |
+| model_8param.json | 11 | 110 | 0.7 | 2 | 0.7655 | 0.1068 | 0.1277 |
+| model_8param.json | 11 | 110 | 0.7 | 3 | 0.9282 | 0.0364 | 0.0355 |
+| model_8param.json | 11 | 110 | 0.5 | 1 | 0.1736 | 0.3918 | 0.4345 |
+| model_8param.json | 11 | 110 | 0.5 | 2 | 0.4586 | 0.2205 | 0.3209 |
+| model_8param.json | 11 | 110 | 0.5 | 3 | 0.6882 | 0.1468 | 0.1650 |
+| model_high_constraints.json | 9 | 35 | 1.0 | 1 | 0.8000 | 0.0000 | 0.2000 |
+| model_high_constraints.json | 9 | 35 | 1.0 | 2 | 0.8000 | 0.0000 | 0.2000 |
+| model_high_constraints.json | 9 | 35 | 1.0 | 3 | 0.8000 | 0.0000 | 0.2000 |
+| model_high_constraints.json | 9 | 35 | 0.9 | 1 | 0.6186 | 0.1271 | 0.2543 |
+| model_high_constraints.json | 9 | 35 | 0.9 | 2 | 0.7900 | 0.0086 | 0.2014 |
+| model_high_constraints.json | 9 | 35 | 0.9 | 3 | 0.7957 | 0.0014 | 0.2029 |
+| model_high_constraints.json | 9 | 35 | 0.7 | 1 | 0.3457 | 0.3200 | 0.3343 |
+| model_high_constraints.json | 9 | 35 | 0.7 | 2 | 0.6271 | 0.1086 | 0.2643 |
+| model_high_constraints.json | 9 | 35 | 0.7 | 3 | 0.7314 | 0.0343 | 0.2343 |
+| model_high_constraints.json | 9 | 35 | 0.5 | 1 | 0.1429 | 0.5214 | 0.3357 |
+| model_high_constraints.json | 9 | 35 | 0.5 | 2 | 0.4057 | 0.2471 | 0.3471 |
+| model_high_constraints.json | 9 | 35 | 0.5 | 3 | 0.5829 | 0.1429 | 0.2743 |
+| model_low_constraints.json | 8 | 40 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model_low_constraints.json | 8 | 40 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model_low_constraints.json | 8 | 40 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_low_constraints.json | 8 | 40 | 0.9 | 1 | 0.8125 | 0.0250 | 0.1625 |
+| model_low_constraints.json | 8 | 40 | 0.9 | 2 | 0.9838 | 0.0025 | 0.0138 |
+| model_low_constraints.json | 8 | 40 | 0.9 | 3 | 0.9988 | 0.0000 | 0.0013 |
+| model_low_constraints.json | 8 | 40 | 0.7 | 1 | 0.5200 | 0.1325 | 0.3475 |
+| model_low_constraints.json | 8 | 40 | 0.7 | 2 | 0.8263 | 0.0213 | 0.1525 |
+| model_low_constraints.json | 8 | 40 | 0.7 | 3 | 0.9487 | 0.0050 | 0.0462 |
+| model_low_constraints.json | 8 | 40 | 0.5 | 1 | 0.2737 | 0.2737 | 0.4525 |
+| model_low_constraints.json | 8 | 40 | 0.5 | 2 | 0.5262 | 0.0963 | 0.3775 |
+| model_low_constraints.json | 8 | 40 | 0.5 | 3 | 0.7762 | 0.0300 | 0.1938 |
+| model_multivalue.json | 11 | 46 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model_multivalue.json | 11 | 46 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model_multivalue.json | 11 | 46 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_multivalue.json | 11 | 46 | 0.9 | 1 | 0.8011 | 0.1043 | 0.0946 |
+| model_multivalue.json | 11 | 46 | 0.9 | 2 | 0.9848 | 0.0076 | 0.0076 |
+| model_multivalue.json | 11 | 46 | 0.9 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_multivalue.json | 11 | 46 | 0.7 | 1 | 0.4380 | 0.2804 | 0.2815 |
+| model_multivalue.json | 11 | 46 | 0.7 | 2 | 0.7902 | 0.1185 | 0.0913 |
+| model_multivalue.json | 11 | 46 | 0.7 | 3 | 0.9543 | 0.0250 | 0.0207 |
+| model_multivalue.json | 11 | 46 | 0.5 | 1 | 0.2326 | 0.4315 | 0.3359 |
+| model_multivalue.json | 11 | 46 | 0.5 | 2 | 0.5522 | 0.2359 | 0.2120 |
+| model_multivalue.json | 11 | 46 | 0.5 | 3 | 0.7250 | 0.1424 | 0.1326 |
+| my_model.json | 8 | 39 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| my_model.json | 8 | 39 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| my_model.json | 8 | 39 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| my_model.json | 8 | 39 | 0.9 | 1 | 0.8077 | 0.0628 | 0.1295 |
+| my_model.json | 8 | 39 | 0.9 | 2 | 0.9833 | 0.0064 | 0.0103 |
+| my_model.json | 8 | 39 | 0.9 | 3 | 0.9987 | 0.0000 | 0.0013 |
+| my_model.json | 8 | 39 | 0.7 | 1 | 0.4974 | 0.1821 | 0.3205 |
+| my_model.json | 8 | 39 | 0.7 | 2 | 0.8231 | 0.0577 | 0.1192 |
+| my_model.json | 8 | 39 | 0.7 | 3 | 0.9474 | 0.0154 | 0.0372 |
+| my_model.json | 8 | 39 | 0.5 | 1 | 0.2615 | 0.3744 | 0.3641 |
+| my_model.json | 8 | 39 | 0.5 | 2 | 0.5244 | 0.1462 | 0.3295 |
+| my_model.json | 8 | 39 | 0.5 | 3 | 0.7667 | 0.0731 | 0.1603 |
+
+What this shows: at p = 1.0 every model gives exact = 1.0000 except model_high_constraints.json at 0.8000 (wrong 0.2000, all r). I checked separately that 7 of its 35 feasible interactions share their signature over all 11 valid configurations with another interaction, i.e. 7/35 = 0.2, so that 0.2 is the unavoidable ambiguity, not noise. For p < 1, exact localization drops sharply at r = 1 (for p = 0.9 between 0.6186 and 0.8125 across models; for p = 0.5 between 0.1429 and 0.2737) and recovers with repeats (p = 0.9, r = 3: 0.7957 on high_constraints and 0.9947 to 1.0000 on the others; p = 0.5, r = 3: 0.5829 to 0.7762). Failures show up as both empty results (all failing tests missed) and wrong results (a subset of the failing tests looks like another interaction's pattern). What it does not show: any other seed, strength t = 3, larger models, suites built to tolerate flakiness, or how a ranking method (`rank_noisy`) would do; none were run.
+Test status before commit: 149 tests OK, 3 skipped (z3 installed).
