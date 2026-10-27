@@ -1746,3 +1746,38 @@ Median over seeds of the final sizes: spins 43, bugzilla 36.5, spinv 79, apache 
 
 ## Needs your decision (added by item 46)
 - Item 46 (STOP FOR USER): a time-matched comparison on the same machine needs the authors' CLA tool or SA4LA (external download and run), and the 25 CitLab/literature benchmarks need a source for the files. Both are decisions about third-party code and data.
+
+## Item 46 resolved in the live session: PDF check, time ratios, tool and benchmark sources (research plan items 46 and 47)
+Live session (sandbox), 2026-10-27. Docs only; no code changed, no search run.
+
+**Table 1 checked against the arXiv PDF** (https://arxiv.org/pdf/1801.06041, 29 pages, read by a PDF parser with a direct-quote query; rows 8, 9 and 21 to 24 were not returned). Heuristic (1bar,2)-CLA sizes max / min and average time over 10 runs:
+
+| No. | SUT | max | min | avg time (s) |
+|---|---|---|---|---|
+| 26 | Apache | 89 | 85 | 3,263.15 |
+| 27 | Bugzilla | 48 | 41 | 9.02 |
+| 28 | GCC | 68 | 61 | 2,494.59 |
+| 29 | Spins | 53 | 49 | 0.63 |
+| 30 | Spinv | 97 | 91 | 58.21 |
+
+Sizes agree with the two conversions used in items 44 and 45. Valid-pair and indistinguishable-pair columns also agree (Apache 66,927 / 0, Bugzilla 5,818 / 0, GCC 82,770 / 46, Spins 979 / 9, Spinv 8,741 / 599). Still not checked: the journal version (J. Syst. Softw. 170, 2020).
+
+**Correction to the item 45 framing.** Our run time divided by their average time (our times from items 44 and 45; different hardware and language, so this is a ratio of wall-clock numbers, not of compute):
+
+| model | ratio(s) |
+|---|---|
+| spins | 421, 714, 516 (seeds 0 to 2) |
+| bugzilla | 331 (seed 0) |
+| spinv | 101, 83 (seeds 0, 1) |
+| apache | 2.2 (7,200 s cap) |
+| gcc | 2.9 (7,200 s cap) |
+
+So "10 to 1,000 times the published run time" is wrong for apache: both apache seeds ended at 82 (below the published minimum of 85) within about 2.2 times the published average time. For gcc, 61 (equal to the published minimum) within about 2.9 times. Two seeds each, capped runs, different hardware; this is not a time-matched comparison.
+
+**Tools.** SA4LA (github.com/tatsuhirotsuchiya/SA4LA, Konishi et al., Java) was cloned outside the repo. Its input format is strength, number of parameters and value counts only, and no source file mentions constraints, so it builds unconstrained locating arrays only. It cannot give a like-for-like constrained comparison; it can give a same-machine comparison of the two searches on the CCAG models with constraints removed. Building and running it was blocked by the session's permission check (third-party code); not run. The Jin & Tsuchiya heuristic implementation (C++, CIT-BACH based) was not found in a public repository by web and developer-index searches.
+
+**Literature benchmarks 1 to 25.** 20 of them (Banking1/2, CommProtocol, Concurrency, Healthcare1 to 4, Insurance, NetworkMgmt, ProcessorComm1/2, Services, Storage1 to 5, SystemMgmt, Telecom; Segall et al.) are in the Jia, Cohen, Harman and Petke benchmark archive on Zenodo (DOI 10.5281/zenodo.581657, ICSE15_HHSA_Benchmarks.zip, .model and .constraints files). Download was refused by the container's network policy (zenodo.org not allowed). No source found yet for Aircraft, Car, Movie, Medicitries and Medicitries_small.
+
+## Needs your decision (added by item 47)
+- SA4LA run (item 52): needs a permission rule that allows building and running third-party Java code in the session, or a run on your machine.
+- Literature benchmarks (item 53): add zenodo.org to the environment's allowed domains, or download the archive yourself and put it outside the repo.

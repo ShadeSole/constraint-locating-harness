@@ -134,3 +134,9 @@ Web search via a search tool returns excerpts only; absence of a result is not p
 
 ## 7. Addendum: Jin & Tsuchiya Table 1 read in full text (2026-10-17, cloud session; PDF converted to markdown, check against the PDF before quoting)
 Experiments use (1bar,2)-CLAs. Table 1 sizes for the heuristic (min to max over 10 runs): Spins 49 to 53, Bugzilla 41 to 48, Spinv 91 to 97, Apache 85 to 89, GCC 61 to 68; SMT timed out on all five. Comparison with this repo's results is in PROJECT_NOTES 'Comparison with published CLA sizes'. Not yet read: the Konishi et al. SA paper's tables (downloaded, not analysed).
+
+## 8. Addendum: tools and benchmark sources (2026-10-27, live session)
+- Jin & Tsuchiya 2020 Table 1 checked against the arXiv PDF; see PROJECT_NOTES 'Item 46 resolved in the live session'.
+- SA4LA (github.com/tatsuhirotsuchiya/SA4LA; Konishi, Kojima, Nakagawa, Tsuchiya, Inf. Softw. Technol. 126, 2020, 106346): input is strength and value counts only; unconstrained locating arrays. Not run.
+- Benchmark archive: Jia, Cohen, Harman, Petke, "Combinatorial Interaction Testing (CIT) Benchmarks", Zenodo, DOI 10.5281/zenodo.581657 (contains the 20 Segall et al. real-world models). Not downloaded (network policy).
+- Not found: a public implementation of the Jin & Tsuchiya CLA heuristic; a source for Aircraft, Car, Movie, Medicitries, Medicitries_small.
