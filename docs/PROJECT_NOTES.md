@@ -1910,3 +1910,41 @@ What this shows: a suite built for single faults leaves many two-interaction fau
 
 ## Needs your decision (added by item 51)
 - Items 52 and 53 stay STOP FOR USER (see the entries added by item 47).
+
+## Literature benchmarks: comparison with Jin & Tsuchiya Table 1 rows 6 to 25 (research plan item 53)
+Live session (sandbox), 2026-10-27. Interaction localization only; t = 2, d = 1; seeds 0 to 2 (three data points per model).
+
+**Source and conversion.** Jia, Cohen, Harman and Petke, CIT Benchmarks, Zenodo DOI 10.5281/zenodo.581657, `ICSE15_HHSA_Benchmarks.zip`, folder `segall_issta_11` (20 Segall et al. models; kept outside the repo, not committed). Its `X_yue.cons` files number (parameter, value) pairs from 1 (in every file the largest index equals the number of values and index 0 never occurs), so `scripts/item53_convert.py` shifts every index down by one into the format `load_casa_model` reads; a model with no .cons file gets an empty constraints file (Insurance, Storage2).
+
+**Model check against Table 1.** Feasible 2-way interaction count (FastZ3CostModel, cover mode) equals Table 1's |VI_2| on 18 of 20 models. Two differ and are excluded: ProcessorComm2 (3,081 here, 2,525 in the table) and Storage4 (3,414 here, 3,491). As an independent check, the verifier's inseparable-pair count equals Table 1's * column on all 18 (for example Healthcare3 477, SystemMgmt 130, Services 93). Table 1 rows 1 to 5 (Aircraft, Car, Movie, Medicitries, Medicitries_small) are not in the archive; no source found. Rows 8, 9 and 21 to 24 were read from the arXiv PDF by a freeform (not direct-quote) query; check them against the PDF before quoting.
+
+**Settings.** `scripts/item44_run.py` unchanged: Z3-backed targeted SA, 6000 moves x 5 restarts per size, shrink by one, start = the published maximum size, **wall-clock cap 900 s per run** (item 44 used 7,200 s; reduced to bound the session). Four runs at a time on a 4-core container. Every saved suite (`docs/item53_suites/`, 54 files) passed `scripts/item44_verify.py`: valid tests, 0 uncovered, 0 avoidable collisions.
+
+| No. | model | published min to max | SMT (exact search) | this search, seeds 0/1/2 | median | median vs published min | our time (s), median | published avg time (s) | time ratio |
+|---|---|---|---|---|---|---|---|---|---|
+| 6 | Banking1 | 25 to 28 | 23 | 22/22/22 | 22 | -3 | 71.9 | 0.14 | 514 |
+| 7 | Banking2 | 27 to 30 | T.O. | 23/23/23 | 23 | -4 | 179.5 | 0.17 | 1,056 |
+| 8 | Concurrency | 7 to 7 | 7 | 7/7/7 | 7 | +0 | 41.9 | 0.1 | 419 |
+| 9 | CommProtocol | 33 to 35 | T.O. | 29/30/29 | 29 | -4 | 331.3 | 0.18 | 1,841 |
+| 10 | Healthcare1 | 45 to 50 | 42 | 41/40/41 | 41 | -4 | 226 | 0.2 | 1,130 |
+| 11 | Healthcare2 | 33 to 36 | T.O. | 29/30/29 | 29 | -4 | 192.1 | 0.2 | 960 |
+| 12 | Healthcare3 | 77 to 101 | T.O. | 69c/68c/70c | 69 | -8 | 900 (cap) | 4.38 | 205 |
+| 13 | Healthcare4 | 98 to 105 | T.O. | 94c/94c/94c | 94 | -4 | 900 (cap) | 20.85 | 43 |
+| 14 | Insurance | 789 to 805 | T.O. | 789c/789c/790c | 789 | +0 | 900 (cap) | 84.34 | 11 |
+| 15 | NetworkMgmt | 202 to 210 | T.O. | 179/181/179c | 179 | -23 | 830.2 (cap) | 1.86 | 446 |
+| 16 | ProcessorComm1 | 58 to 63 | T.O. | 50/51/52 | 51 | -7 | 496.8 | 0.59 | 842 |
+| 18 | Services | 194 to 200 | T.O. | 174c/174c/175c | 174 | -20 | 900 (cap) | 4.62 | 195 |
+| 19 | Storage1 | 22 to 22 | 22 | 22/22/22 | 22 | +0 | 37.2 | 0.11 | 338 |
+| 20 | Storage2 | 34 to 37 | 30 | 30/30/30 | 30 | -4 | 78 | 0.12 | 650 |
+| 21 | Storage3 | 87 to 89 | T.O. | 74/76/75 | 75 | -12 | 751.4 | 0.77 | 976 |
+| 23 | Storage5 | 344 to 361 | T.O. | 350c/350c/350c | 350 | +6 | 900 (cap) | 56.18 | 16 |
+| 24 | SystemMgmt | 27 to 31 | T.O. | 25/25/25 | 25 | -2 | 172.1 | 0.16 | 1,076 |
+| 25 | Telecom | 49 to 54 | T.O. | 44/44/45 | 44 | -5 | 219.4 | 0.22 | 997 |
+
+median below published min: 14, equal: 3, above: 1
+
+"c" = stopped by the 900 s cap while still shrinking (the size is where it was, not where it fails). Time ratio = our median run time / their average time; different hardware and language, so this compares wall-clock numbers, not compute. SMT column is the size their SMT method reached (it starts from the heuristic's minimum), not a proven minimum.
+
+**What the numbers show.** Median size below the published heuristic minimum on 14 of 18 models, equal on 3 (Concurrency, Storage1, Insurance), above on 1 (Storage5, capped at 350 against 344). Where their SMT method finished, our sizes were equal (Concurrency 7, Storage1 22, Storage2 30) or smaller (Banking1 22 against 23, Healthcare1 40 to 41 against 42). Our runs used about 11 to 1,841 times their average time; on the two models nearest to equal time (Insurance about 11 times, Storage5 about 16 times) the search did not go below their minimum.
+
+**What they do not show.** That this search beats their heuristic at equal time or hardware; minimum sizes (search results at a fixed budget); anything for Table 1 rows 1 to 5, ProcessorComm2 or Storage4. Three seeds per model.

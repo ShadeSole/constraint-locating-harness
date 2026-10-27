@@ -9,6 +9,8 @@
 
 ## 0. Status as of 2026-10-04 (read this first)
 
+**Update 2026-10-27 (branch `auto/research`, draft PR ShadeSole/constraint-locating-harness#1).** V0.3 research plan items 1 to 51 and 53 are done; see `docs/RESEARCH_PLAN.md` and `docs/PROJECT_NOTES.md` (latest section: "Literature benchmarks: comparison with Jin & Tsuchiya Table 1 rows 6 to 25"). Only item 52 (SA4LA, unconstrained, needs permission to build and run third-party Java) is open. The text below is the older V0.2 status.
+
 All V0.2 work is complete and pushed on `v0.2-experiments`. The last step,
 merging into `main` and tagging `v0.2.0`, is recorded below. If `git log`
 on `main` shows a "Merge v0.2-experiments" commit and `git tag` lists
