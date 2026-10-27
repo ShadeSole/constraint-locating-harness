@@ -140,3 +140,18 @@ Experiments use (1bar,2)-CLAs. Table 1 sizes for the heuristic (min to max over 
 - SA4LA (github.com/tatsuhirotsuchiya/SA4LA; Konishi, Kojima, Nakagawa, Tsuchiya, Inf. Softw. Technol. 126, 2020, 106346): input is strength and value counts only; unconstrained locating arrays. Not run.
 - Benchmark archive: Jia, Cohen, Harman, Petke, "Combinatorial Interaction Testing (CIT) Benchmarks", Zenodo, DOI 10.5281/zenodo.581657 (contains the 20 Segall et al. real-world models). Not downloaded (network policy).
 - Not found: a public implementation of the Jin & Tsuchiya CLA heuristic; a source for Aircraft, Car, Movie, Medicitries, Medicitries_small.
+
+## 9. Addendum: machine learning / LLM work near covering arrays, locating arrays and failure-inducing interactions (research plan item 50, 2026-10-27, cloud run, not reproduced by the author)
+Method: three web searches (excerpts only), then each source below was opened (landing page or abstract page, not the full text). Entries are limited to those pages' contents; venue is given only where the page stated it. Absence of a result is not proof of absence; "we did not find" is the strongest claim available.
+
+| Title | Authors | Year | Venue | One line (from the abstract page) |
+|---|---|---|---|---|
+| Combinatorial Test Design Model Creation using Large Language Models | Furman, Farchi, Gildein, Hicks, Rawlins | 2025 | IEEE ICST (workshops; DOI 10.1109/ICSTW64639.2025.10962528) | Initial experience using LLMs to generate a base combinatorial test design model (parameters and values); it does not construct arrays. |
+| GALP: A hybrid artificial intelligence algorithm for generating covering array | Esfandyari, Rafe | 2021 | Soft Computing 25(11), 7673-7689 | Combines a genetic algorithm with a particle swarm variant to generate covering arrays; this is metaheuristic search, not a learned model. |
+| Combinatorial Testing for Deep Learning Systems | Ma, Zhang, Xue, Li, Liu, Zhao, Wang | 2018 | arXiv 1806.07723 (venue not stated on the page) | Applies combinatorial coverage criteria to testing deep-learning systems; combinatorial testing OF ML, not ML used to build arrays. |
+| ProphetFuzz: Fully Automated Prediction and Fuzzing of High-Risk Option Combinations with Only Documentation via Large Language Model | Wang, Zhou, Chen, Li, Miao | 2024 | arXiv 2409.00922 (related DOI 10.1145/3658644.3690231) | An LLM predicts which command-line option combinations are likely vulnerable, then fuzzes them; prediction of risky combinations, not localization of a failure-inducing one. |
+| Isolating Failure-Inducing Combinations in Combinatorial Testing using Test Augmentation and Classification | Shakya, Xie, Li, Lei, Kacker, Kuhn | 2012 | IEEE ICST 2012 | Classification-tree analysis plus extra generated tests to isolate failure-inducing combinations. Older than 2018 and classical machine learning; listed as the closest "learned classifier" precedent. |
+
+What the searches suggested but I did NOT open (so not claimed): a systematic mapping study (arXiv 2206.10210) whose excerpt says neural networks and reinforcement learning have been used for covering-array generation; a reinforcement-learning-guided simulated annealing attributed to Jia et al. in that excerpt. Both are leads to verify, not citations.
+
+Reading across the table: of the sources opened, none builds locating arrays with a learned model and none uses ML or an LLM to localize failure-inducing interactions in the sense used here. That is "we did not find", from three queries and five opened pages. Interaction localization only; no source-code fault localization is covered.
