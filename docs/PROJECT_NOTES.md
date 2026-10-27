@@ -1893,3 +1893,20 @@ Suites: the item 25 locating search re-run per model (Z3-backed cold shrinking, 
 
 What this shows: at p = 1.0 every model gives exact = 1.0000 except model_high_constraints.json at 0.8000 (wrong 0.2000, all r). I checked separately that 7 of its 35 feasible interactions share their signature over all 11 valid configurations with another interaction, i.e. 7/35 = 0.2, so that 0.2 is the unavoidable ambiguity, not noise. For p < 1, exact localization drops sharply at r = 1 (for p = 0.9 between 0.6186 and 0.8125 across models; for p = 0.5 between 0.1429 and 0.2737) and recovers with repeats (p = 0.9, r = 3: 0.7957 on high_constraints and 0.9947 to 1.0000 on the others; p = 0.5, r = 3: 0.5829 to 0.7762). Failures show up as both empty results (all failing tests missed) and wrong results (a subset of the failing tests looks like another interaction's pattern). What it does not show: any other seed, strength t = 3, larger models, suites built to tolerate flakiness, or how a ranking method (`rank_noisy`) would do; none were run.
 Test status before commit: 149 tests OK, 3 skipped (z3 installed).
+
+## Summary of research plan items 47 to 50 (research plan item 51)
+Cloud run, not reproduced by the author. Interaction localization only; one seed (0) for items 48 and 49. In this session I re-ran `scripts/item48_sets.py` and `scripts/item49_flaky.py` (z3-solver 5.3.2.0 installed via pip) instead of copying numbers. Item 48: all six table rows (sets, set pairs, colliding, unavoidable, avoidable) are identical to the item 48 section, and model_8param.json is skipped again (18,632,460 set pairs, over the 5,000,000 rule). Item 49: all 84 rows (7 models x 4 values of p x 3 values of r; exact, empty, wrong) are identical to the item 49 table. Items 47 and 50 involved no code; their results (PDF table check, time ratios, tool and benchmark sources, literature search) are in the item 46/47 section above and in docs/LITERATURE_CHECK.md, and were not re-measured here (web and PDF access, not repeated).
+
+| item | what was measured | result (see section) |
+|---|---|---|
+| 47 | Table 1 vs PDF; time ratios | sizes agree; apache ratio about 2.2, so the "10 to 1,000 times" framing was wrong for apache (item 46/47 section; not re-run) |
+| 48 | colliding pairs of fault sets of size 1 or 2 in d = 1 suites | 1,013 to 4,912 colliding pairs on six models, of which 456 to 4,264 avoidable (re-run) |
+| 49 | exact localization under flaky failures | p = 1.0: exact 1.0000 on six models, 0.8000 on model_high_constraints.json (unavoidable ambiguity); p = 0.9, r = 1: 0.6186 to 0.8125; p = 0.5, r = 3: 0.5829 to 0.7762 (re-run) |
+| 50 | ML/LLM literature | five sources opened; none builds locating arrays or localizes interactions with a learned model, "did not find" from three queries (not re-run) |
+
+Test status before commit: 149 tests OK, 3 skipped (z3 installed).
+
+What this shows: a suite built for single faults leaves many two-interaction fault sets confusable, and the exact localizer needs repeats to cope with flaky failures. What it does not show: sizes of d = 2 suites, other seeds, t = 3, larger models, `rank_noisy`, or any comparison with published sizes beyond what items 44 to 47 recorded.
+
+## Needs your decision (added by item 51)
+- Items 52 and 53 stay STOP FOR USER (see the entries added by item 47).
