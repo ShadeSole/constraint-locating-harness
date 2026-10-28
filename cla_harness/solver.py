@@ -150,9 +150,11 @@ class Z3CostModel:
 
     def __init__(self, parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden],
                  cover_only: bool = False, strength: int = 2):
+        forbidden = list(forbidden)
         self.cover_only = cover_only
         self.strength = strength
         self.parameters = parameters
+        self.forbidden = forbidden
         self.solver, self.variables = build_solver(parameters, forbidden)
         self.interactions = sorted(feasible_interactions_z3(parameters, forbidden, strength), key=sorted)
         self._separable: Dict[frozenset, bool] = {}
@@ -325,6 +327,45 @@ def _z3_move(model: "Z3CostModel", rng, current: List[Config], cost: dict, targe
     return position, neighbor if neighbor is not None else containing(target)
 
 
+def _z3_local_move(model: "Z3CostModel", rng, current: List[Config], cost: dict):
+    """The "local" move: same choices as the targeted move in `_z3_move`, but edits a test in place.
+
+    An interaction goes into a test by overwriting only its t values (as SA4LA does), kept if the
+    result breaks no forbidden rule; otherwise a Z3-drawn valid configuration containing it is used.
+    A test is taken out of a collision by changing one value of the colliding interaction itself,
+    first value that breaks no rule; otherwise `_one_change_neighbor`, then a Z3 draw. Returns
+    (position in the suite to change, the valid configuration to put there).
+    """
+    from .core import contains_interaction, is_valid as breaks_no_rule
+    def containing(target):
+        return _draw(model, rng, {n: model.parameters[n].index(v) for n, v in target})
+    def written_into(base, target):
+        config = {**base, **dict(target)}
+        return config if breaks_no_rule(config, model.forbidden) else containing(target)
+    if cost["uncovered_list"]:
+        target = rng.choice(cost["uncovered_list"])
+        position = rng.randrange(len(current))
+        return position, written_into(current[position], target)
+    target = rng.choice(cost["colliding_list"])
+    having = [p for p, c in enumerate(current) if contains_interaction(c, target)]
+    lacking = [p for p in range(len(current)) if p not in having]
+    if lacking and (not having or rng.random() < 0.5):
+        position = rng.choice(lacking)
+        return position, written_into(current[position], target)
+    position = rng.choice(having)
+    base = current[position]
+    names = [name for name, _ in target]
+    for name in rng.sample(names, len(names)):
+        others = [v for v in model.parameters[name] if v != base[name]]
+        rng.shuffle(others)
+        for value in others:
+            config = {**base, name: value}
+            if breaks_no_rule(config, model.forbidden):
+                return position, config
+    neighbor = _one_change_neighbor(model, rng, base)
+    return position, neighbor if neighbor is not None else containing(target)
+
+
 def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: int = 20000,
                     start_temp: float = 2.0, cooling: float = 0.999, weight: float = 1.0,
                     neighbor: str = "random", deadline: float = None) -> dict:
@@ -340,7 +381,11 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
       "targeted": if an interaction is uncovered, put in a Z3-drawn valid configuration containing it;
                   otherwise pick an interaction in an avoidable collision and either replace a test
                   that lacks it with a valid configuration containing it, or replace a test that has
-                  it with a valid configuration differing in exactly one parameter (Z3 decides).
+                  it with a valid configuration differing in exactly one parameter (Z3 decides);
+      "local":    the same choices as "targeted", but tests are edited in place: an interaction is
+                  written into a test (only its t values change) and a test leaves a collision by
+                  one change to the colliding interaction's own values; Z3 only when that would
+                  break a rule (see `_z3_local_move`).
     Every test in every suite is valid by construction. Reproducible for a given seed unless
     `deadline` (a time.perf_counter() value) is given: the run then stops early, with
     "timed_out": True, when the clock passes it, and where it stops depends on machine speed.
@@ -349,12 +394,12 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
     import math
     import random
     import time
-    if neighbor not in ("random", "targeted"):
-        raise ValueError("neighbor must be 'random' or 'targeted'")
+    if neighbor not in ("random", "targeted", "local"):
+        raise ValueError("neighbor must be 'random', 'targeted' or 'local'")
     if n_tests < 1:
         raise ValueError("n_tests must be at least 1")
     rng = random.Random(seed)
-    targeted = neighbor == "targeted"
+    targeted = neighbor in ("targeted", "local")
     current: List[Config] = []
     for _ in range(n_tests):
         for _try in range(50):
@@ -374,7 +419,10 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
             timed_out = True
             break
         steps += 1
-        position, replacement = _z3_move(model, rng, current, current_cost, targeted)
+        if neighbor == "local":
+            position, replacement = _z3_local_move(model, rng, current, current_cost)
+        else:
+            position, replacement = _z3_move(model, rng, current, current_cost, targeted)
         proposal = list(current)
         proposal[position] = replacement
         proposal_cost = model.suite_cost(proposal, weight, detail=targeted)

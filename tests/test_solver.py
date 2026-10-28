@@ -319,6 +319,41 @@ class SolverAnnealing(unittest.TestCase):
         free = solver.anneal_suite_z3(model, 5, seed=0, max_steps=3)
         self.assertFalse(free["timed_out"])
 
+    def test_local_move_keeps_tests_valid_and_reaches_the_exact_minimum(self):
+        # Same budget as test_reaches_the_exact_minimum_with_both_moves, for the "local" move.
+        for name, n in Z3_MINIMA.items():
+            model, valid = self.model_for(name)
+            for seed in range(2):
+                result = solver.anneal_suite_z3(model, n, seed=seed, max_steps=20000, neighbor="local")
+                self.assertTrue(result["solved"], (name, seed))
+                self.assertTrue(all(key(c) in valid for c in result["suite"]))
+            short = solver.anneal_suite_z3(model, n - 1, seed=0, max_steps=1500, neighbor="local")
+            self.assertFalse(short["solved"], name)
+        for name in ("model.json", "model_spins_core.json"):
+            model, valid = self.model_for(name)
+            result = solver.anneal_suite_z3(model, 12, seed=2, max_steps=60, neighbor="local")
+            self.assertTrue(all(key(c) in valid for c in result["suite"]), name)
+            self.assertEqual(model.suite_cost(result["suite"])["cost"], result["cost"]["cost"])
+
+    def test_local_move_changes_only_the_target_interactions_values_when_that_is_valid(self):
+        from cla_harness.core import contains_interaction
+        parameters, _ = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        model = solver.Z3CostModel(parameters, [])          # no rules, so the overwrite is always valid
+        rng = random.Random(0)
+        current = [solver._draw(model, rng) for _ in range(6)]
+        cost = model.suite_cost(current, detail=True)
+        self.assertTrue(cost["uncovered_list"])
+        for _ in range(20):
+            position, new = solver._z3_local_move(model, rng, current, cost)
+            changed = {n for n in new if new[n] != current[position][n]}
+            self.assertLessEqual(len(changed), model.strength)
+            self.assertTrue(any(contains_interaction(new, i) for i in cost["uncovered_list"]))
+
+    def test_unknown_neighbor_is_rejected(self):
+        model, _ = self.model_for("model.json")
+        with self.assertRaises(ValueError):
+            solver.anneal_suite_z3(model, 5, seed=0, max_steps=3, neighbor="magic")
+
     def test_deliberate_break_is_caught(self):
         # With the model's rules ignored the "valid" check below would fail: sampling from an
         # unconstrained model must produce tests the real model forbids.

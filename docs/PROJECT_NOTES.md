@@ -1967,3 +1967,25 @@ Live session (sandbox), 2026-10-27, after the plan author committed `.claude/set
 
 ## Needs your decision (added by the scheduled research run, 2026-10-27)
 - Every item in docs/RESEARCH_PLAN.md (1 to 53) is ticked. The scheduled run has nothing left to do until you add new items; the open choices are the ones listed in the earlier "Needs your decision" entries (published-size framing, more seeds, d = 2, AI-based work).
+
+## Why SA4LA won: size schedule or moves? (research plan item 54)
+Live session (sandbox), 2026-10-28. Unconstrained spins, bugzilla, spinv (as item 52), seeds 0 to 2. Interaction localization only.
+
+**Test.** `scripts/item44_run.py` (targeted move, 6000 moves x 5 restarts per size) started AT SA4LA's own final size, with cap 1x and 10x SA4LA's time. If the shrink-by-one schedule were the only problem, the search would solve that size.
+
+**Result.** It solved SA4LA's size in none of the 18 runs, even when all 5 x 6,000 = 30,000 moves finished before the 10x cap. Best costs at 10x: spins 4, 5, 6; bugzilla 49, 26, 11; spinv 30, 51, 27. SA4LA reached those sizes inside single anneals of at most 4,096 moves. Moves per second over item 52's runs: SA4LA 1,043 to 1,094 on spins, 163 to 172 on bugzilla, 81 to 85 on spinv; this search 118 to 138, 18 to 22, about 20. **So the gap is the move, not the size schedule.** Reading SA4LA's `AnealSearch.java`: it inserts an interaction by overwriting only its t columns in an existing row, and breaks a collision by changing one column of the colliding interaction; this repo's targeted move replaced the whole test with a fresh Z3-drawn configuration (random values everywhere else) and paid several Z3 queries per move.
+
+## A local move, and the race re-run (research plan item 55)
+Live session (sandbox), 2026-10-28. Code change (approved by the plan author: "whatever is next I give you permission to do"): `anneal_suite_z3(..., neighbor="local")` with new `_z3_local_move` in `cla_harness/solver.py`; `Z3CostModel` now keeps `self.forbidden`. "random" and "targeted" are unchanged (all 37 existing solver tests pass unchanged). The local move makes the same choices as "targeted" but edits tests in place: an interaction is written into an existing test (only its t values change), kept if no forbidden rule is broken (plain Python check), else the old Z3 draw; a test leaves a collision by one change to one of the colliding interaction's own values, else `_one_change_neighbor`, else a Z3 draw. Every test stays valid. New tests: the local move reaches the proven minima of the three small models (2 seeds, 20,000 moves) and cannot solve one below; changes at most t values when no rule applies; unknown move names rejected. 152 tests OK.
+
+Single-run check, unconstrained spins, size 35, seed 0, 6,000 moves: local 904 moves/s, final cost 4; targeted 129 moves/s, final cost 13.
+
+**Race re-run** (`scripts/item55_run.py` = item44_run.py with a move argument; same unconstrained models, same seeds, cap = SA4LA's own time, start = SA4LA's upper bound, 4 processes at a time as in item 52). All saved suites verified with `item44_verify.py` (`docs/item55_suites/`).
+
+| model | SA4LA (item 52) | targeted, same cap (item 52) | **local, same cap** | local, start at SA4LA size, 10x cap |
+|---|---|---|---|---|
+| spins | 35 / 35 / 35 | 45 / 44 / 43 | **35 / 36 / 35** | 35 / unsolved at 35 / 34 |
+| bugzilla | 32 / 32 / 32 | 43 / 44 / 43 | **32 / 32 / 32** | 32 / 32 / 32 |
+| spinv | 51 / 51 / 52 | 66 / 68 / 67 | **51 / 51 / 52** | 50 / 50 / 50 |
+
+The 10x runs finished all moves before the cap (44 to 622 s). **What this shows:** with the local move, this search matches SA4LA at equal time on the same machine on all three unconstrained models (one spins seed one test worse), and given more moves it went one below SA4LA's size on spinv (all three seeds) and spins (one seed). **What it does not show:** apache (not re-run); constrained models (next item); more than three seeds.

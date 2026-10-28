@@ -340,3 +340,6 @@ We downloaded 20 of the paper's 25 smaller benchmarks and checked they are the s
 
 ## A fair race against the other group's tool (plan item 52)
 We finally ran SA4LA, the other group's annealing tool, on the same computer and gave our search exactly the same time it took. SA4LA cannot handle constraints, so both ran on the four big models with the constraints switched off. SA4LA won every race clearly: for example 35 tests against our 43 to 45 on spins, and 51 to 52 against our 66 to 68 on spinv. So our earlier "smaller than published" results come from running much longer, not from a faster method. The honest paper story is about handling constraints and what extra time buys, not speed.
+
+## Why we lost the race, and the fix (plan items 54 and 55)
+We gave our search a head start (beginning right at the size SA4LA had reached) and it still could not get there. So the problem was how it changes a test, not how it picks sizes. Our old move threw a whole test away and drew a new one; SA4LA only changes the two values it cares about. We added that kind of move (keeping every test valid under the constraints) and re-ran the race: now our search ties SA4LA at equal time on all three models, and with more time it goes one test lower on two of them.
