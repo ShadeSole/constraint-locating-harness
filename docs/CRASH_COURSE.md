@@ -346,3 +346,6 @@ We gave our search a head start (beginning right at the size SA4LA had reached) 
 
 ## The new move on the real (constrained) benchmarks (plan item 56)
 We gave the improved search exactly as much time as the published method reported, on the five big benchmarks with their constraints. On the two biggest, apache and gcc, it found arrays of 69 and 54 to 55 tests, against 85 to 89 and 61 to 68 published, and much smaller than our old move managed in over twice that time. On the three smaller ones it lands inside the published range at their time and below it with ten times their time. Their computer and language were different from ours, so this is suggestive, not a head-to-head race.
+
+## The paper's other benchmarks, with the new move (plan item 57)
+This step was not done. It needs the 18 benchmark models from the Zenodo archive, and the cloud container is blocked from zenodo.org (the proxy answers 403) and has no copy. So there are no new numbers. The earlier results (item 53, old move; item 56, new move on the five constrained models) are unchanged. To finish it, allow zenodo.org for the environment, then rerun item 57.

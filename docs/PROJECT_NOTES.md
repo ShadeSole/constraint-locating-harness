@@ -602,9 +602,11 @@ Comparison: the locating suites of item 23 (all ten seeds, sizes 42 to 44) left 
   the cloud container, `../external` absent). The loader is already tested in tests/test_casa.py and
   almost every benchmark is too large to enumerate (docs/BENCHMARKS.md), so this only matters once
   solver-based handling exists (plan item 6).
+- Item 57 (scheduled cloud run, 2026-10-28; cloud run, not reproduced by the author): not run. zenodo.org (and doi.org) returned `CONNECT tunnel failed, response 403` from the agent proxy, and no copy of `ICSE15_HHSA_Benchmarks.zip` / `segall_issta_11` exists in the container. No numbers were produced. Needs zenodo.org in the environment's allowed domains (or the archive supplied); then re-run item 57 as written. Item 58 depends on it.
 - Item 3: rows with more than 4 rules rest on fewer orderings (survivors only); see that section.
 
 ## Needs your decision
+- Item 57 could not run: allow zenodo.org (HTTPS) in the cloud environment's network policy, or supply `ICSE15_HHSA_Benchmarks.zip`; then item 57 and 58 can proceed.
 - Item 33 approved in the live session (carried out as items 39 and 40). Still yours: comparison with published sizes (needs the primary papers' definitions read first), multiple faults, nondeterminism, anything AI-based.
 
 ## Constraint-structure family: fraction of distinguishable interactions (research plan item 3)
