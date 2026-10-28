@@ -2008,3 +2008,25 @@ All runs ended at their cap while still shrinking.
 **What the numbers show.** On apache and gcc, with a wall-clock budget equal to the published average time, this search (Python, this 4-core container) returned verified (1bar,2)-CLAs of 69 and 54 to 55 tests against the published heuristic's 85 to 89 and 61 to 68, and below what the targeted move reached in 7,200 s (82; 61 to 63). On the three smaller models at their time (spins: 8 times theirs because of the 5 s minimum) the sizes fall inside the published range, not below it; at 10 times their time they fall below it (spins 42 to 43, bugzilla 34 to 36, spinv 83). Bugzilla at 90 s (34 to 36) is smaller than the targeted move reached in about 3,000 s (36 to 37).
 
 **What they do not show.** A same-machine comparison with their heuristic (their tool is not public; their machine was a 3.2 GHz Xeon running C++); minimum sizes; more than three seeds. Spinv at 10x (83) is still above the targeted move's 78 to 79 at about 85 to 100 times their time. The search-time cap excludes model build time.
+
+## Summary of research plan items 54 to 57 (research plan item 58)
+Scheduled cloud run, 2026-10-28. No new search was run for this item: every number below is copied from the sections named in the table notes (items 44, 45, 52, 55, 56), which were produced in earlier sessions (items 44 to 45 cloud runs; items 52, 54 to 56 live-session sandbox runs), not re-run here and not reproduced by the author. Item 57 produced no numbers (see Open questions). t = 2, d = 1, interaction localization only; three seeds (spins/bugzilla/spinv also seed counts of 2 to 4 for the targeted column); sizes are search results, not proven minima.
+
+**One table: constrained CCAG models.** Published = Jin & Tsuchiya Table 1 heuristic, min to max over 10 runs (average time; C++, 3.2 GHz Xeon). Targeted = items 44/45 (7,200 s cap or run to the end, so 4 to 98 minutes unless stated). Local = `neighbor="local"`, item 56, this 4-core container, cap = their average time (minimum 5 s), and 10x that cap.
+
+| model | published range (avg time) | targeted move | local, cap = their time | local, 10x their time |
+|---|---|---|---|---|
+| spins | 49 to 53 (0.63 s) | 42 to 43; 52 to 53 at a 10 s cap | 51 / 50 / 51 (5 s) | 42 / 42 / 43 (50 s) |
+| bugzilla | 41 to 48 (9.02 s) | 36 to 37; 47 to 48 at 60 s; 39 to 40 at 600 s | 46 / 46 / 46 (9 s) | 36 / 35 / 34 (90 s) |
+| spinv | 91 to 97 (58.21 s) | 78 to 79 | 95 / 96 / 95 (58 s) | 83 / 83 / 83 (580 s) |
+| apache | 85 to 89 (3,263 s) | 82 / 82 (cap) | 69 / 69 / 69 (3,263 s) | not run |
+| gcc | 61 to 68 (2,495 s) | 63 / 61 (cap) | 54 / 54 / 55 (2,495 s) | not run |
+
+All suites in item 56 passed `item44_verify.py`; all local runs ended at their cap while still shrinking.
+
+**Diagnosis behind it (items 54, 55, unconstrained, same machine as SA4LA).** Starting the targeted search at SA4LA's size solved it in none of 18 runs, even at 10x SA4LA's time; with the local move the search matched SA4LA at equal time (spins 35/36/35 against 35, bugzilla 32 against 32, spinv 51/51/52 against 51/51/52).
+
+**What the numbers show.** The local move reaches, in seconds to minutes, sizes the targeted move needed hours for or did not reach: at the published average time it lands inside the published range on spins, bugzilla and spinv, and below it on apache (69 against 85 to 89) and gcc (54 to 55 against 61 to 68). At 10x their time it is below the published range on the three smaller models; on spinv (83) it is still above the targeted move's 78 to 79, which used far more time. **What they do not show:** a same-machine comparison with the published heuristic (not public; different hardware and language); minimum sizes; more than three seeds; the 18 literature benchmarks with the local move (item 57 not run).
+
+## Needs your decision (added by item 58)
+- Item 57 is still not run: it needs zenodo.org allowed in the cloud environment's network policy (or the archive supplied). Everything else in docs/RESEARCH_PLAN.md is ticked once item 58 is; no further unchecked items remain.
