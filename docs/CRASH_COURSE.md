@@ -343,3 +343,6 @@ We finally ran SA4LA, the other group's annealing tool, on the same computer and
 
 ## Why we lost the race, and the fix (plan items 54 and 55)
 We gave our search a head start (beginning right at the size SA4LA had reached) and it still could not get there. So the problem was how it changes a test, not how it picks sizes. Our old move threw a whole test away and drew a new one; SA4LA only changes the two values it cares about. We added that kind of move (keeping every test valid under the constraints) and re-ran the race: now our search ties SA4LA at equal time on all three models, and with more time it goes one test lower on two of them.
+
+## The new move on the real (constrained) benchmarks (plan item 56)
+We gave the improved search exactly as much time as the published method reported, on the five big benchmarks with their constraints. On the two biggest, apache and gcc, it found arrays of 69 and 54 to 55 tests, against 85 to 89 and 61 to 68 published, and much smaller than our old move managed in over twice that time. On the three smaller ones it lands inside the published range at their time and below it with ten times their time. Their computer and language were different from ours, so this is suggestive, not a head-to-head race.

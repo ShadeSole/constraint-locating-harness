@@ -1989,3 +1989,20 @@ Single-run check, unconstrained spins, size 35, seed 0, 6,000 moves: local 904 m
 | spinv | 51 / 51 / 52 | 66 / 68 / 67 | **51 / 51 / 52** | 50 / 50 / 50 |
 
 The 10x runs finished all moves before the cap (44 to 622 s). **What this shows:** with the local move, this search matches SA4LA at equal time on the same machine on all three unconstrained models (one spins seed one test worse), and given more moves it went one below SA4LA's size on spinv (all three seeds) and spins (one seed). **What it does not show:** apache (not re-run); constrained models (next item); more than three seeds.
+
+## Constrained CCAG models with the local move (research plan item 56)
+Live session (sandbox), 2026-10-28, code at ac324c7 (no code change in this item). t = 2, d = 1, interaction localization only, seeds 0 to 2. `scripts/item55_run.py` with neighbor "local", CCAG clone outside the repo, start = Jin & Tsuchiya's published maximum, 6000 moves x 5 restarts per size, cap = their average time from Table 1 (minimum 5 s; model build of 0.2 s to 18.7 s is outside the cap), and 10x that cap on the three smaller models. 4 processes at a time. Every suite verified with `item44_verify.py` (valid, 0 uncovered, 0 avoidable collisions; inseparable pairs left 9, 0, 599, 0, 46 for spins, bugzilla, spinv, apache, gcc, equal to Table 1's column). Suites in `docs/item56_suites/`.
+
+| model | published heuristic: min to max (avg time) | targeted move, items 44 and 45 (time) | **local, cap = their time** | local, 10x their time |
+|---|---|---|---|---|
+| spins | 49 to 53 (0.63 s) | 42 to 43 (265 to 450 s); 52 to 53 at a 10 s cap | 51 / 50 / 51 (5 s) | 42 / 42 / 43 (50 s) |
+| bugzilla | 41 to 48 (9.02 s) | 36 to 37 (up to 2,986 s); 47 to 48 at 60 s; 39 to 40 at 600 s | 46 / 46 / 46 (9 s) | 36 / 35 / 34 (90 s) |
+| spinv | 91 to 97 (58.21 s) | 78 to 79 (4,833 to 5,893 s) | 95 / 96 / 95 (58 s) | 83 / 83 / 83 (580 s) |
+| apache | 85 to 89 (3,263 s) | 82 / 82 (7,200 s cap) | **69 / 69 / 69** (3,263 s) | not run |
+| gcc | 61 to 68 (2,495 s) | 63 / 61 (7,200 s cap) | **54 / 54 / 55** (2,495 s) | not run |
+
+All runs ended at their cap while still shrinking.
+
+**What the numbers show.** On apache and gcc, with a wall-clock budget equal to the published average time, this search (Python, this 4-core container) returned verified (1bar,2)-CLAs of 69 and 54 to 55 tests against the published heuristic's 85 to 89 and 61 to 68, and below what the targeted move reached in 7,200 s (82; 61 to 63). On the three smaller models at their time (spins: 8 times theirs because of the 5 s minimum) the sizes fall inside the published range, not below it; at 10 times their time they fall below it (spins 42 to 43, bugzilla 34 to 36, spinv 83). Bugzilla at 90 s (34 to 36) is smaller than the targeted move reached in about 3,000 s (36 to 37).
+
+**What they do not show.** A same-machine comparison with their heuristic (their tool is not public; their machine was a 3.2 GHz Xeon running C++); minimum sizes; more than three seeds. Spinv at 10x (83) is still above the targeted move's 78 to 79 at about 85 to 100 times their time. The search-time cap excludes model build time.
