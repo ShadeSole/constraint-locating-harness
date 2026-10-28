@@ -1989,3 +1989,6 @@ Single-run check, unconstrained spins, size 35, seed 0, 6,000 moves: local 904 m
 | spinv | 51 / 51 / 52 | 66 / 68 / 67 | **51 / 51 / 52** | 50 / 50 / 50 |
 
 The 10x runs finished all moves before the cap (44 to 622 s). **What this shows:** with the local move, this search matches SA4LA at equal time on the same machine on all three unconstrained models (one spins seed one test worse), and given more moves it went one below SA4LA's size on spinv (all three seeds) and spins (one seed). **What it does not show:** apache (not re-run); constrained models (next item); more than three seeds.
+
+## Needs your decision (added by the scheduled research run, 2026-10-28)
+- Item 56 (STOP FOR USER, constrained CCAG models with the local move) is the only unchecked item and is marked as being run in the live session; the scheduled run did not start it. Tick it or add new items.
