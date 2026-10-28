@@ -2030,3 +2030,36 @@ All suites in item 56 passed `item44_verify.py`; all local runs ended at their c
 
 ## Needs your decision (added by item 58)
 - Item 57 is still not run: it needs zenodo.org allowed in the cloud environment's network policy (or the archive supplied). Everything else in docs/RESEARCH_PLAN.md is ticked once item 58 is; no further unchecked items remain.
+
+## Literature benchmarks with the local move (research plan item 59, = item 57 as written)
+Live session (sandbox), 2026-10-28, code at ac324c7 (no code change). The scheduled run could not reach zenodo.org (item 57 ticked as not run); this session still had the 18 converted models from item 53 (outside the repo). `scripts/item55_run.py`, neighbor local, seeds 0 to 2, start = published maximum, 6000 moves x 5 restarts per size, cap = max(5 s, Jin & Tsuchiya's average time) and 10x that, 4 processes at a time. 103 of 108 runs saved a suite and all 103 passed `item44_verify.py` (valid, 0 uncovered, 0 avoidable collisions). The other 5 ("none") did not solve the start size within the 5 s cap, so they have no suite. Suites in `docs/item59_suites/`. Targeted-move column from item 53 (900 s cap).
+
+| No. | model | published min to max (avg s) | targeted, item 53 (up to 900 s) | local, cap = max(5 s, their time) | local, 10x cap |
+|---|---|---|---|---|---|
+| 6 | Banking1 | 25 to 28 (0.14) | 22/22/22 | 22/22/23 (5 s) | 22/21/21 (50 s) |
+| 7 | Banking2 | 27 to 30 (0.17) | 23/23/23 | 22/22/22 (5 s) | 22/22/22 (50 s) |
+| 8 | Concurrency | 7 to 7 (0.1) | 7/7/7 | 7/7/7 (5 s) | 7/7/7 (50 s) |
+| 9 | CommProtocol | 33 to 35 (0.18) | 29/30/29 | 35/none/34 (5 s) | 33/34/31 (50 s) |
+| 10 | Healthcare1 | 45 to 50 (0.2) | 41/40/41 | 46/46/45 (5 s) | 38/38/38 (50 s) |
+| 11 | Healthcare2 | 33 to 36 (0.2) | 29/30/29 | 32/30/30 (5 s) | 27/27/27 (50 s) |
+| 12 | Healthcare3 | 77 to 101 (4.38) | 69/68/70 | 99/99/99 (5 s) | 82/81/82 (50 s) |
+| 13 | Healthcare4 | 98 to 105 (20.85) | 94/94/94 | 102/103/102 (21 s) | 89/90/89 (210 s) |
+| 14 | Insurance | 789 to 805 (84.34) | 789/789/790 | 803/803/803 (84 s) | 776/776/775 (840 s) |
+| 15 | NetworkMgmt | 202 to 210 (1.86) | 179/181/179 | 210/210/210 (5 s) | 200/199/199 (50 s) |
+| 16 | ProcessorComm1 | 58 to 63 (0.59) | 50/51/52 | 59/59/59 (5 s) | 49/47/47 (50 s) |
+| 18 | Services | 194 to 200 (4.62) | 174/174/175 | none/none/none (5 s) | 197/197/196 (50 s) |
+| 19 | Storage1 | 22 to 22 (0.11) | 22/22/22 | 22/22/22 (5 s) | 22/22/22 (50 s) |
+| 20 | Storage2 | 34 to 37 (0.12) | 30/30/30 | 30/30/30 (5 s) | 30/30/30 (50 s) |
+| 21 | Storage3 | 87 to 89 (0.77) | 74/76/75 | 89/89/89 (5 s) | 82/81/81 (50 s) |
+| 23 | Storage5 | 344 to 361 (56.18) | 350/350/350 | 361/361/361 (56 s) | 349/349/348 (560 s) |
+| 24 | SystemMgmt | 27 to 31 (0.16) | 25/25/25 | 26/27/none (5 s) | 25/25/25 (50 s) |
+| 25 | Telecom | 49 to 54 (0.22) | 44/44/45 | 50/50/50 (5 s) | 42/43/42 (50 s) |
+
+x1 median below min / within range / above max (models with a result): [5, 12, 0]
+x10 median below min / within range / above max (models with a result): [12, 6, 0]
+
+"x1" counts are medians over seeds with a result, against the published range. **Note:** for 13 of the 18 models their time is under 1 s, so the 5 s minimum gives this search 5 to 50 times their time even in the first column.
+
+**What the numbers show.** At the first cap, the median lands inside the published range on 12 models and below it on 5 (Banking1, Banking2, Healthcare2, Storage2, SystemMgmt; for these the cap was 25 to 50 times their time); Services did not solve its start size in 5 s. At 10x the cap, the median is below the published minimum on 12 of 18 and inside the range on 6 (Concurrency and Storage1, where the published minimum also equals the SMT result; CommProtocol, Healthcare3, Services, Storage5). Insurance at 840 s (775 to 776) is below both the published minimum (789) and item 53's targeted result (789 to 790); Healthcare4 (89 to 90), ProcessorComm1 (47 to 49), Healthcare2 (27), Banking1 (21 to 22) and Telecom (42 to 43) are also below item 53's targeted sizes in less time. On CommProtocol, Healthcare3, NetworkMgmt, Services and Storage3 the 10x runs are still above item 53's targeted sizes; all were capped while shrinking from the published maximum.
+
+**What they do not show.** A same-machine comparison (their tool is not public; different hardware and language); minimum sizes; more than three seeds; Table 1 rows 1 to 5, ProcessorComm2 or Storage4.
