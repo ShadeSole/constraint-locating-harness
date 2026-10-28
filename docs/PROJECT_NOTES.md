@@ -606,6 +606,7 @@ Comparison: the locating suites of item 23 (all ten seeds, sizes 42 to 44) left 
 - Item 3: rows with more than 4 rules rest on fewer orderings (survivors only); see that section.
 
 ## Needs your decision
+- Every item in docs/RESEARCH_PLAN.md (1 to 59) is ticked (item 57 was carried out in the live session as item 59; the first line below is superseded). The scheduled run has nothing left to do until you add new items (2026-10-28 scheduled run, cloud run, no numbers produced).
 - Item 57 could not run: allow zenodo.org (HTTPS) in the cloud environment's network policy, or supply `ICSE15_HHSA_Benchmarks.zip`; then item 57 and 58 can proceed.
 - Item 33 approved in the live session (carried out as items 39 and 40). Still yours: comparison with published sizes (needs the primary papers' definitions read first), multiple faults, nondeterminism, anything AI-based.
 
