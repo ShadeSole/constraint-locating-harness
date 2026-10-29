@@ -68,18 +68,18 @@ Apache was not part of the re-run.
 ## RQ3. Constrained benchmarks against the published CLA heuristic
 
 PROJECT_NOTES "Constrained CCAG models with the local move" (item 56), "Literature benchmarks with the local move"
-(item 59) and [item 60, ten seeds: to be filled]. Published figures: Jin & Tsuchiya Table 1 (10 runs each, C++,
+(item 59) and "Ten seeds on apache, gcc and Insurance with the local move" (item 60). Published figures: Jin & Tsuchiya Table 1 (10 runs each, C++,
 3.2 GHz Xeon). This search: Python, 4-core cloud container, cap = their average time (minimum 5 s). **Different
 hardware and language, and their tool is not public, so this is not a same-machine comparison.**
 
 | model | published min to max (avg time) | local move, cap = their time | local move, 10x |
 |---|---|---|---|
-| apache | 85 to 89 (3,263 s) | 69 / 69 / 69 [10 seeds: to be filled] | not run |
-| gcc | 61 to 68 (2,495 s) | 54 / 54 / 55 [10 seeds: to be filled] | not run |
+| apache | 85 to 89 (3,263 s) | 67 to 69, median 68.5 (10 seeds) | not run |
+| gcc | 61 to 68 (2,495 s) | 54 to 55, median 54 (10 seeds) | not run |
 | spins | 49 to 53 (0.63 s) | 51 / 50 / 51 (5 s) | 42 / 42 / 43 |
 | bugzilla | 41 to 48 (9.02 s) | 46 / 46 / 46 | 36 / 35 / 34 |
 | spinv | 91 to 97 (58.21 s) | 95 / 96 / 95 | 83 / 83 / 83 |
-| Insurance | 789 to 805 (84.34 s) | 803 / 803 / 803 | 776 / 776 / 775 [10 seeds: to be filled] |
+| Insurance | 789 to 805 (84.34 s) | 803 / 803 / 803 (3 seeds) | 775 to 782, median 778 (10 seeds) |
 
 On the 18 literature benchmarks (Segall et al., from the Jia et al. Zenodo archive; 18 of 20 match Table 1's
 interaction counts), at 10 times max(5 s, their time) the median over 3 seeds was below the published minimum on 12
@@ -90,7 +90,7 @@ to minutes.
 ## Threats to validity (to expand)
 
 - Hardware, language and tool availability: the CLA heuristic comparison is not same-machine.
-- Seeds: three per model except where stated.
+- Seeds: three per model except apache, gcc and Insurance (ten).
 - Budgets: most runs were stopped by their time cap while still shrinking; sizes are upper bounds for that budget.
 - Data provenance: Table 1 rows 8, 9 and 21 to 24 were read by a freeform query of a PDF conversion; ProcessorComm2
   and Storage4 differ from Table 1 and were excluded; rows 1 to 5 were not available.

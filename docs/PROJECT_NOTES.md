@@ -2064,3 +2064,16 @@ x10 median below min / within range / above max (models with a result): [12, 6, 
 **What the numbers show.** At the first cap, the median lands inside the published range on 12 models and below it on 5 (Banking1, Banking2, Healthcare2, Storage2, SystemMgmt; for these the cap was 25 to 50 times their time); Services did not solve its start size in 5 s. At 10x the cap, the median is below the published minimum on 12 of 18 and inside the range on 6 (Concurrency and Storage1, where the published minimum also equals the SMT result; CommProtocol, Healthcare3, Services, Storage5). Insurance at 840 s (775 to 776) is below both the published minimum (789) and item 53's targeted result (789 to 790); Healthcare4 (89 to 90), ProcessorComm1 (47 to 49), Healthcare2 (27), Banking1 (21 to 22) and Telecom (42 to 43) are also below item 53's targeted sizes in less time. On CommProtocol, Healthcare3, NetworkMgmt, Services and Storage3 the 10x runs are still above item 53's targeted sizes; all were capped while shrinking from the published maximum.
 
 **What they do not show.** A same-machine comparison (their tool is not public; different hardware and language); minimum sizes; more than three seeds; Table 1 rows 1 to 5, ProcessorComm2 or Storage4.
+
+## Ten seeds on apache, gcc and Insurance with the local move (research plan item 60)
+Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to 9 added to seeds 0 to 2 of items 56 (apache, gcc) and 59 (Insurance), same settings: `scripts/item55_run.py`, neighbor local, start = published maximum, 6000 moves x 5 restarts per size, cap = Jin & Tsuchiya's average time for apache (3,263 s) and gcc (2,495 s), 840 s (10x their 84 s) for Insurance; 4 processes at a time. Seeds 7 to 9 were run twice: the first attempt died when the container was shut down while idle (a detached process does not keep it running), so they were re-run from scratch; only the second run is reported. All 21 new suites passed `item44_verify.py`; `docs/item60_suites/`. Every run ended at its cap while still shrinking.
+
+| model | published min to max (avg time) | this search, seeds 0 to 9 | min / median / max |
+|---|---|---|---|
+| apache | 85 to 89 (3,263 s) | 69, 69, 69, 68, 68, 67, 67, 69, 68, 69 | 67 / 68.5 / 69 |
+| gcc | 61 to 68 (2,495 s) | 54, 54, 55, 54, 54, 54, 54, 54, 55, 55 | 54 / 54 / 55 |
+| Insurance | 789 to 805 (84.34 s; our cap 840 s) | 776, 776, 775, 778, 778, 778, 778, 781, 782, 782 | 775 / 778 / 782 |
+
+**What the numbers show.** All 10 seeds on each model returned verified (1bar,2)-CLAs below the published heuristic's minimum: apache 67 to 69 against 85, gcc 54 to 55 against 61, Insurance 775 to 782 against 789. The spread over seeds is 2 tests on apache, 1 on gcc and 7 on Insurance. Apache and gcc used a wall-clock cap equal to their reported average time; Insurance used 10 times theirs.
+
+**What they do not show.** A same-machine comparison (their tool is not public; their runs were C++ on a 3.2 GHz Xeon, ours Python on a shared 4-core container); minimum sizes; behaviour on the other models with ten seeds.

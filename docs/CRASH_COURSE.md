@@ -355,3 +355,6 @@ Short version of the last stretch: our first search lost a fair race to SA4LA be
 
 ## The new move on the 18 smaller benchmarks (plan item 59)
 Most of these the published method solved in under a second, and our search needs a few seconds just to get going, so at our 5-second minimum we land inside their range on most models. With ten times that (still under a minute for most) we go below their smallest size on 12 of 18, and on the biggest one, Insurance, below both their result and our old move's. The honest summary: we are not faster on tiny models; we find smaller arrays when given seconds to minutes.
+
+## Ten tries instead of three (plan item 60)
+Three runs can be lucky, so we ran the three headline models ten times each with different random seeds. Every one of the thirty runs beat the published smallest size: apache 67 to 69 (published 85 or more), gcc 54 to 55 (published 61 or more) and Insurance 775 to 782 (published 789 or more). The results barely change between seeds, so the earlier numbers were not a fluke. The usual caveat stays: different computers, so not a head-to-head race.
