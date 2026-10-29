@@ -2081,6 +2081,7 @@ Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to
 
 ## Needs your decision (added by the scheduled research run, 2026-10-29)
 - Every item in docs/RESEARCH_PLAN.md (1 to 60) is ticked. The scheduled run did nothing else; add new items or say what to do next (open choices are in the earlier "Needs your decision" entries, e.g. d = 2, AI-based work, same-machine comparison with the published tool).
+- Item 61 was done in the live session and is ticked, so every item in docs/RESEARCH_PLAN.md (1 to 61) is now ticked; the line above, which says 1 to 60, is superseded. The scheduled run (2026-10-29 22:08 UTC, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
 
 ## Covering versus locating with the local move (research plan item 61)
 Live session (sandbox), 2026-10-29, code at ac324c7 plus `scripts/item61_run.py` (item55_run.py with a cover/locate mode argument). t = 2, d = 1, interaction localization only, seeds 0 to 2. Both modes: local move, start = the published locating maximum, 6000 moves x 5 restarts per size, same cap per model. Apache and gcc locating sizes are the item 56 runs (same settings and cap); all other runs are new. 4 processes at a time. All 24 new suites verified with `item44_verify.py` (covering: valid and 0 uncovered; locating: also 0 avoidable collisions). Suites in `docs/item61_suites/`. "(finished)" = the search stopped because the next size failed all 5 restarts, not at the cap.
