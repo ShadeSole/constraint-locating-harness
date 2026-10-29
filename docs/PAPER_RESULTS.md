@@ -1,0 +1,97 @@
+# Draft results section (for the plan author to edit)
+
+Drafted 2026-10-29 in a live cloud session. **Every number below was produced by cloud (sandbox) runs and has not been
+reproduced by the author.** Each table names the `docs/PROJECT_NOTES.md` section it is copied from; nothing here is new
+measurement. Before submission: re-run the headline rows locally, check every Table 1 figure against the journal version
+(J. Syst. Softw. 170, 2020), and settle the claims in "Positioning" with the literature check.
+
+## Setting and terms
+
+- Interaction localization only: one deterministic faulty interaction (d = 1), strength t = 2 unless stated. No
+  source-code fault localization.
+- A suite is a (1bar,2)-constrained locating array (CLA) in the sense of Jin & Tsuchiya (2020): every valid test, every
+  feasible 2-way interaction covered, and every pair of distinguishable interactions separated by some test.
+  Inseparable pairs (no valid test separates them) are exempt.
+- Every suite reported was re-checked by `scripts/item44_verify.py`, which shares only the model loader with the search
+  and uses its own Z3 encoding.
+- Sizes are what a search found within a stated budget, not proven minima. Seeds are listed per row; three seeds is a
+  small sample.
+
+## Positioning (claims to keep, claims to avoid)
+
+Prior work (see `docs/LITERATURE_CHECK.md` sections 1, 3 and 6): constrained locating arrays and distinguishability
+(Jin & Tsuchiya 2020); simulated annealing for **unconstrained** locating arrays, with a targeted neighbourhood and a
+binary search over sizes (Konishi et al. 2020, SA4LA); metaheuristics with constraint handling for constrained
+**covering** arrays (Garvin, Cohen & Dwyer). The ceiling metric is an instance of Jin & Tsuchiya's distinguishability.
+
+- Safe: this work applies simulated annealing, with every test kept valid by a solver, to constrained locating arrays,
+  and measures it against the published CLA heuristic and against SA4LA.
+- Must credit: the "local" move (write an interaction's t values into an existing test; leave a collision by changing
+  one of the interaction's own values) follows SA4LA's moves; what is added is keeping every test valid under the
+  constraints (rule check, Z3 fallback).
+- Avoid: "first", "novel", "no prior work". Three excerpt-only literature searches found no constrained-locating-array
+  metaheuristic; that is "we did not find", not "there is none".
+
+## RQ1. How many more tests does localization cost than coverage?
+
+Old (targeted) move; from PROJECT_NOTES "Summary of research plan items 25 to 27" (item 28), "Summary of research plan
+items 29 to 31" (item 32) and "Summary of research plan items 38 to 42" (item 43).
+
+| model, strength | seeds | covering size | locating size | locating / covering |
+|---|---|---|---|---|
+| seven small example models, t = 2 | 3 | 5 to 7 | 8 to 12 | 1.33 to 1.8 |
+| spins (CCAG), t = 2 | 10 | 23 to 25 (median 24) | 42 to 44 (median 43) | 1.72 to 1.87 |
+| spins (CCAG), t = 3 | 5 | 114 to 116 | 197 to 200 | 1.707 to 1.754 |
+| spinv (CCAG), t = 2 | 3 | 48 to 49 | 78 to 79 | 1.612 to 1.646 |
+
+On the two large benchmarks a locating suite needed about 1.6 to 1.9 times the tests of a covering suite at the budgets
+used. These sizes come from the targeted move; they were not re-run with the local move.
+
+## RQ2. Does the move design matter? A same-machine race with SA4LA
+
+PROJECT_NOTES "Same-machine, equal-time comparison with SA4LA" (item 52), "Why SA4LA won" (item 54) and "A local move,
+and the race re-run" (item 55). SA4LA cannot express constraints, so both ran on the CCAG models with constraints
+removed; this search was capped at SA4LA's own run time for the same model and seed, on the same 4-core container.
+
+| model (unconstrained) | SA4LA | targeted move, same time | local move, same time |
+|---|---|---|---|
+| spins | 35 / 35 / 35 | 45 / 44 / 43 | 35 / 36 / 35 |
+| bugzilla | 32 / 32 / 32 | 43 / 44 / 43 | 32 / 32 / 32 |
+| spinv | 51 / 51 / 52 | 66 / 68 / 67 | 51 / 51 / 52 |
+
+Diagnosis (item 54): started at SA4LA's own size, the targeted move solved it in none of 18 runs, even with 30,000
+moves, while SA4LA reached it within single anneals of at most 4,096 moves; the targeted move also made about 4 to 9
+times fewer moves per second. The gap was the move (replacing a whole test with a fresh solver draw), not the size
+schedule. Given more moves from SA4LA's size, the local move went to 50 on spinv (3 seeds) and 34 on spins (1 seed).
+Apache was not part of the re-run.
+
+## RQ3. Constrained benchmarks against the published CLA heuristic
+
+PROJECT_NOTES "Constrained CCAG models with the local move" (item 56), "Literature benchmarks with the local move"
+(item 59) and [item 60, ten seeds: to be filled]. Published figures: Jin & Tsuchiya Table 1 (10 runs each, C++,
+3.2 GHz Xeon). This search: Python, 4-core cloud container, cap = their average time (minimum 5 s). **Different
+hardware and language, and their tool is not public, so this is not a same-machine comparison.**
+
+| model | published min to max (avg time) | local move, cap = their time | local move, 10x |
+|---|---|---|---|
+| apache | 85 to 89 (3,263 s) | 69 / 69 / 69 [10 seeds: to be filled] | not run |
+| gcc | 61 to 68 (2,495 s) | 54 / 54 / 55 [10 seeds: to be filled] | not run |
+| spins | 49 to 53 (0.63 s) | 51 / 50 / 51 (5 s) | 42 / 42 / 43 |
+| bugzilla | 41 to 48 (9.02 s) | 46 / 46 / 46 | 36 / 35 / 34 |
+| spinv | 91 to 97 (58.21 s) | 95 / 96 / 95 | 83 / 83 / 83 |
+| Insurance | 789 to 805 (84.34 s) | 803 / 803 / 803 | 776 / 776 / 775 [10 seeds: to be filled] |
+
+On the 18 literature benchmarks (Segall et al., from the Jia et al. Zenodo archive; 18 of 20 match Table 1's
+interaction counts), at 10 times max(5 s, their time) the median over 3 seeds was below the published minimum on 12
+and inside the published range on 6. For 13 of those models their time is under 1 s, so even the first cap gives this
+search 5 to 50 times their time: **the search is not faster on small models**; it reaches smaller arrays given seconds
+to minutes.
+
+## Threats to validity (to expand)
+
+- Hardware, language and tool availability: the CLA heuristic comparison is not same-machine.
+- Seeds: three per model except where stated.
+- Budgets: most runs were stopped by their time cap while still shrinking; sizes are upper bounds for that budget.
+- Data provenance: Table 1 rows 8, 9 and 21 to 24 were read by a freeform query of a PDF conversion; ProcessorComm2
+  and Storage4 differ from Table 1 and were excluded; rows 1 to 5 were not available.
+- RQ1 used the older targeted move; its ratios may change with the local move.
