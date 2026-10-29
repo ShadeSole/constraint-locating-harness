@@ -2077,3 +2077,6 @@ Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to
 **What the numbers show.** All 10 seeds on each model returned verified (1bar,2)-CLAs below the published heuristic's minimum: apache 67 to 69 against 85, gcc 54 to 55 against 61, Insurance 775 to 782 against 789. The spread over seeds is 2 tests on apache, 1 on gcc and 7 on Insurance. Apache and gcc used a wall-clock cap equal to their reported average time; Insurance used 10 times theirs.
 
 **What they do not show.** A same-machine comparison (their tool is not public; their runs were C++ on a 3.2 GHz Xeon, ours Python on a shared 4-core container); minimum sizes; behaviour on the other models with ten seeds.
+
+## Needs your decision (added by the scheduled research run, 2026-10-29)
+- Every item in docs/RESEARCH_PLAN.md (1 to 60) is ticked. The scheduled run did nothing else; add new items or say what to do next (open choices are in the earlier "Needs your decision" entries, e.g. d = 2, AI-based work, same-machine comparison with the published tool).
