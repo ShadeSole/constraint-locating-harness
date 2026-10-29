@@ -358,3 +358,6 @@ Most of these the published method solved in under a second, and our search need
 
 ## Ten tries instead of three (plan item 60)
 Three runs can be lucky, so we ran the three headline models ten times each with different random seeds. Every one of the thirty runs beat the published smallest size: apache 67 to 69 (published 85 or more), gcc 54 to 55 (published 61 or more) and Insurance 775 to 782 (published 789 or more). The results barely change between seeds, so the earlier numbers were not a fluke. The usual caveat stays: different computers, so not a head-to-head race.
+
+## The price of pinpointing, re-measured (plan item 61)
+A suite that only checks every pair of settings is cheaper than one that can also tell you which pair broke. With the new move and the same time for both, the "tell me which" suite needed about 1.6 to 2.1 times as many tests on the five big benchmarks (for example 16 against 32 on bugzilla, 36 against 69 on apache). That is the cost of localization in tests, and it is now measured with the same search for both.

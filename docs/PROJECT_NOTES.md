@@ -2081,3 +2081,30 @@ Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to
 
 ## Needs your decision (added by the scheduled research run, 2026-10-29)
 - Every item in docs/RESEARCH_PLAN.md (1 to 60) is ticked. The scheduled run did nothing else; add new items or say what to do next (open choices are in the earlier "Needs your decision" entries, e.g. d = 2, AI-based work, same-machine comparison with the published tool).
+
+## Covering versus locating with the local move (research plan item 61)
+Live session (sandbox), 2026-10-29, code at ac324c7 plus `scripts/item61_run.py` (item55_run.py with a cover/locate mode argument). t = 2, d = 1, interaction localization only, seeds 0 to 2. Both modes: local move, start = the published locating maximum, 6000 moves x 5 restarts per size, same cap per model. Apache and gcc locating sizes are the item 56 runs (same settings and cap); all other runs are new. 4 processes at a time. All 24 new suites verified with `item44_verify.py` (covering: valid and 0 uncovered; locating: also 0 avoidable collisions). Suites in `docs/item61_suites/`. "(finished)" = the search stopped because the next size failed all 5 restarts, not at the cap.
+
+| model | cap | seed | covering | locating | extra tests | locating / covering |
+|---|---|---|---|---|---|---|
+| spins | 600 s | 0 | 20 (finished) | 38 (finished) | 18 | 1.90 |
+| spins | 600 s | 1 | 21 (finished) | 39 (finished) | 18 | 1.86 |
+| spins | 600 s | 2 | 21 (finished) | 39 (finished) | 18 | 1.86 |
+| bugzilla | 600 s | 0 | 16 (finished) | 32 (finished) | 16 | 2.00 |
+| bugzilla | 600 s | 1 | 16 (finished) | 32 (finished) | 16 | 2.00 |
+| bugzilla | 600 s | 2 | 16 (finished) | 32 (finished) | 16 | 2.00 |
+| spinv | 600 s | 0 | 51 | 82 | 31 | 1.61 |
+| spinv | 600 s | 1 | 50 | 82 | 32 | 1.64 |
+| spinv | 600 s | 2 | 49 | 82 | 33 | 1.67 |
+| apache | 3,263 s | 0 | 36 | 69 | 33 | 1.92 |
+| apache | 3,263 s | 1 | 37 | 69 | 32 | 1.86 |
+| apache | 3,263 s | 2 | 36 | 69 | 33 | 1.92 |
+| gcc | 2,495 s | 0 | 26 | 54 | 28 | 2.08 |
+| gcc | 2,495 s | 1 | 28 | 54 | 26 | 1.93 |
+| gcc | 2,495 s | 2 | 28 | 55 | 27 | 1.96 |
+
+ratio range 1.61 to 2.08
+
+**What the numbers show.** With the same move and the same budget for both, a locating array needed 1.61 to 2.08 times the tests of a covering array on these five benchmarks (16 to 33 extra tests). On spins and bugzilla both searches finished before the cap. Against the targeted-move runs of item 43 (spins covering 23 to 25, locating 42 to 44; spinv 48 to 49 and 78 to 79), the local move found smaller covering and locating arrays on spins in 600 s, and a smaller covering but larger locating array on spinv (82 against 78 to 79 in far longer runs).
+
+**What they do not show.** Minimum sizes (spinv, apache and gcc runs were capped); other strengths or d > 1; a covering comparison with published covering-array sizes (not made).

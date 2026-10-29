@@ -34,18 +34,22 @@ binary search over sizes (Konishi et al. 2020, SA4LA); metaheuristics with const
 
 ## RQ1. How many more tests does localization cost than coverage?
 
-Old (targeted) move; from PROJECT_NOTES "Summary of research plan items 25 to 27" (item 28), "Summary of research plan
-items 29 to 31" (item 32) and "Summary of research plan items 38 to 42" (item 43).
+Local move, same budget for both modes; from PROJECT_NOTES "Covering versus locating with the local move" (item 61).
+Seeds 0 to 2.
 
-| model, strength | seeds | covering size | locating size | locating / covering |
-|---|---|---|---|---|
-| seven small example models, t = 2 | 3 | 5 to 7 | 8 to 12 | 1.33 to 1.8 |
-| spins (CCAG), t = 2 | 10 | 23 to 25 (median 24) | 42 to 44 (median 43) | 1.72 to 1.87 |
-| spins (CCAG), t = 3 | 5 | 114 to 116 | 197 to 200 | 1.707 to 1.754 |
-| spinv (CCAG), t = 2 | 3 | 48 to 49 | 78 to 79 | 1.612 to 1.646 |
+| model | cap | covering | locating | extra tests | locating / covering |
+|---|---|---|---|---|---|
+| spins | 600 s | 20 / 21 / 21 | 38 / 39 / 39 | 18 | 1.86 to 1.90 |
+| bugzilla | 600 s | 16 / 16 / 16 | 32 / 32 / 32 | 16 | 2.00 |
+| spinv | 600 s | 51 / 50 / 49 | 82 / 82 / 82 | 31 to 33 | 1.61 to 1.67 |
+| apache | 3,263 s | 36 / 37 / 36 | 69 / 69 / 69 | 32 to 33 | 1.86 to 1.92 |
+| gcc | 2,495 s | 26 / 28 / 28 | 54 / 54 / 55 | 26 to 28 | 1.93 to 2.08 |
 
-On the two large benchmarks a locating suite needed about 1.6 to 1.9 times the tests of a covering suite at the budgets
-used. These sizes come from the targeted move; they were not re-run with the local move.
+On these five constrained benchmarks a locating array needed about 1.6 to 2.1 times the tests of a covering array
+at the same budget. Spins and bugzilla runs finished before the cap; the others were capped, so their sizes are
+upper bounds for the budget. The earlier targeted-move measurements gave 1.33 to 1.87 at t = 2 (items 28 and 43)
+and 1.22 to 2.07 at t = 3 (item 32, small models; spins 1.707 to 1.754); they are kept in the notes but not used
+here.
 
 ## RQ2. Does the move design matter? A same-machine race with SA4LA
 
@@ -94,4 +98,4 @@ to minutes.
 - Budgets: most runs were stopped by their time cap while still shrinking; sizes are upper bounds for that budget.
 - Data provenance: Table 1 rows 8, 9 and 21 to 24 were read by a freeform query of a PDF conversion; ProcessorComm2
   and Storage4 differ from Table 1 and were excluded; rows 1 to 5 were not available.
-- RQ1 used the older targeted move; its ratios may change with the local move.
+- RQ1 at t = 3 and on the small example models was measured only with the older targeted move.
