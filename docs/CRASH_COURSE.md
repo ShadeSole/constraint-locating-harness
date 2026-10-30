@@ -364,3 +364,6 @@ A suite that only checks every pair of settings is cheaper than one that can als
 
 ## The price of pinpointing, at triples (plan item 62)
 Same question, but now every combination of three settings has to be checked instead of every pair. On the big spins model the "tell me which" suite needed about 1.8 times as many tests (for example 108 against 193), and on the seven small practice models between 1.2 and 2 times. The new move found the same sizes as the old one on the small models, and smaller ones on spins in less time. Spins runs were stopped by the time limit, so its sizes could probably go lower.
+
+## Is the search finding the best possible answer? (plan item 63)
+On the seven small practice models there are few enough valid tests that a solver can try every combination in effect and prove the smallest size that works. The search found that smallest size in 27 of 28 cases. The one miss: on model_8param at triples, the best possible locating suite has 26 tests and the search stopped at 27 or 28 because of its 60-second limit. This doesn't tell us how close the search gets on the big models, where proving the minimum is out of reach.

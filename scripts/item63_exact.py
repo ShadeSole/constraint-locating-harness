@@ -1,9 +1,10 @@
 """Plan item 63: exact minimum covering / locating array size on a small JSON model, by MaxSAT over the valid configurations.
-Usage: PYTHONPATH=. python3 scripts/item63_exact.py MODEL.json STRENGTH MODE [TIMEOUT_S]
+Usage: PYTHONPATH=. python3 scripts/item63_exact.py MODEL.json STRENGTH MODE [TIMEOUT_S] [OUT.json]
 Each valid configuration is a Boolean "chosen". Every feasible t-way interaction needs a chosen test containing it; in
 locate mode every pair of interactions whose signatures over ALL valid configurations differ needs a chosen test that
 contains exactly one of them (inseparable pairs are exempt). Z3's Optimize minimizes the number chosen; "optimal" means
-Z3 finished, so that size is a proven minimum. The returned suite is re-checked with annealing.suite_cost."""
+Z3 finished, so that size is a proven minimum. The returned suite is re-checked with annealing.suite_cost (cover: 0 uncovered;
+locate: cost 0)."""
 import json, sys, time
 import z3
 from cla_harness.io import load_model
@@ -36,5 +37,9 @@ if result == z3.sat:
     model = opt.model()
     suite = [c for k, c in enumerate(configs) if z3.is_true(model.eval(x[k], model_completion=True))]
     cost = suite_cost(suite, set(inter), set() if mode == "cover" else unavoidable_pairs(configs, set(inter)))
-    out.update({"size": len(suite), "check_cost": cost["cost"] if isinstance(cost, dict) else cost})
+    check = cost["uncovered"] if mode == "cover" else cost["cost"]
+    out.update({"size": len(suite), "check_ok": check == 0})
+    if len(sys.argv) > 5:
+        json.dump({"model": out["model"], "strength": t, "mode": mode, "seed": None, "suite": suite},
+                  open(sys.argv[5], "w"), indent=1)
 print(json.dumps(out))

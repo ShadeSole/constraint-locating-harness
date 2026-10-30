@@ -2082,6 +2082,7 @@ Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to
 ## Needs your decision (added by the scheduled research run, 2026-10-29)
 - Every item in docs/RESEARCH_PLAN.md (1 to 60) is ticked. The scheduled run did nothing else; add new items or say what to do next (open choices are in the earlier "Needs your decision" entries, e.g. d = 2, AI-based work, same-machine comparison with the published tool).
 - Item 61 was done in the live session and is ticked, so every item in docs/RESEARCH_PLAN.md (1 to 61) is now ticked; the line above, which says 1 to 60, is superseded. The scheduled run (2026-10-29 22:08 UTC, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
+- Item 63 (exact minima on the small models) was added and done in the live session on 2026-10-30.
 - Item 62 was done in the live session on 2026-10-30 and is ticked (section "RQ1 at t = 3 with the local move"), so items 1 to 62 are all ticked. Superseded: item 62 (RQ1 at t = 3 with the local move) is the only unchecked item and is marked STOP FOR USER (being run in the live session 2026-10-30). The scheduled run (2026-10-30 12:13 UTC, cloud run, no numbers produced) did nothing else; say whether to run it live or hand it over.
 
 ## Covering versus locating with the local move (research plan item 61)
@@ -2130,3 +2131,23 @@ Run status: every small-model covering run and 19 of 21 small-model locating run
 **What the numbers show.** On the seven small models the local move found exactly the item 32 sizes in both modes, except model_8param.json locating (27 to 28 against 28 to 29), so the t = 3 ratios there (1.22 to 2.00) are essentially the earlier ones (1.22 to 2.07). On original spins, in 2,700 s, the local move found smaller covering (107 to 108 against 114 to 116) and locating (192 to 195 against 197 to 200) arrays than the targeted move had with up to 7,200 s; ratio 1.78 to 1.82 against 1.707 to 1.754 then. At t = 2 on spins the same move gave 1.86 to 1.90 (item 61).
 
 **What they do not show.** Minimum sizes. On the small models the locating searches started at the item 32 size and, except model_8param.json, never solved one test fewer, so those sizes may be limited by the start or budget as much as by the model; whether any is minimal was not checked here. Spins was capped. Other strengths, d > 1, more seeds.
+
+## Exact minimum sizes on the small models (research plan item 63)
+Live session (sandbox), 2026-10-30, `scripts/item63_exact.py` (code at a9b7f61 plus the cover-check fix in this commit). Each valid configuration is a Boolean; every feasible t-way interaction must be in a chosen test; in locating mode every pair of interactions whose signatures over all valid configurations differ must be split by a chosen test (inseparable pairs exempt, as in `suite_cost`). Z3 `Optimize` (z3-solver 5.3) minimizes the number chosen; "sat" from `Optimize` means it finished, so the size is a proven minimum under this encoding. Every returned suite was re-checked with `annealing.suite_cost` (cover: 0 uncovered; locate: cost 0). Deterministic, no seeds. d = 1, interaction localization only.
+
+| model | valid configs | t = 2 cover: exact / search | t = 2 locate: exact / search | t = 3 cover: exact / search | t = 3 locate: exact / search |
+|---|---|---|---|---|---|
+| model.json | 18 | 5 / 5 | 9 / 9 | 12 / 12 | 17 / 17 |
+| model_6param.json | 36 | 6 / 6 | 10 / 10 | 12 / 12 | 22 / 22 |
+| model_8param.json | 144 | 7 / 7 | 11 / 11 to 12 | 14 / 14 | **26** / 27 to 28 (item 62), 28 to 29 (item 32) |
+| model_high_constraints.json | 11 | 6 / 6 | 9 / 9 | 9 / 9 | 11 / 11 |
+| model_low_constraints.json | 32 | 6 / 6 | 8 / 8 | 10 / 10 | 15 / 15 |
+| model_multivalue.json | 30 | 7 / 7 | 11 / 11 | 15 / 15 | 22 / 22 |
+| my_model.json | 24 | 6 / 6 | 8 / 8 | 10 / 10 | 17 / 17 |
+
+"search": t = 2 covering from the item 32 table, t = 2 locating from the item 16 table (seeds 0 to 2), t = 3 from item 62 (local move, seeds 0 to 2). Exact solve times were under 3 s per case except model_8param.json t = 2 locate (15.6 s) and t = 3 locate (316.9 s, 305.0 s on a re-run; 84,131 separation and coverage clauses). The t = 2 locating minima 9, 9 and 8 for model.json, model_high_constraints.json and my_model.json agree with the earlier brute-force `exact_minimum_suite_size` results. The 26-test model_8param.json array is saved in `docs/item63_suites/` and passed `scripts/item62_verify.py`.
+model_spins_core.json at t = 2 (978 valid configurations): Z3 returned "unknown" after the 3,600 s limit in both modes, so its minimum is still not known.
+
+**What the numbers show.** On the seven small models the best of three seeds reaches the proven minimum in 27 of 28 (model, strength, mode) cases, and every seed does in 26 (model_8param.json t = 2 locating seed 1 found 12, one above). The one gap is model_8param.json locating at t = 3: minimum 26, search 27 to 28 within its 60 s cap (two of three seeds hit the cap). So the RQ1 t = 3 ratio on that model at the minimum is 26 / 14 = 1.86, against 1.93 to 2.00 from the search. At the minimum, the small-model locating / covering ratio is 1.33 to 1.80 at t = 2 and 1.22 to 1.86 at t = 3.
+
+**What they do not show.** Anything about the CCAG models (far too many valid configurations for this encoding); model_spins_core.json; the minimum depends on the encoding matching the locating definition, which was checked only through `suite_cost` on the returned suites, not by a second solver route (a plain Z3 Solver with an at-most-25 constraint did not finish within 30 minutes).

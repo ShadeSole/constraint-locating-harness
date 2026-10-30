@@ -51,7 +51,10 @@ On the five constrained benchmarks at t = 2 a locating array needed about 1.6 to
 array at the same budget; at t = 3 on spins about 1.8 times. Spins and bugzilla runs at t = 2 finished before the
 cap; all others on the CCAG models were capped, so their sizes are upper bounds for the budget. On the small models
 at t = 3 the local move reproduced the earlier targeted-move sizes (item 32) except one model, and its locating
-searches never went below their start size, so those sizes may reflect the start as much as the model. The earlier
+searches never went below their start size. Item 63 (exact minimum by MaxSAT over all valid configurations) shows
+the best small-model sizes are the proven minima in 27 of 28 (model, t, mode) cases; the exception is model_8param.json
+locating at t = 3 (minimum 26, search 27 to 28). At the minimum the small-model ratio is 1.33 to 1.80 at t = 2 and
+1.22 to 1.86 at t = 3. The earlier
 targeted-move measurements (items 28, 32, 40 and 43) are kept in the notes but not used here.
 
 ## RQ2. Does the move design matter? A same-machine race with SA4LA
@@ -101,5 +104,5 @@ to minutes.
 - Budgets: most runs were stopped by their time cap while still shrinking; sizes are upper bounds for that budget.
 - Data provenance: Table 1 rows 8, 9 and 21 to 24 were read by a freeform query of a PDF conversion; ProcessorComm2
   and Storage4 differ from Table 1 and were excluded; rows 1 to 5 were not available.
-- RQ1 at t = 3 rests on one CCAG model (spins, capped) and seven small hand-made models; the small-model locating
-  searches started at earlier sizes and did not go below them.
+- RQ1 at t = 3 rests on one CCAG model (spins, capped) and seven small hand-made models. Minimality is proven only on
+  the small models (item 63); on the CCAG models no lower bound is known.
