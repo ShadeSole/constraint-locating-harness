@@ -2083,6 +2083,7 @@ Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to
 ## Needs your decision (added by the scheduled research run, 2026-10-29)
 - Every item in docs/RESEARCH_PLAN.md (1 to 60) is ticked. The scheduled run did nothing else; add new items or say what to do next (open choices are in the earlier "Needs your decision" entries, e.g. d = 2, AI-based work, same-machine comparison with the published tool).
 - Item 61 was done in the live session and is ticked, so every item in docs/RESEARCH_PLAN.md (1 to 61) is now ticked; the line above, which says 1 to 60, is superseded. The scheduled run (2026-10-29 22:08 UTC, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
+- Items 64 (done) and 65 (d = 2, STOP FOR USER, live session) were added on 2026-10-30.
 - Item 63 (exact minima on the small models) was added and done in the live session on 2026-10-30.
 - Item 62 was done in the live session on 2026-10-30 and is ticked (section "RQ1 at t = 3 with the local move"), so items 1 to 62 are all ticked. Superseded: item 62 (RQ1 at t = 3 with the local move) is the only unchecked item and is marked STOP FOR USER (being run in the live session 2026-10-30). The scheduled run (2026-10-30 12:13 UTC, cloud run, no numbers produced) did nothing else; say whether to run it live or hand it over.
 - Every item in docs/RESEARCH_PLAN.md (1 to 63) is now ticked, so the lines above are superseded. The scheduled run (2026-10-30, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
@@ -2153,3 +2154,14 @@ model_spins_core.json at t = 2 (978 valid configurations): Z3 returned "unknown"
 **What the numbers show.** On the seven small models the best of three seeds reaches the proven minimum in 27 of 28 (model, strength, mode) cases, and every seed does in 26 (model_8param.json t = 2 locating seed 1 found 12, one above). The one gap is model_8param.json locating at t = 3: minimum 26, search 27 to 28 within its 60 s cap (two of three seeds hit the cap). So the RQ1 t = 3 ratio on that model at the minimum is 26 / 14 = 1.86, against 1.93 to 2.00 from the search. At the minimum, the small-model locating / covering ratio is 1.33 to 1.80 at t = 2 and 1.22 to 1.86 at t = 3.
 
 **What they do not show.** Anything about the CCAG models (far too many valid configurations for this encoding); model_spins_core.json; the minimum depends on the encoding matching the locating definition, which was checked only through `suite_cost` on the returned suites, not by a second solver route (a plain Z3 Solver with an at-most-25 constraint did not finish within 30 minutes).
+
+## model_8param.json at t = 3: more budget for the search (research plan item 64)
+Live session (sandbox), 2026-10-30, `scripts/item62_run.py` unchanged (local move, start 29, 5 restarts per size, cap 1,800 s), seeds 0 to 2, 3 processes at a time. Item 63 proved the minimum locating size here is 26; item 62 (60 s cap) found 27 to 28. All six suites (size 27) passed `scripts/item62_verify.py`; saved in `docs/item64_suites/`.
+
+| moves per restart | seed | final size | best cost at 26 (avoidable collisions, best of 5 restarts) | total moves | seconds |
+|---|---|---|---|---|---|
+| 6,000 | 0 / 1 / 2 | 27 / 27 / 27 | 4 / 4 / 2 | 35,208 / 36,250 / 46,933 | 38.3 / 38.1 / 49.4 |
+| 30,000 | 0 / 1 / 2 | 27 / 27 / 27 | 2 / 2 / 2 | 169,102 / 161,794 / 171,479 | 161.6 / 153.7 / 164.2 |
+
+No run hit the cap; every run stopped because all 5 restarts at 26 failed. **What this shows:** on this model the gap to the minimum is not the time cap: with five times the moves per restart the search still stops at 27, two avoidable collisions short at 26. **What it does not show:** whether other schedules (slower cooling, restarting from the exact 26 array perturbed, more restarts) close it; one model.
+
