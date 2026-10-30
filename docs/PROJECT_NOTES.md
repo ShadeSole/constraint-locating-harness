@@ -2165,3 +2165,6 @@ Live session (sandbox), 2026-10-30, `scripts/item62_run.py` unchanged (local mov
 
 No run hit the cap; every run stopped because all 5 restarts at 26 failed. **What this shows:** on this model the gap to the minimum is not the time cap: with five times the moves per restart the search still stops at 27, two avoidable collisions short at 26. **What it does not show:** whether other schedules (slower cooling, restarting from the exact 26 array perturbed, more restarts) close it; one model.
 
+
+## Needs your decision (added by the scheduled research run, 2026-10-30)
+- Items 1 to 64 are ticked and the only open item, 65 (d = 2 exact minimum sizes and search), is marked STOP FOR USER (being run in the live session). The scheduled run did nothing else; say whether to hand item 65 to a scheduled run or add new items.
