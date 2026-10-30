@@ -1,7 +1,7 @@
 """Re-run headline results on your own machine and compare them with the cloud (sandbox) numbers.
 
 Usage (PowerShell, repo root):
-  .\\.venv\\Scripts\\python.exe scripts\\reproduce.py quick            # about 10 to 20 minutes, examples/ only
+  .\\.venv\\Scripts\\python.exe scripts\\reproduce.py quick            # about 20 to 30 minutes, examples/ only
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py spins            # about 45 minutes, needs ..\\external\\CCAG
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py long             # about 1.6 hours (apache + gcc locating, seed 0)
   add  --ccag PATH  if the CCAG benchmark folder is not ..\\external\\CCAG\\benchmark
@@ -22,6 +22,7 @@ EXACT = {  # item 63, "Exact minimum sizes on the small models": (t, mode) -> si
     (2, "cover"): [5, 6, 7, 6, 6, 7, 6], (2, "locate"): [9, 10, 11, 9, 8, 11, 8],
     (3, "cover"): [12, 12, 14, 9, 10, 15, 10], (3, "locate"): [17, 22, 26, 11, 15, 22, 17]}
 T3_START = [17, 22, 29, 11, 15, 22, 17]  # item 62 start sizes
+D2_T2 = [17, 22, None, 11, 15, 22, 17]  # item 65 exact (2bar, 2) minima; model_8param not solved, skipped
 T3_SEED0 = {"cover": [12, 12, 14, 9, 10, 15, 10], "locate": [17, 22, 27, 11, 15, 22, 17]}  # item 62, seed 0
 
 
@@ -53,6 +54,14 @@ def main():
                 got = r.get("size", f"z3 {r['z3']}")
                 note(f"exact minimum, {name}, t={t}, {mode}", got, cloud, "Exact minimum sizes on the small models (item 63)",
                      r.get("check_ok"))
+        for name, cloud in zip(SMALL, D2_T2):
+            if cloud is None:
+                continue
+            out = os.path.join(OUT, f"d2_t2_{name}.json")
+            r = run(["scripts/item65_exact.py", f"examples/{name}.json", "2", "2", "1800", out], env)[-1]
+            v = run(["scripts/item65_verify.py", f"examples/{name}.json", out], env)[-1] if "size" in r else {"ok": None}
+            note(f"exact minimum, {name}, t=2, d=2 (two faults)", r.get("size", f"z3 {r['z3']}"), cloud,
+                 "Two faults (d = 2): exact minima and a search (item 65)", v["ok"])
         for mode in ("cover", "locate"):
             for name, start, cloud in zip(SMALL, T3_START, T3_SEED0[mode]):
                 out = os.path.join(OUT, f"t3_{mode}_{name}_s0.json")
@@ -90,10 +99,11 @@ def main():
         z3v = "not installed"
     path = os.path.join(ROOT, "results", f"reproduce_{a.tier}.md")
     with open(path, "w", encoding="utf-8") as f:
-        f.write(f"# Reproduced locally: tier {a.tier}\n\n{datetime.datetime.now():%Y-%m-%d %H:%M}, commit {git}, "
+        f.write(f"# Re-run of tier {a.tier} on this machine (label it \"reproduced locally\" only if this is the author's "
+                f"machine)\n\n{datetime.datetime.now():%Y-%m-%d %H:%M}, commit {git}, "
                 f"{platform.platform()}, {platform.processor() or 'cpu unknown'}, {os.cpu_count()} logical cores, "
                 f"Python {platform.python_version()}, z3 {z3v}. One seed per row.\n\n"
-                "| what | reproduced locally | cloud (sandbox) | PROJECT_NOTES section | suite verified |\n|---|---|---|---|---|\n")
+                "| what | this run | cloud (sandbox) | PROJECT_NOTES section | suite verified |\n|---|---|---|---|---|\n")
         for row in rows:
             f.write("| " + " | ".join(str(x) for x in row) + " |\n")
     print(f"\nwrote {path}")

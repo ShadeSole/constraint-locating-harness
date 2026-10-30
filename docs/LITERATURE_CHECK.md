@@ -155,3 +155,22 @@ Method: three web searches (excerpts only), then each source below was opened (l
 What the searches suggested but I did NOT open (so not claimed): a systematic mapping study (arXiv 2206.10210) whose excerpt says neural networks and reinforcement learning have been used for covering-array generation; a reinforcement-learning-guided simulated annealing attributed to Jia et al. in that excerpt. Both are leads to verify, not citations.
 
 Reading across the table: of the sources opened, none builds locating arrays with a learned model and none uses ML or an LLM to localize failure-inducing interactions in the sense used here. That is "we did not find", from three queries and five opened pages. Interaction localization only; no source-code fault localization is covered.
+
+## 10. Addendum: d = 2 and the (2bar, 2) versus (1bar, 3) observation (research plan item 65, 2026-10-30, live session; search excerpts plus one slide deck read)
+
+Question: is a relation between (2bar, 2)- and (1bar, 3)-locating arrays (constrained or not) known? Observed in item 65 on
+the example models (equal minima, arrays of one kind pass the other's check), not general on random models.
+
+Searched (Exa and Tavily; Firecrawl returned HTTP 403): "(2,2) locating array strength 3 relation", "locating array d = 2
+t = 2 versus t = 3", Colbourn McClary detecting array. Read in full: Colbourn, "Fault Location and Resolvable Set Systems"
+(slides, ACA 2015, pages.mtu.edu/~tonchev/Colbourn.pdf): defines (d, t)-locating and detecting arrays; for d = 2 it lists
+the conditions (no two sets equal, no set equal to a union of two others, unions of two distinct pairs differ); no
+relation to strength t + 1 is stated there. Excerpts only: Dougherty, Green & Kim 2023 (arXiv 2310.07448) say
+constructions are "only well studied for d = 1" and claim the first non-trivial d = 2 arrays (unconstrained); Shi, Tang
+& Yin 2012 relate optimal detecting arrays to super-simple orthogonal arrays; Martinez, Moura, Panario & Stevens 2009
+(error locating arrays, built from covering arrays).
+
+Result: no source found that states the relation. Colbourn & McClary 2008, the most likely place, is still read only as
+an abstract. So: "we did not find it", not "it is new". Also not found: any constrained (2bar, t) locating array
+construction or minimum-size result; Jin & Tsuchiya 2020 define the (dbar, t) variants but their Table 1 results are
+for d = 1 (section 7 above).
