@@ -2083,7 +2083,7 @@ Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to
 ## Needs your decision (added by the scheduled research run, 2026-10-29)
 - Every item in docs/RESEARCH_PLAN.md (1 to 60) is ticked. The scheduled run did nothing else; add new items or say what to do next (open choices are in the earlier "Needs your decision" entries, e.g. d = 2, AI-based work, same-machine comparison with the published tool).
 - Item 61 was done in the live session and is ticked, so every item in docs/RESEARCH_PLAN.md (1 to 61) is now ticked; the line above, which says 1 to 60, is superseded. The scheduled run (2026-10-29 22:08 UTC, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
-- Items 64 (done) and 65 (d = 2, STOP FOR USER, live session) were added on 2026-10-30.
+- Items 64 and 65 were added and done in the live session on 2026-10-30.
 - Item 63 (exact minima on the small models) was added and done in the live session on 2026-10-30.
 - Item 62 was done in the live session on 2026-10-30 and is ticked (section "RQ1 at t = 3 with the local move"), so items 1 to 62 are all ticked. Superseded: item 62 (RQ1 at t = 3 with the local move) is the only unchecked item and is marked STOP FOR USER (being run in the live session 2026-10-30). The scheduled run (2026-10-30 12:13 UTC, cloud run, no numbers produced) did nothing else; say whether to run it live or hand it over.
 - Every item in docs/RESEARCH_PLAN.md (1 to 63) is now ticked, so the lines above are superseded. The scheduled run (2026-10-30, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
@@ -2167,4 +2167,35 @@ No run hit the cap; every run stopped because all 5 restarts at 26 failed. **Wha
 
 
 ## Needs your decision (added by the scheduled research run, 2026-10-30)
-- Items 1 to 64 are ticked and the only open item, 65 (d = 2 exact minimum sizes and search), is marked STOP FOR USER (being run in the live session). The scheduled run did nothing else; say whether to hand item 65 to a scheduled run or add new items.
+- Items 1 to 64 are ticked and the only open item, 65 (d = 2 exact minimum sizes and search), is marked STOP FOR USER (being run in the live session). The scheduled run did nothing else; say whether to hand item 65 to a scheduled run or add new items. Superseded: item 65 was done later the same day (section "Two faults (d = 2): exact minima and a search").
+
+## Two faults (d = 2): exact minima and a search (research plan item 65)
+Live session (sandbox), 2026-10-30. Interaction localization only, t-way interactions, at most two faulty interactions. A fault set is 1 or 2 distinct feasible interactions; its signature is the tests containing at least one of them. A (2bar, t) constrained locating array: every interaction covered, and any two fault sets whose signatures over all valid configurations differ also differ over the suite (sets with equal full signatures are exempt, as in Jin & Tsuchiya's distinguishability for d = 1). New code: `cla_harness/multifault.py` (`MultiFaultModel` cost over distinct full signatures, `anneal_multifault` with a targeted swap move, `find_small_multifault` shrinking search with a time cap; enumeration of valid configurations, so small and medium models only), tests in `tests/test_multifault.py` (cost equals a brute-force reading of the definition on random suites; search reaches four exact minima). Scripts: `scripts/item65_exact.py` (MaxSAT with lazily added separation clauses; agreed with a non-lazy version on five cases), `scripts/item65_search.py`, `scripts/item65_verify.py` (independent check with tuples and sets, no bit masks), `scripts/item65_random.py`. Every saved array in `docs/item65_suites/` passed `item65_verify.py`. Full test suite: 157 tests, OK, 3 skipped, 410 s.
+
+Exact minimum sizes (Z3 Optimize finished, so proven minima under this encoding; d = 1 values from item 63):
+
+| model | valid configs | t = 2: d = 1 / d = 2 | t = 3: d = 1 / d = 2 |
+|---|---|---|---|
+| model.json | 18 | 9 / 17 | 17 / 18 |
+| model_6param.json | 36 | 10 / 22 | 22 / 34 |
+| model_8param.json | 144 | 11 / at most 26 (not solved in 3,600 s; search, seeds 0 / 1 / 2: 28 / 27 / 28) | 26 / not solved in 3,600 s |
+| model_high_constraints.json | 11 | 9 / 11 | 11 / 11 |
+| model_low_constraints.json | 32 | 8 / 15 | 15 / 28 |
+| model_multivalue.json | 30 | 11 / 22 | 22 / 30 |
+| my_model.json | 24 | 8 / 17 | 17 / 24 |
+
+Search (`find_small_multifault`, 6000 moves x 5 restarts per size, seeds 0 to 2): reached the exact d = 2, t = 2 minimum on every seed for model_6param (22), model_low_constraints (15) and model_multivalue (22), and in the unit tests for model.json, model_high_constraints and my_model. On model_spins_core.json (978 valid configurations, 239 interactions, 26,057 distinct fault-set signatures at d = 2), start 120, cap 1,800 s, no run capped:
+
+| model_spins_core.json, t = 2 | seed 0 | seed 1 | seed 2 | seconds |
+|---|---|---|---|---|
+| d = 1 | 30 | 30 | 30 | 12 to 19 |
+| d = 2 | 83 | 84 | 82 | 933 to 1,718 |
+
+Best cost one size below the d = 2 result: 16 to 36 unseparated pairs of fault-set classes. The d = 1 size 30 is inside the earlier range 30 to 32 (item 32 table).
+
+**Observation: d = 2 at t = 2 versus d = 1 at t = 3.** On the six example models where both are solved the minima are equal, and each exact array of one kind passed the other's check (7 of 7 d = 1, t = 3 arrays are (2bar, 2) arrays, including the 26-test model_8param array, which gives the "at most 26" above; 6 of 6 d = 2, t = 2 arrays are (1bar, 3) arrays). This is not general: on random models (`item65_random.py`, seed 0, 3 to 6 parameters with 2 or 3 values, 0 to 4 forbidden pairs, at most 100 configurations; run stopped after model 51; 18 skipped as too large; 2 not solved in 600 s), the minima were equal on 27 of 33 and differed on 6, always with d = 2 at t = 2 smaller (for example 28 against 34, 24 against 27). By number of 3-valued parameters: equal on all 14 models with 0 or 1, different on 6 of 19 with 2 or more. On model_spins_core.json the d = 2, t = 2 search sizes (82 to 84) are far below the d = 1, t = 3 search sizes (110 to 112, item 32). Whether a relation like this is known for (unconstrained or constrained) locating arrays was not checked: the web search tool returned HTTP 403 in this session. Check `docs/LITERATURE_CHECK.md` sources (Colbourn & McClary 2008; Jin & Tsuchiya 2020) before writing anything about it.
+
+**What the numbers show.** Locating up to two faults costs much more than one: at t = 2 the exact minimum roughly doubles on the small models (9 to 17, 10 to 22, 8 to 15, 11 to 22, 8 to 17; 9 to 11 on model_high_constraints, which has only 11 valid configurations), and the search on model_spins_core needs 82 to 84 tests against 30. At t = 3, d = 2 needs every valid configuration on four of six solved models.
+
+**What they do not show.** Anything on the CCAG benchmarks: the cost is computed over enumerated valid configurations and all fault-set pairs, which does not scale to them in this prototype (bugzilla alone has 5,818 feasible pairs, about 17 million fault sets). d > 2. Whether the search is near-minimal on model_spins_core (no lower bound). One seed for the random-model sample.
+

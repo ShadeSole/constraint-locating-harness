@@ -97,10 +97,32 @@ and inside the published range on 6. For 13 of those models their time is under 
 search 5 to 50 times their time: **the search is not faster on small models**; it reaches smaller arrays given seconds
 to minutes.
 
+## RQ4. What does localizing two faults cost? (d = 2)
+
+PROJECT_NOTES "Two faults (d = 2): exact minima and a search" (item 65). t = 2. Exact minima by MaxSAT over all valid
+configurations; the search is `cla_harness/multifault.py`, seeds 0 to 2.
+
+| model | valid configs | d = 1 | d = 2 |
+|---|---|---|---|
+| model.json | 18 | 9 (exact) | 17 (exact) |
+| model_6param.json | 36 | 10 (exact) | 22 (exact) |
+| model_8param.json | 144 | 11 (exact) | at most 26; search 28 / 27 / 28 |
+| model_high_constraints.json | 11 | 9 (exact) | 11 (exact) |
+| model_low_constraints.json | 32 | 8 (exact) | 15 (exact) |
+| model_multivalue.json | 30 | 11 (exact) | 22 (exact) |
+| my_model.json | 24 | 8 (exact) | 17 (exact) |
+| model_spins_core.json (derived from spins) | 978 | search 30 / 30 / 30 | search 83 / 84 / 82 |
+
+The search reached the exact d = 2 minimum on all six models where it is known. The CCAG benchmarks were not run at
+d = 2: this prototype scores all pairs of fault sets over enumerated valid configurations, which does not scale to
+them. An observation to check against the literature before use: on the example models the d = 2, t = 2 minimum
+equals the d = 1, t = 3 minimum, but random models show it is not general.
+
 ## Threats to validity (to expand)
 
 - Hardware, language and tool availability: the CLA heuristic comparison is not same-machine.
 - Seeds: three per model except apache, gcc and Insurance (ten).
+- RQ4 (d = 2) uses only small hand-made models and one derived model; no CCAG benchmark.
 - Budgets: most runs were stopped by their time cap while still shrinking; sizes are upper bounds for that budget.
 - Data provenance: Table 1 rows 8, 9 and 21 to 24 were read by a freeform query of a PDF conversion; ProcessorComm2
   and Storage4 differ from Table 1 and were excluded; rows 1 to 5 were not available.

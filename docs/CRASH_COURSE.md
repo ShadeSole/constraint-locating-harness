@@ -367,3 +367,7 @@ Same question, but now every combination of three settings has to be checked ins
 
 ## Is the search finding the best possible answer? (plan item 63)
 On the seven small practice models there are few enough valid tests that a solver can try every combination in effect and prove the smallest size that works. The search found that smallest size in 27 of 28 cases. The one miss: on model_8param at triples, the best possible locating suite has 26 tests and the search stopped at 27 or 28 because of its 60-second limit. This doesn't tell us how close the search gets on the big models, where proving the minimum is out of reach.
+
+## Two broken things at once (plan item 65)
+So far every suite assumed only one pair of settings is broken. If two can be broken at the same time, the suite has to tell apart "A is broken", "B is broken", "A and B are both broken", and so on. On the small practice models the smallest such suite is about twice the size of the one-fault suite (for example 9 tests become 17), and on the 978-configuration spins-derived model the search needed 82 to 84 tests instead of 30. A curiosity: on the practice models, "two faults among pairs" needs exactly as many tests as "one fault among triples", but random models show that is not a rule.
+
