@@ -34,22 +34,25 @@ binary search over sizes (Konishi et al. 2020, SA4LA); metaheuristics with const
 
 ## RQ1. How many more tests does localization cost than coverage?
 
-Local move, same budget for both modes; from PROJECT_NOTES "Covering versus locating with the local move" (item 61).
-Seeds 0 to 2.
+Local move, same budget for both modes. t = 2: PROJECT_NOTES "Covering versus locating with the local move" (item 61);
+t = 3: "RQ1 at t = 3 with the local move" (item 62). Seeds 0 to 2.
 
-| model | cap | covering | locating | extra tests | locating / covering |
-|---|---|---|---|---|---|
-| spins | 600 s | 20 / 21 / 21 | 38 / 39 / 39 | 18 | 1.86 to 1.90 |
-| bugzilla | 600 s | 16 / 16 / 16 | 32 / 32 / 32 | 16 | 2.00 |
-| spinv | 600 s | 51 / 50 / 49 | 82 / 82 / 82 | 31 to 33 | 1.61 to 1.67 |
-| apache | 3,263 s | 36 / 37 / 36 | 69 / 69 / 69 | 32 to 33 | 1.86 to 1.92 |
-| gcc | 2,495 s | 26 / 28 / 28 | 54 / 54 / 55 | 26 to 28 | 1.93 to 2.08 |
+| model | t | cap | covering | locating | extra tests | locating / covering |
+|---|---|---|---|---|---|---|
+| spins | 2 | 600 s | 20 / 21 / 21 | 38 / 39 / 39 | 18 | 1.86 to 1.90 |
+| bugzilla | 2 | 600 s | 16 / 16 / 16 | 32 / 32 / 32 | 16 | 2.00 |
+| spinv | 2 | 600 s | 51 / 50 / 49 | 82 / 82 / 82 | 31 to 33 | 1.61 to 1.67 |
+| apache | 2 | 3,263 s | 36 / 37 / 36 | 69 / 69 / 69 | 32 to 33 | 1.86 to 1.92 |
+| gcc | 2 | 2,495 s | 26 / 28 / 28 | 54 / 54 / 55 | 26 to 28 | 1.93 to 2.08 |
+| spins | 3 | 2,700 s | 107 / 108 / 108 | 195 / 193 / 192 | 84 to 88 | 1.78 to 1.82 |
+| seven small example models | 3 | 60 s | 9 to 15 | 11 to 28 | 2 to 14 | 1.22 to 2.00 |
 
-On these five constrained benchmarks a locating array needed about 1.6 to 2.1 times the tests of a covering array
-at the same budget. Spins and bugzilla runs finished before the cap; the others were capped, so their sizes are
-upper bounds for the budget. The earlier targeted-move measurements gave 1.33 to 1.87 at t = 2 (items 28 and 43)
-and 1.22 to 2.07 at t = 3 (item 32, small models; spins 1.707 to 1.754); they are kept in the notes but not used
-here.
+On the five constrained benchmarks at t = 2 a locating array needed about 1.6 to 2.1 times the tests of a covering
+array at the same budget; at t = 3 on spins about 1.8 times. Spins and bugzilla runs at t = 2 finished before the
+cap; all others on the CCAG models were capped, so their sizes are upper bounds for the budget. On the small models
+at t = 3 the local move reproduced the earlier targeted-move sizes (item 32) except one model, and its locating
+searches never went below their start size, so those sizes may reflect the start as much as the model. The earlier
+targeted-move measurements (items 28, 32, 40 and 43) are kept in the notes but not used here.
 
 ## RQ2. Does the move design matter? A same-machine race with SA4LA
 
@@ -98,4 +101,5 @@ to minutes.
 - Budgets: most runs were stopped by their time cap while still shrinking; sizes are upper bounds for that budget.
 - Data provenance: Table 1 rows 8, 9 and 21 to 24 were read by a freeform query of a PDF conversion; ProcessorComm2
   and Storage4 differ from Table 1 and were excluded; rows 1 to 5 were not available.
-- RQ1 at t = 3 and on the small example models was measured only with the older targeted move.
+- RQ1 at t = 3 rests on one CCAG model (spins, capped) and seven small hand-made models; the small-model locating
+  searches started at earlier sizes and did not go below them.

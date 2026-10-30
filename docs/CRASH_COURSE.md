@@ -361,3 +361,6 @@ Three runs can be lucky, so we ran the three headline models ten times each with
 
 ## The price of pinpointing, re-measured (plan item 61)
 A suite that only checks every pair of settings is cheaper than one that can also tell you which pair broke. With the new move and the same time for both, the "tell me which" suite needed about 1.6 to 2.1 times as many tests on the five big benchmarks (for example 16 against 32 on bugzilla, 36 against 69 on apache). That is the cost of localization in tests, and it is now measured with the same search for both.
+
+## The price of pinpointing, at triples (plan item 62)
+Same question, but now every combination of three settings has to be checked instead of every pair. On the big spins model the "tell me which" suite needed about 1.8 times as many tests (for example 108 against 193), and on the seven small practice models between 1.2 and 2 times. The new move found the same sizes as the old one on the small models, and smaller ones on spins in less time. Spins runs were stopped by the time limit, so its sizes could probably go lower.

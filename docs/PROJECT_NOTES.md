@@ -2082,7 +2082,7 @@ Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to
 ## Needs your decision (added by the scheduled research run, 2026-10-29)
 - Every item in docs/RESEARCH_PLAN.md (1 to 60) is ticked. The scheduled run did nothing else; add new items or say what to do next (open choices are in the earlier "Needs your decision" entries, e.g. d = 2, AI-based work, same-machine comparison with the published tool).
 - Item 61 was done in the live session and is ticked, so every item in docs/RESEARCH_PLAN.md (1 to 61) is now ticked; the line above, which says 1 to 60, is superseded. The scheduled run (2026-10-29 22:08 UTC, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
-- Item 62 (RQ1 at t = 3 with the local move) is the only unchecked item and is marked STOP FOR USER (being run in the live session 2026-10-30). The scheduled run (2026-10-30 12:13 UTC, cloud run, no numbers produced) did nothing else; say whether to run it live or hand it over.
+- Item 62 was done in the live session on 2026-10-30 and is ticked (section "RQ1 at t = 3 with the local move"), so items 1 to 62 are all ticked. Superseded: item 62 (RQ1 at t = 3 with the local move) is the only unchecked item and is marked STOP FOR USER (being run in the live session 2026-10-30). The scheduled run (2026-10-30 12:13 UTC, cloud run, no numbers produced) did nothing else; say whether to run it live or hand it over.
 
 ## Covering versus locating with the local move (research plan item 61)
 Live session (sandbox), 2026-10-29, code at ac324c7 plus `scripts/item61_run.py` (item55_run.py with a cover/locate mode argument). t = 2, d = 1, interaction localization only, seeds 0 to 2. Both modes: local move, start = the published locating maximum, 6000 moves x 5 restarts per size, same cap per model. Apache and gcc locating sizes are the item 56 runs (same settings and cap); all other runs are new. 4 processes at a time. All 24 new suites verified with `item44_verify.py` (covering: valid and 0 uncovered; locating: also 0 avoidable collisions). Suites in `docs/item61_suites/`. "(finished)" = the search stopped because the next size failed all 5 restarts, not at the cap.
@@ -2110,3 +2110,23 @@ ratio range 1.61 to 2.08
 **What the numbers show.** With the same move and the same budget for both, a locating array needed 1.61 to 2.08 times the tests of a covering array on these five benchmarks (16 to 33 extra tests). On spins and bugzilla both searches finished before the cap. Against the targeted-move runs of item 43 (spins covering 23 to 25, locating 42 to 44; spinv 48 to 49 and 78 to 79), the local move found smaller covering and locating arrays on spins in 600 s, and a smaller covering but larger locating array on spinv (82 against 78 to 79 in far longer runs).
 
 **What they do not show.** Minimum sizes (spinv, apache and gcc runs were capped); other strengths or d > 1; a covering comparison with published covering-array sizes (not made).
+
+## RQ1 at t = 3 with the local move (research plan item 62)
+Live session (sandbox), 2026-10-30, code at 79c0b10 (`scripts/item62_run.py`, local move, `FastZ3CostModel`, 6000 moves x 5 restarts per size, shrinking one test at a time). t = 3, d = 1, interaction localization only, seeds 0 to 2, 4 processes at a time. Original CCAG spins (12,835 feasible 3-way interactions): cap 2,700 s, start 140 (covering) and 200 (locating). Seven small example models: cap 60 s, start = the item 32 t = 3 locating size, for both modes. All 48 suites verified with `scripts/item62_verify.py` (small models: enumeration with `annealing.suite_cost`; spins: `Z3CostModel` at t = 3): every test valid, 0 uncovered, and for locating 0 avoidable collisions. Suites in `docs/item62_suites/`. One seed = one data point; three seeds is a small sample.
+
+| model | covering (seeds 0 / 1 / 2) | locating (seeds 0 / 1 / 2) | extra tests | locating / covering | item 32 / 40 (targeted move): cover / locate |
+|---|---|---|---|---|---|
+| model.json | 12 / 12 / 12 | 17 / 17 / 17 | 5 | 1.42 | 12 / 17 |
+| model_6param.json | 12 / 12 / 12 | 22 / 22 / 22 | 10 | 1.83 | 12 / 22 |
+| model_8param.json | 14 / 14 / 14 | 27 / 27 / 28 | 13 to 14 | 1.93 to 2.00 | 14 / 28 to 29 |
+| model_high_constraints.json | 9 / 9 / 9 | 11 / 11 / 11 | 2 | 1.22 | 9 / 11 |
+| model_low_constraints.json | 10 / 10 / 10 | 15 / 15 / 15 | 5 | 1.50 | 10 / 15 |
+| model_multivalue.json | 15 / 15 / 15 | 22 / 22 / 22 | 7 | 1.47 | 15 / 22 |
+| my_model.json | 10 / 10 / 10 | 17 / 17 / 17 | 7 | 1.70 | 10 / 17 |
+| spins (original) | 107 / 108 / 108 (capped) | 195 / 193 / 192 (capped) | 84 to 88 | 1.78 to 1.82 | 114 to 116 / 197 to 200 (item 40, 5 seeds, 7,200 s cap, not reached) |
+
+Run status: every small-model covering run and 19 of 21 small-model locating runs stopped because the next size failed all 5 restarts; model_8param.json locating seeds 0 and 1 hit the 60 s cap. All six spins runs hit the 2,700 s cap while still shrinking, so the spins sizes are upper bounds for this budget.
+
+**What the numbers show.** On the seven small models the local move found exactly the item 32 sizes in both modes, except model_8param.json locating (27 to 28 against 28 to 29), so the t = 3 ratios there (1.22 to 2.00) are essentially the earlier ones (1.22 to 2.07). On original spins, in 2,700 s, the local move found smaller covering (107 to 108 against 114 to 116) and locating (192 to 195 against 197 to 200) arrays than the targeted move had with up to 7,200 s; ratio 1.78 to 1.82 against 1.707 to 1.754 then. At t = 2 on spins the same move gave 1.86 to 1.90 (item 61).
+
+**What they do not show.** Minimum sizes. On the small models the locating searches started at the item 32 size and, except model_8param.json, never solved one test fewer, so those sizes may be limited by the start or budget as much as by the model; whether any is minimal was not checked here. Spins was capped. Other strengths, d > 1, more seeds.
