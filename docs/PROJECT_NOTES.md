@@ -2276,3 +2276,26 @@ Methods: exact sizes from `scripts/item65_exact.py` (2800 s, then 900 s); upper 
 **What this shows.** On 12 of the 15 models C22 < C13 (by 4 to 28 tests where both sides are known or bounded by search and exact values; by at least 1 to 10 where only a lower bound on C13 is known); on none is C22 shown to be larger. Together with item 65 (equal on the example models), no model so far needs more tests for two faults at t = 2 than for one fault at t = 3.
 
 **What it does not show.** It is not a proof, and three models are open. bin7 is the closest case: the searches tie at 22 and neither minimum is known. The lower bounds on C22 for bin7 and ter5 are far below the search sizes, so a proof there needs a stronger method (for example symmetry breaking for unconstrained models).
+
+## A SAT decision tool with symmetry breaking; exact minima on small unconstrained models (research plan item 69)
+Live session (sandbox), 2026-10-31. `scripts/item69_decide.py MODEL t d K [--fix-first | --fix-two] [OUT]` asks "is there a (dbar, t) array with at most K tests?" with PySAT (CaDiCaL 1.9.5, sequential-counter cardinality encoding; `pip install python-sat`, needed by this script only). Same conditions and lazy separation clauses as `item65_exact.py`. UNSAT proves the minimum is at least K + 1. Symmetry breaking, for unconstrained models only (the script refuses otherwise): `--fix-first` adds "configuration 0 (all first values) is chosen", sound because renaming values acts transitively on configurations and preserves both conditions; `--fix-two` (all parameters share one value list) also fixes the chosen configuration of least positive weight to "second value on the first w parameters", sound because parameter permutations and value renamings that keep the first value fix configuration 0 and preserve weights.
+
+Validation, each against a minimum found independently (Z3 `item65_exact.py`, or the plain SAT run without symmetry breaking): K = minimum - 1 gives UNSAT and K = minimum gives SAT, with no flag, `--fix-first` and `--fix-two`, on model.json (d = 1: 9, d = 2: 17), bin5 (t = 2: 8, d = 2 t = 2: 15, t = 3: 15), bin6 (t = 2: 9, d = 2 t = 2: 19, t = 3: 19) and ter4 (t = 2: 16). On ter4 t = 2 the SAT run took 2 to 13 s against 814 s for Z3. Saved minimum suites in `docs/item69/` pass `item65_verify.py`.
+
+Minimum (1bar, 3) size C13 versus minimum (2bar, 2) size C22 on small unconstrained models (exact unless stated):
+
+| model | C13 | C22 |
+|---|---|---|
+| bin3 | 8 | 8 |
+| bin4 | 14 | 14 |
+| bin5 | 15 | 15 |
+| bin6 | 19 | 19 |
+| bin7 | 12 to 22 | 6 to 22 (searches tie at 22, item 68) |
+| ter3 | 27 (all configurations; t = number of parameters) | 18 |
+| ter4 | at least 27 (3 of the 4 parameters need all 27 value triples); search 46 | search 23 (verified) |
+
+Not settled within the budget: "at most 21 tests" on bin7 for both conditions (two runs of 7000 s each, with `--fix-first` and with `--fix-two`), and "at most 29 tests" on r334 for both conditions (5000 s each; no symmetry breaking, it is constrained).
+
+**What this shows.** The new tool decides small cases far faster than Z3 MaxSAT, and the symmetry breaking is checked against independent minima. On unconstrained binary models with 3 to 6 parameters the two minima are equal, so the "never larger" observation of item 68 is tight there; on ternary models C22 is much smaller.
+
+**What it does not show.** Why the binary minima coincide (no argument yet), and bin7, r334 and ter5 remain open.

@@ -121,7 +121,8 @@ array failing (2bar, 2), but item 67's exact check found counterexamples (for ex
 three-valued parameters and on 13 of 198 random constrained models), verified independently. So (1bar, 3) does not
 imply (2bar, 2); do not claim it. Sizes are a separate question: on the 15 models where the implication fails, the minimum (2bar, 2) size is
 smaller than the minimum (1bar, 3) size on 12 and unsettled on 3 (item 68, PROJECT_NOTES); on no model so far is it
-larger. One data point per search seed; not a theorem.
+larger. One data point per search seed; not a theorem. On unconstrained binary models with 3 to 6 parameters the two minima are
+exactly equal (item 69: bin3 8, bin4 14, bin5 15, bin6 19), so the bound would be tight there.
 
 ## Threats to validity (to expand)
 

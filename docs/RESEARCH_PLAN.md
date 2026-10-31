@@ -66,4 +66,5 @@
 - [x] 66. Done 2026-10-31 in the live session (PROJECT_NOTES "Does every (1bar, 3) array also locate two faults at t = 2?"). Test whether every (1bar, 3) constrained locating array is a (2bar, 2) one, and the converse, on random suites, near-minimal arrays, sparse binary models and an adversarial search; check the literature.
 - [x] 67. Done 2026-10-31 in the live session (PROJECT_NOTES "The (1bar, 3) => (2bar, 2) conjecture is false"). Exact per-model check of the item 66 conjecture via monotone clause inclusion; counterexamples verified independently.
 - [x] 68. Done 2026-10-31 in the live session (PROJECT_NOTES "Two faults at t = 2 versus one fault at t = 3"). Minimum (2bar, 2) versus (1bar, 3) size on the 15 item 67 counterexample models: (2bar, 2) is smaller on 12, open on 3 (bin7 ties at 22 by search); never larger so far.
+- [x] 69. Done 2026-10-31 in the live session (PROJECT_NOTES "A SAT decision tool with symmetry breaking"). `scripts/item69_decide.py` (PySAT) with validated symmetry breaking for unconstrained models; (1bar, 3) and (2bar, 2) minima are equal on bin3 to bin6; bin7, r334, ter5 still open.
 
