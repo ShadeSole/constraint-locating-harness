@@ -2256,3 +2256,22 @@ Three counterexamples were rebuilt as suites and passed **both independent verif
 
 **What it does not show.** Whether minimum-size C3 arrays are always C22 (the counterexamples are large); how often near-minimal arrays fail on larger models.
 
+
+## Two faults at t = 2 versus one fault at t = 3: minimum sizes on the item 67 counterexample models (research plan item 68)
+Live session (sandbox), 2026-10-31, parent commit b93d841. Question: is the minimum (2bar, 2) size (C22) ever larger than the minimum (1bar, 3) size (C13)? Item 65 found them equal on the example models; item 67 showed neither condition implies the other, so the size comparison is open. Tested on the 15 models where item 67's implication failed (13 random r*.json, plus unconstrained ter5 and bin7; models and the bin7 suites in `docs/item68/`, per-model table in `docs/item68/summary.jsonl`).
+
+Methods: exact sizes from `scripts/item65_exact.py` (2800 s, then 900 s); upper bounds from `scripts/item65_search.py` (seed 0, 6000 steps, 5 restarts, cap 900 s; bin7 also seeds 1 to 4 with 20000 steps); lower bounds from the exact t = 3 covering minimum (`scripts/item63_exact.py ... cover`, a lower bound because every (1bar, 3) array covers every 3-way interaction) and from the new `scripts/item68_bound.py` (the optimum of each finished lazy-MaxSAT round satisfies a subset of the conditions, so it is a proven lower bound; 1200 s). One seed per search unless stated.
+
+| models | result |
+|---|---|
+| r122, r249, r264 | both exact: C22 = 40, 28, 37; C13 = 44, 40, 51 |
+| r121, r171, r246, r77, r67 | C22 search 40, 38, 37, 32, 44 below exact C13 48, 66, 52, 40, 64 |
+| r137, r61, r387 | C22 search 43, 45, 45 below the t = 3 covering minimum 44, 48, 48 |
+| r78 | C22 search 38 below the item68_bound lower bound 48 on C13 |
+| r334 | not settled: C22 in [24, 30], C13 in [27, 34] |
+| ter5 | not settled: C22 in [11, 34], C13 at most 56 (no lower bound beyond trivial in 1200 s) |
+| bin7 | not settled: C22 in [6, 22], C13 in [12, 22]; the best search suites tie at 22 (C22 seeds 0 to 4: 23, 23, 22, 23, 23; C13 seeds 0 to 2: 22, 23, 22); both 22-test suites pass `item65_verify.py` |
+
+**What this shows.** On 12 of the 15 models C22 < C13 (by 4 to 28 tests where both sides are known or bounded by search and exact values; by at least 1 to 10 where only a lower bound on C13 is known); on none is C22 shown to be larger. Together with item 65 (equal on the example models), no model so far needs more tests for two faults at t = 2 than for one fault at t = 3.
+
+**What it does not show.** It is not a proof, and three models are open. bin7 is the closest case: the searches tie at 22 and neither minimum is known. The lower bounds on C22 for bin7 and ter5 are far below the search sizes, so a proof there needs a stronger method (for example symmetry breaking for unconstrained models).

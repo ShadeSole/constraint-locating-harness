@@ -377,3 +377,6 @@ A suite that pinpoints one broken triple of settings seems to always also pinpoi
 ## ...and the pattern was wrong (plan item 67)
 Instead of more random tries, I wrote a check that answers the question exactly for a given model. It found models where the pattern breaks, and two separate checkers confirmed them. The smallest clean example: five settings with three options each; a suite that pinpoints any one broken triple still can't tell "setting 0 is 0 together with setting 1 or 2 being 0" from the same thing with settings 3 and 4. The lesson: hundreds of random tests found nothing because the counterexamples are unusual, nearly-complete suites. Random testing can't prove a rule for every case.
 
+
+## Does two-at-pairs ever cost more than one-at-triples? (plan item 68)
+Item 67 showed a suite for "one broken triple" doesn't automatically handle "two broken pairs". But how big do the smallest suites need to be? On the 15 models where the pattern broke, the two-broken-pairs suite was smaller on 12 (sometimes by a lot) and we couldn't decide 3. The closest call is seven yes/no settings with no rules, where both kinds of suite come out at 22 tests in our searches. So far, handling two broken pairs never needed more tests than one broken triple, but that is an observation, not a proof.

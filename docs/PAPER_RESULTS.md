@@ -119,7 +119,9 @@ them. An observation to check against the literature before use: on the example 
 equals the d = 1, t = 3 minimum, but random models show it is not general. Item 66 sampled suites and found no (1bar, 3)
 array failing (2bar, 2), but item 67's exact check found counterexamples (for example on 5 unconstrained
 three-valued parameters and on 13 of 198 random constrained models), verified independently. So (1bar, 3) does not
-imply (2bar, 2); do not claim it.
+imply (2bar, 2); do not claim it. Sizes are a separate question: on the 15 models where the implication fails, the minimum (2bar, 2) size is
+smaller than the minimum (1bar, 3) size on 12 and unsettled on 3 (item 68, PROJECT_NOTES); on no model so far is it
+larger. One data point per search seed; not a theorem.
 
 ## Threats to validity (to expand)
 
