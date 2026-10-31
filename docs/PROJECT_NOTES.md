@@ -606,6 +606,7 @@ Comparison: the locating suites of item 23 (all ten seeds, sizes 42 to 44) left 
 - Item 3: rows with more than 4 rules rest on fewer orderings (survivors only); see that section.
 
 ## Needs your decision
+- Every item in docs/RESEARCH_PLAN.md (1 to 67) is ticked. The scheduled run has nothing left to do until you add new items (2026-10-31 scheduled run, cloud run, no numbers produced).
 - Item 63 (exact minimum sizes by MaxSAT on the small models) is marked STOP FOR USER and is being run in the live session; the scheduled run did not start it (2026-10-30 scheduled run, cloud run, no numbers produced). Superseded: item 63 was done later the same day (section "Exact minimum sizes on the small models").
 - Item 61 (RQ1 with the local move) is marked STOP FOR USER and is being run in the live session; the scheduled run did not start it (2026-10-29 scheduled run, cloud run, no numbers produced).
 - Every item in docs/RESEARCH_PLAN.md (1 to 59) is ticked (item 57 was carried out in the live session as item 59; the first line below is superseded). The scheduled run has nothing left to do until you add new items (2026-10-28 scheduled run, cloud run, no numbers produced).
