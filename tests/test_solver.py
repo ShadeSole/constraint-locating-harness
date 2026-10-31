@@ -140,11 +140,12 @@ class SolverFeasibleInteractions(unittest.TestCase):
         self.assertNotIn(frozenset({("B", "1"), ("C", "1")}), found)
         self.assertEqual(found, feasible_interactions(valid_configurations(parameters, forbidden), 2))
 
-    def test_no_valid_configuration_and_unsupported_strength(self):
+    def test_no_valid_configuration_and_invalid_strength(self):
         parameters = {"A": ["x"], "B": ["u"]}
         self.assertEqual(solver.feasible_interactions_z3(parameters, [Forbidden.from_dict({"A": "x"})]), frozenset())
-        with self.assertRaises(ValueError):
-            solver.feasible_interactions_z3(parameters, [], strength=3)
+        for bad in (0, 3):                                   # strength must be 1 .. number of parameters
+            with self.assertRaises(ValueError):
+                solver.feasible_interactions_z3(parameters, [], strength=bad)
 
     def test_deliberate_break_is_caught(self):
         parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
@@ -192,6 +193,32 @@ class SolverCost(unittest.TestCase):
         self.assertEqual(model.misses, misses)
         self.assertGreater(model.hits, 0)
 
+    def test_cover_only_cost_is_the_count_of_uncovered_interactions(self):
+        from cla_harness.core import contains_interaction
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            configs = valid_configurations(parameters, forbidden)
+            model = solver.Z3CostModel(parameters, forbidden, cover_only=True)
+            for suite in random_suites(configs, 100, seed=21):
+                uncovered = [i for i in model.interactions
+                             if not any(contains_interaction(c, i) for c in suite)]
+                got = model.suite_cost(suite, detail=True)
+                self.assertEqual(got["cost"], len(uncovered), path)
+                self.assertEqual((got["uncovered"], got["avoidable_collisions"]), (len(uncovered), 0), path)
+                self.assertEqual(got["uncovered_list"], sorted(uncovered, key=sorted), path)
+            self.assertEqual(model.misses, 0, path)          # no separability query was needed
+        # the default model is unchanged by the new option
+        parameters, forbidden = load_model(EXAMPLES[0])
+        self.assertFalse(solver.Z3CostModel(parameters, forbidden).cover_only)
+
+    def test_cover_only_never_costs_more_than_locating(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        configs = valid_configurations(parameters, forbidden)
+        cover = solver.Z3CostModel(parameters, forbidden, cover_only=True)
+        locate = solver.Z3CostModel(parameters, forbidden)
+        for suite in random_suites(configs, 100, seed=5):
+            self.assertLessEqual(cover.suite_cost(suite)["cost"], locate.suite_cost(suite)["cost"])
+
     def test_deliberate_break_is_caught(self):
         # Treating every colliding pair as avoidable overcounts on high_constraints, which has
         # indistinguishable interactions (28 of 35 localizable).
@@ -212,10 +239,21 @@ Z3_MINIMA = {"model.json": 9, "model_high_constraints.json": 9, "my_model.json":
 
 @unittest.skipUnless(solver is not None, "z3-solver is not installed")
 class SolverAnnealing(unittest.TestCase):
-    def model_for(self, name):
+    def model_for(self, name, cover_only=False):
         parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index(name)])
         valid = {key(c) for c in valid_configurations(parameters, forbidden)}
-        return solver.Z3CostModel(parameters, forbidden), valid
+        return solver.Z3CostModel(parameters, forbidden, cover_only=cover_only), valid
+
+    def test_cover_only_search_solves_with_valid_tests_and_needs_no_more_tests_than_locating(self):
+        from cla_harness.core import contains_interaction
+        for name, n in Z3_MINIMA.items():
+            model, valid = self.model_for(name, cover_only=True)
+            found = solver.find_small_suite_z3(model, n, seed=0, restarts=3, steps_per_restart=2000)
+            self.assertIsNotNone(found["size"], name)
+            self.assertLessEqual(found["size"], n, name)       # a locating suite of size n also covers
+            self.assertTrue(all(key(c) in valid for c in found["suite"]))
+            self.assertTrue(all(any(contains_interaction(c, i) for c in found["suite"])
+                                for i in model.interactions), name)
 
     def test_every_test_in_every_suite_is_valid_and_cost_is_consistent(self):
         for name in ("model.json", "model_spins_core.json"):
@@ -281,6 +319,41 @@ class SolverAnnealing(unittest.TestCase):
         free = solver.anneal_suite_z3(model, 5, seed=0, max_steps=3)
         self.assertFalse(free["timed_out"])
 
+    def test_local_move_keeps_tests_valid_and_reaches_the_exact_minimum(self):
+        # Same budget as test_reaches_the_exact_minimum_with_both_moves, for the "local" move.
+        for name, n in Z3_MINIMA.items():
+            model, valid = self.model_for(name)
+            for seed in range(2):
+                result = solver.anneal_suite_z3(model, n, seed=seed, max_steps=20000, neighbor="local")
+                self.assertTrue(result["solved"], (name, seed))
+                self.assertTrue(all(key(c) in valid for c in result["suite"]))
+            short = solver.anneal_suite_z3(model, n - 1, seed=0, max_steps=1500, neighbor="local")
+            self.assertFalse(short["solved"], name)
+        for name in ("model.json", "model_spins_core.json"):
+            model, valid = self.model_for(name)
+            result = solver.anneal_suite_z3(model, 12, seed=2, max_steps=60, neighbor="local")
+            self.assertTrue(all(key(c) in valid for c in result["suite"]), name)
+            self.assertEqual(model.suite_cost(result["suite"])["cost"], result["cost"]["cost"])
+
+    def test_local_move_changes_only_the_target_interactions_values_when_that_is_valid(self):
+        from cla_harness.core import contains_interaction
+        parameters, _ = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        model = solver.Z3CostModel(parameters, [])          # no rules, so the overwrite is always valid
+        rng = random.Random(0)
+        current = [solver._draw(model, rng) for _ in range(6)]
+        cost = model.suite_cost(current, detail=True)
+        self.assertTrue(cost["uncovered_list"])
+        for _ in range(20):
+            position, new = solver._z3_local_move(model, rng, current, cost)
+            changed = {n for n in new if new[n] != current[position][n]}
+            self.assertLessEqual(len(changed), model.strength)
+            self.assertTrue(any(contains_interaction(new, i) for i in cost["uncovered_list"]))
+
+    def test_unknown_neighbor_is_rejected(self):
+        model, _ = self.model_for("model.json")
+        with self.assertRaises(ValueError):
+            solver.anneal_suite_z3(model, 5, seed=0, max_steps=3, neighbor="magic")
+
     def test_deliberate_break_is_caught(self):
         # With the model's rules ignored the "valid" check below would fail: sampling from an
         # unconstrained model must produce tests the real model forbids.
@@ -289,6 +362,96 @@ class SolverAnnealing(unittest.TestCase):
         loose = solver.Z3CostModel(parameters, [])
         result = solver.anneal_suite_z3(loose, 12, seed=0, max_steps=5, neighbor="random")
         self.assertTrue(any(key(c) not in valid for c in result["suite"]))
+
+
+@unittest.skipUnless(solver is not None, "z3-solver is not installed")
+class SolverStrengthT(unittest.TestCase):
+    def test_interaction_sets_equal_enumeration_at_t1_t2_t3_on_every_example_model(self):
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            configs = valid_configurations(parameters, forbidden)
+            for t in (1, 2, 3):
+                self.assertEqual(solver.feasible_interactions_z3(parameters, forbidden, t),
+                                 feasible_interactions(configs, t), (path, t))
+
+    def test_default_strength_is_two(self):
+        parameters, forbidden = load_model(EXAMPLES[0])
+        self.assertEqual(solver.feasible_interactions_z3(parameters, forbidden),
+                         solver.feasible_interactions_z3(parameters, forbidden, 2))
+        self.assertEqual(solver.Z3CostModel(parameters, forbidden).strength, 2)
+
+    def test_t3_cost_identical_to_suite_cost_and_cover_cost_to_a_direct_count(self):
+        from cla_harness.core import contains_interaction
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            configs = valid_configurations(parameters, forbidden)
+            interactions = feasible_interactions(configs, 3)
+            unavoidable = unavoidable_pairs(configs, interactions)
+            locate = solver.Z3CostModel(parameters, forbidden, strength=3)
+            cover = solver.Z3CostModel(parameters, forbidden, cover_only=True, strength=3)
+            self.assertEqual(set(locate.interactions), set(interactions), path)
+            with_collisions = 0
+            for suite in random_suites(configs, 200, seed=31):
+                want = suite_cost(suite, interactions, unavoidable, detail=True)
+                self.assertEqual(locate.suite_cost(suite, detail=True), want, path)
+                uncovered = [i for i in interactions if not any(contains_interaction(c, i) for c in suite)]
+                self.assertEqual(cover.suite_cost(suite)["cost"], len(uncovered), path)
+                with_collisions += want["avoidable_collisions"] > 0
+            self.assertGreater(with_collisions, 0, path)
+
+    def test_t3_search_returns_valid_suites_that_cover_all_3way_interactions(self):
+        from cla_harness.core import contains_interaction
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        valid = {key(c) for c in valid_configurations(parameters, forbidden)}
+        for cover_only in (True, False):
+            model = solver.Z3CostModel(parameters, forbidden, cover_only=cover_only, strength=3)
+            found = solver.find_small_suite_z3(model, 17, seed=0, restarts=3, steps_per_restart=2000)
+            self.assertIsNotNone(found["size"])
+            self.assertTrue(all(key(c) in valid for c in found["suite"]))
+            self.assertTrue(all(any(contains_interaction(c, i) for c in found["suite"]) for i in model.interactions))
+
+    def test_deliberate_break_is_caught(self):
+        # Computing 2-way interactions where 3-way ones are required must differ from the enumeration.
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        configs = valid_configurations(parameters, forbidden)
+        self.assertNotEqual(solver.feasible_interactions_z3(parameters, forbidden, 2),
+                            feasible_interactions(configs, 3))
+
+
+@unittest.skipUnless(solver is not None, "z3-solver is not installed")
+class FastCostModel(unittest.TestCase):
+    def test_fast_cost_identical_to_z3_cost_and_suite_cost_at_t2_and_t3(self):
+        for path in EXAMPLES:
+            parameters, forbidden = load_model(path)
+            configs = valid_configurations(parameters, forbidden)
+            for t in (2, 3):
+                interactions = feasible_interactions(configs, t)
+                unavoidable = unavoidable_pairs(configs, interactions)
+                for cover_only in (False, True):
+                    slow = solver.Z3CostModel(parameters, forbidden, cover_only=cover_only, strength=t)
+                    fast = solver.FastZ3CostModel(parameters, forbidden, cover_only=cover_only, strength=t)
+                    self.assertEqual(fast.interactions, slow.interactions, (path, t))
+                    for suite in random_suites(configs, 10 if "spins_core" in path else 100, seed=33):
+                        self.assertEqual(fast.suite_cost(suite, detail=True),
+                                         slow.suite_cost(suite, detail=True), (path, t, cover_only))
+                        if not cover_only:
+                            self.assertEqual(fast.suite_cost(suite, detail=True),
+                                             suite_cost(suite, interactions, unavoidable, detail=True), (path, t))
+
+    def test_fast_model_usable_by_search(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        model = solver.FastZ3CostModel(parameters, forbidden)
+        found = solver.find_small_suite_z3(model, 12, seed=0, restarts=3, steps_per_restart=2000)
+        self.assertIsNotNone(found["size"])
+
+    def test_deliberate_break_is_caught(self):
+        parameters, forbidden = load_model(EXAMPLES[[Path(p).name for p in EXAMPLES].index("model.json")])
+        configs = valid_configurations(parameters, forbidden)
+        fast = solver.FastZ3CostModel(parameters, forbidden, strength=3)
+        slow = solver.Z3CostModel(parameters, forbidden, strength=3)
+        suite = configs[:3]
+        self.assertEqual(fast.suite_cost(suite), slow.suite_cost(suite))
+        self.assertNotEqual(fast.suite_cost(suite[:2]), slow.suite_cost(suite))
 
 
 if __name__ == "__main__":

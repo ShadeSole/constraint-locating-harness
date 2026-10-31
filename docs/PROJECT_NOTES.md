@@ -578,15 +578,41 @@ Not supported: any general claim that SA beats greedy (7 tiny models, 3 seeds, u
 schedule). The CASA benchmark files are not in this container, so only the hand-built
 models were run.
 
+## Ceiling on the original spins model (research plan item 42)
+Cloud run, not reproduced by the author. `scripts/item42_ceiling.py` (spins from a CCAG clone outside the repo, nothing committed) and `scripts/item42_check.py`; z3-solver 5.3.1 pip-installed. Strength 2, d = 1, interaction localization only (no source-code fault localization). An interaction is counted distinguishable if no other feasible interaction is inseparable from it (Jin & Tsuchiya Def. 1 / Lemma 1 as implemented by `Z3CostModel.separable`; the primary paper's definitions were not re-read in this session).
+
+Method: 400 Z3-sampled valid configurations (all checked valid) give each interaction a signature; pairs whose signatures differ are separated by some pool test and need no query. Every pair with identical signatures gets the exact Z3 query.
+
+Cross-check (same method, pool 100): on all 8 example models the Z3 count equals `experiment.ceiling_of` from full enumeration (38, 58, 110, 28, 40, 46, 229, 39 distinguishable; high_constraints 28 of 35, spins_core 229 of 239, the other six equal to their feasible count).
+
+| quantity | value |
+|---|---|
+| feasible 2-way interactions | 979 |
+| all pairs of interactions | 478,731 |
+| pairs needing a Z3 query after the pool | 9 |
+| of these, inseparable | 9 |
+| interactions in an inseparable pair | 10 |
+| distinguishable interactions (ceiling) | 969 |
+| setup time / query time | 3.1 s / under 0.05 s (30 min budget not approached) |
+
+Comparison: the locating suites of item 23 (all ten seeds, sizes 42 to 44) left 969 of 979 interactions uniquely identified (see the item 23 section), equal to this exact count. So on this model, at t = 2, d = 1, the best suites separate every interaction that any suite could separate; the 10 left over are inseparable for any suite. Not shown: anything at t = 3 or d > 1, or whether suites of items 27/40 (covering-only) matter here (their count of 457 to 566 is from item 28). One model.
+
 ## Open questions
 - Low priority, not a blocker: no CASA benchmark file was run for item 2 (the CCAG files are not in
   the cloud container, `../external` absent). The loader is already tested in tests/test_casa.py and
   almost every benchmark is too large to enumerate (docs/BENCHMARKS.md), so this only matters once
   solver-based handling exists (plan item 6).
+- Item 57 (scheduled cloud run, 2026-10-28; cloud run, not reproduced by the author): not run. zenodo.org (and doi.org) returned `CONNECT tunnel failed, response 403` from the agent proxy, and no copy of `ICSE15_HHSA_Benchmarks.zip` / `segall_issta_11` exists in the container. No numbers were produced. Needs zenodo.org in the environment's allowed domains (or the archive supplied); then re-run item 57 as written. Item 58 depends on it.
 - Item 3: rows with more than 4 rules rest on fewer orderings (survivors only); see that section.
 
 ## Needs your decision
-(none yet)
+- Every item in docs/RESEARCH_PLAN.md (1 to 67) is ticked. The scheduled run has nothing left to do until you add new items (2026-10-31 scheduled run, cloud run, no numbers produced).
+- Item 68 is also ticked, so every item in docs/RESEARCH_PLAN.md (1 to 68) is ticked; the line above, which says 1 to 67, is superseded. The scheduled run (2026-10-31, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
+- Item 63 (exact minimum sizes by MaxSAT on the small models) is marked STOP FOR USER and is being run in the live session; the scheduled run did not start it (2026-10-30 scheduled run, cloud run, no numbers produced). Superseded: item 63 was done later the same day (section "Exact minimum sizes on the small models").
+- Item 61 (RQ1 with the local move) is marked STOP FOR USER and is being run in the live session; the scheduled run did not start it (2026-10-29 scheduled run, cloud run, no numbers produced).
+- Every item in docs/RESEARCH_PLAN.md (1 to 59) is ticked (item 57 was carried out in the live session as item 59; the first line below is superseded). The scheduled run has nothing left to do until you add new items (2026-10-28 scheduled run, cloud run, no numbers produced).
+- Item 57 could not run: allow zenodo.org (HTTPS) in the cloud environment's network policy, or supply `ICSE15_HHSA_Benchmarks.zip`; then item 57 and 58 can proceed.
+- Item 33 approved in the live session (carried out as items 39 and 40). Still yours: comparison with published sizes (needs the primary papers' definitions read first), multiple faults, nondeterminism, anything AI-based.
 
 ## Constraint-structure family: fraction of distinguishable interactions (research plan item 3)
 
@@ -1230,3 +1256,1047 @@ are the same set; that they are the same set was not checked. What the numbers d
 or that 41 is impossible (a failed size means not found within 5 x 6000 moves; seeds 1, 5 and 9 reached 42, so a larger budget or
 more seeds might reach lower); anything about a general advantage of the method; any comparison with published sizes (not made,
 by instruction). Ten seeds on one model is still a small sample.
+
+## Covering-only baseline versus locating, small models (research plan item 25)
+
+Origin: cloud run, not reproduced by the author. Base commit 56a8da9 plus `scripts/item25_compare.py` (new), z3-solver 5.1.0.0.
+Items 25 to 28 were proposed by the research session and approved by the plan author ("go"). Research question
+(Research question section above): how much extra suite size makes feasible interactions distinguishable, compared with
+ordinary constrained t-way coverage? Interaction localization only.
+
+Code: `Z3CostModel(parameters, forbidden, cover_only=True)` makes the cost the number of uncovered feasible interactions
+only (collisions neither counted nor queried); the default is unchanged. 3 new tests (cover-mode cost and uncovered list
+equal a direct count on 100 random suites per model on all 8 example models and no Z3 separability query is made; cover-only
+cost never exceeds locating cost; the cover-only search returns valid, fully covering suites no larger than the known locating
+minimum). Full suite: 141 tests OK, 3 skipped.
+
+Comparison, 7 non-slow models, seeds 0, 1 and 2, identical settings for both modes (Z3-backed cold shrinking search, targeted
+moves, 3 restarts x 3000 moves per size, start = greedy locating size). Command:
+`PYTHONPATH=. python3 scripts/item25_compare.py SEED`. Final sizes by seed 0/1/2; every cover-only suite was checked
+independently to contain only valid tests and to cover all feasible interactions (21 of 21 True):
+
+| model | valid | greedy cover | greedy locate | Z3 SA cover-only | Z3 SA locating | difference (locating - covering) |
+|---|---|---|---|---|---|---|
+| model.json | 18 | 6 | 11 | 5/5/5 | 9/9/9 | 4/4/4 |
+| model_6param.json | 36 | 7 | 11 | 6/6/6 | 10/10/10 | 4/4/4 |
+| model_8param.json | 144 | 7 | 13 | 7/7/7 | 11/12/11 | 4/5/4 |
+| model_high_constraints.json | 11 | 7 | 11 | 6/6/6 | 9/9/9 | 3/3/3 |
+| model_low_constraints.json | 32 | 6 | 9 | 6/6/6 | 8/8/8 | 2/2/2 |
+| model_multivalue.json | 30 | 9 | 12 | 7/7/7 | 11/11/11 | 4/4/4 |
+| my_model.json | 24 | 7 | 9 | 6/6/6 | 8/8/8 | 2/2/2 |
+
+The locating columns equal the item 16 results for the same models and seeds. What this shows: on these seven small models
+the distinguishable-signature requirement cost 2 to 5 extra tests over the smallest covering suite the search found, i.e.
+about 1.3 to 1.8 times the covering size (8 vs 6 on low_constraints and my_model, 9 vs 5 on model.json),
+and the covering size itself was stable across seeds (the locating size varied only on model_8param). The SA covering size was
+at or below the greedy covering size on every model (equal on model_8param and model_low_constraints; one to two tests below
+on the rest). What it does not show: that the covering sizes are minimal (search results at a fixed budget; no exact covering
+minimum was computed), anything about larger models (items 26 and 27), or anything about strengths other than 2. Seven tiny
+hand-built models, three seeds.
+
+## Covering-only baseline versus locating, derived spins model, seeds 0 to 9 (research plan item 26)
+
+Origin: cloud run, not reproduced by the author. Base commit ddd0a23, `scripts/item26_cover.py` (new), z3-solver 5.1.0.0.
+Model: `examples/model_spins_core.json` (DERIVED from the CCAG `spins` benchmark, not the benchmark; 978 valid
+configurations, 239 feasible 2-way interactions). Z3-backed cold shrinking search in cover-only mode, targeted moves, start 32,
+6000 moves, 5 restarts per size, exactly as the locating runs of items 6 and 7 (which used the enumeration-based
+`find_small_suite`; the same settings, different code path, so move counts are not comparable). Command:
+`PYTHONPATH=. python3 scripts/item26_cover.py SEED cover`. Four seeds ran at a time on a 4-core container, so seconds are
+approximate. For every seed the returned suite was checked independently: all tests valid and all 239 feasible interactions
+covered (10 of 10 True).
+
+| seed | covering size | locating size (items 6 and 7) | difference | covering moves | covering seconds |
+|---|---|---|---|---|---|
+| 0 | 18 | 30 | 12 | 40,746 | 290.9 |
+| 1 | 18 | 31 | 13 | 39,332 | 286.0 |
+| 2 | 18 | 32 | 14 | 39,607 | 284.5 |
+| 3 | 18 | 31 | 13 | 39,928 | 286.3 |
+| 4 | 18 | 30 | 12 | 40,288 | 241.6 |
+| 5 | 18 | 31 | 13 | 38,734 | 231.6 |
+| 6 | 18 | 31 | 13 | 39,877 | 235.6 |
+| 7 | 18 | 30 | 12 | 37,311 | 221.3 |
+| 8 | 18 | 30 | 12 | 39,748 | 237.0 |
+| 9 | 18 | 31 | 13 | 40,504 | 242.5 |
+
+Over the ten seeds: covering size 18 for every seed (min = median = max = 18); locating size min 30, median 31, max 32;
+difference (locating minus covering) min 12, median 13, max 14; locating about 1.67 to 1.78 times the covering size. In every
+covering search the size that failed all five runs was 17.
+Computed for this section (not a run of the search): the largest number of feasible value pairs for any single pair of
+parameters in this model is 16 (P13/P14, P13/P15, P14/P15), so no suite of fewer than 16 tests can cover every feasible
+interaction; the search found 18 for all ten seeds and failed at 17 for all ten. A gap of 2 above that bound is a fact about
+these runs; whether 16 or 17 is attainable was not tested.
+
+What this shows: on this derived model, making interactions distinguishable cost about 12 to 14 additional tests over the
+smallest covering suite the search found, and the covering size was the same for all ten seeds whereas the locating size varied
+by seed. What it does not show: that 18 is the true covering minimum (a failed size means not found within 5 x 6000 moves);
+anything about the real `spins` benchmark (item 27); anything beyond one derived model and ten seeds. The two sets of runs used
+different code (enumeration-based locating, Z3-backed covering); on the small models of item 25 the two code paths gave the
+same locating sizes, so this is not expected to matter, but it was not tested on this model.
+
+## Covering-only baseline versus locating, original spins, seeds 0 to 9 (research plan item 27)
+
+Origin: cloud run, not reproduced by the author. Base commit 781cab5, `scripts/item19_run.py` and `scripts/item17_spins.py` (both
+given an optional trailing `cover` argument), z3-solver 5.1.0.0, original CCAG `spins` (clone outside the repo; 2,002,944
+valid configurations, 979 feasible 2-way interactions). Z3-backed cold shrinking search in cover-only mode, targeted moves,
+6000 moves per run, 5 restarts per size, cap 7,200 s per seed (never reached), four seeds at a time on a 4-core container (seconds
+approximate). A first attempt at the ten-seed search was killed when the sandbox restarted (about 430 s in, no results) and was
+rerun from the start; only the rerun is reported.
+
+**Start size from a sweep (seed 0, one run of 6000 moves per size, cover mode):** 36, 32 and 28 reached cost zero (76, 495 and
+2,667 moves); 24 did not (2 interactions uncovered); 20 did not (16 uncovered). The smallest solved, 28, was the start size.
+Each solved suite was checked independently (all tests valid, 979 of 979 covered). Commands:
+`scripts/item19_run.py BENCH_DIR SIZE 6000 0 cover` and
+`PYTHONPATH=. python3 scripts/item17_spins.py BENCH_DIR SEED 28 6000 5 7200 cover`.
+
+| seed | covering size | locating size (item 23) | difference | first failed size, best cost (uncovered) | covering moves | covering seconds |
+|---|---|---|---|---|---|---|
+| 0 | 25 | 43 | 18 | 24, 1 | 44,770 | 1,378.3 |
+| 1 | 24 | 42 | 18 | 23, 4 | 54,789 | 1,656.9 |
+| 2 | 25 | 43 | 18 | 24, 1 | 49,818 | 1,527.6 |
+| 3 | 24 | 43 | 19 | 23, 3 | 52,602 | 1,581.8 |
+| 4 | 23 | 43 | 20 | 22, 4 | 73,045 | 2,174.9 |
+| 5 | 24 | 42 | 18 | 23, 2 | 58,364 | 1,788.7 |
+| 6 | 24 | 43 | 19 | 23, 3 | 51,775 | 1,579.5 |
+| 7 | 24 | 44 | 20 | 23, 1 | 53,920 | 1,650.0 |
+| 8 | 23 | 43 | 20 | 22, 4 | 94,740 | 2,919.9 |
+| 9 | 24 | 42 | 18 | 23, 1 | 50,408 | 1,546.5 |
+
+Covering sizes over the ten seeds: 23, 24 and 25 reached by 2, 6 and 2 seeds (min 23, median 24, max 25). Difference
+(locating minus covering): min 18, median 18.5, max 20; locating/covering per seed 1.72 to 1.87. Total 584,231 covering moves; no
+seed hit the cap. For every seed the covering suite was checked independently: all tests valid and 979 of 979 interactions covered.
+As a by-product, the same checks show how much distinguishing the covering suites achieved by accident: only 457 to 566 of 979
+interactions had a signature no other interaction shares (against 969 for the locating suites of item 23).
+
+What it shows: on the original spins model, making interactions distinguishable cost about 18 to 20 more tests than the smallest
+covering suite the search found (covering 23 to 25, locating 42 to 44), roughly 1.7 to 1.9 times the size, and the covering size
+varied by seed only over a range of 2. What it does not show: that the covering sizes are minimal (a failed size means not found within
+5 x 6000 moves; the covering suite is above the bound of 16 computed in the item 18 notes, so 16 to 22 were not excluded); anything
+about other benchmarks; a comparison with published sizes (not made). Ten seeds on one model.
+
+## Summary of research plan items 25 to 27: extra tests needed to distinguish interactions (research plan item 28)
+
+Origin: cloud run, not reproduced by the author; every number is copied from the items 25, 26, 27 sections above (locating sizes
+from items 6, 7, 16 and 23); none is new. Interaction localization only (single deterministic fault, t = 2). Sizes are what the
+search found within a fixed budget, not proven minima.
+
+| model or group | seeds | covering size (search) | locating size (search) | extra tests (locating - covering) | locating / covering |
+|---|---|---|---|---|---|
+| model.json | 3 | 5/5/5 | 9/9/9 | 4/4/4 | 1.8 |
+| model_6param.json | 3 | 6/6/6 | 10/10/10 | 4/4/4 | 1.67 |
+| model_8param.json | 3 | 7/7/7 | 11/12/11 | 4/5/4 | 1.57 to 1.71 |
+| model_high_constraints.json | 3 | 6/6/6 | 9/9/9 | 3/3/3 | 1.5 |
+| model_low_constraints.json | 3 | 6/6/6 | 8/8/8 | 2/2/2 | 1.33 |
+| model_multivalue.json | 3 | 7/7/7 | 11/11/11 | 4/4/4 | 1.57 |
+| my_model.json | 3 | 6/6/6 | 8/8/8 | 2/2/2 | 1.33 |
+| model_spins_core.json (derived from spins) | 10 | 18 for all (median 18) | 30 to 32 (median 31) | 12 to 14 (median 13) | 1.67 to 1.78 |
+| spins (original, CCAG) | 10 | 23 to 25 (median 24) | 42 to 44 (median 43) | 18 to 20 (median 18.5) | 1.72 to 1.87 |
+
+What the numbers show: in every model and every seed the smallest suite that made interactions distinguishable was larger than the
+smallest covering suite the search found, by 2 to 5 tests on the seven small models, 12 to 14 on the derived spins model and 18 to
+20 on the original spins model; as a ratio, 1.33 to 1.87 across all rows. The extra count grew with model size across these three
+groups, while the ratio stayed in a narrower band (1.33 to 1.87); with three groups of very different models this is an
+observation, not a fitted trend. On the two spins models the covering size was nearly constant across seeds (18 for all; 23 to 25)
+while the locating size varied by 2 (30 to 32; 42 to 44).
+What they do not show: that any covering or locating size is the true minimum; that the ratio is stable on other models or at other
+strengths (t = 3, d > 1 were not measured here); anything about how the covering and locating sizes compare with published ones (not
+compared, by instruction). Seven tiny hand-built models with 3 seeds, one derived model and one real benchmark with 10 seeds is a
+small sample. The covering runs used the Z3-backed search and some locating runs the enumeration-based one; where both were run
+on the same model and seed (items 16 and 25) the locating sizes were identical.
+
+## Strength-t support in the Z3 code (research plan item 29)
+
+Origin: cloud run, not reproduced by the author. Base commit 040d152, z3-solver 5.1.0.0. Items 29 to 32 were proposed by the research
+session and approved by the plan author ("go"); the reason is that the research question is not limited to pairs and the
+covering-versus-locating comparison (items 25 to 28) was strength 2 only.
+
+Changes in `cla_harness/solver.py` (nothing else changed): `feasible_interactions_z3(parameters, forbidden, strength=2)` now
+accepts any strength from 1 to the number of parameters (previously strength 2 only; the default and every existing call are
+unchanged; other values raise ValueError), and `Z3CostModel(parameters, forbidden, cover_only=False, strength=2)` passes the
+strength through. The cost code itself was already generic over interaction size.
+
+Tests (5 new, 1 old test updated: the earlier "strength 3 raises ValueError" check became "strength 0 or one above the number of
+parameters raises", because that restriction was deliberately lifted). On all 8 example models the Z3 interaction set equals
+`feasible_interactions` from the enumeration at t = 1, 2 and 3; the default strength is 2; at t = 3 the Z3 locating cost
+(including the detail lists) equals `annealing.suite_cost` on 200 seeded random suites per model (1,600 of 1,600), with avoidable
+collisions present in the comparison for every model, and the Z3 cover-only cost equals a direct count of uncovered 3-way
+interactions on the same suites; the cover-only and locating Z3 searches at t = 3 return valid suites covering every feasible
+3-way interaction on model.json; a deliberate break is caught. Full suite: 146 tests OK, 3 skipped; it now takes about 393 s
+(earlier 170 to 230 s), most of the increase from the t = 3 cost comparison on model_spins_core.json, which the strength-3 tests
+exercise with 200 suites and many separability queries.
+
+Not shown: any search result at t = 3 (items 30 and 31), speed at larger models, or the original spins model at t = 3 (which has at
+most 13,328 candidate 3-way interactions, against 992 pairs and 1,520 for the derived model; item 33 reserves a faster cost
+evaluation for a decision by the plan author).
+
+## Strength 3: covering-only versus locating, small models (research plan item 30)
+
+Origin: cloud run, not reproduced by the author. Base commit aa67773 plus `scripts/item30_compare.py` (new), z3-solver 5.1.0.0.
+Strength 3: the hidden fault is one feasible 3-way interaction and only 3-way interactions are counted (interaction localization only).
+Same settings as item 25 (Z3-backed cold shrinking search, targeted moves, 3 restarts x 3000 moves per size, start = greedy locating
+size at t = 3), seeds 0, 1 and 2; the enumeration-based locating search (`find_small_suite`, same settings and seeds) was also rerun
+as a direct consistency check. Three seeds ran at the same time on a 4-core container, seconds approximate. Command:
+`PYTHONPATH=. python3 scripts/item30_compare.py SEED 3`. Every covering suite was checked independently (21 of 21: tests valid and
+all feasible 3-way interactions covered). Final sizes, seeds 0/1/2:
+
+| model | valid | feasible 3-way | greedy cover | greedy locate | Z3 cover-only | Z3 locating | enumeration locating | extra tests (Z3 locating - covering) | locating / covering | (t = 2: cover, locating) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| model.json | 18 | 68 | 12 | 17 | 12/12/12 | 17/17/17 | 17/17/17 | 5/5/5 | 1.42 | 5, 9 |
+| model_6param.json | 36 | 144 | 15 | 24 | 12/12/12 | 22/22/22 | 22/22/22 | 10/10/10 | 1.83 | 6, 10 |
+| model_8param.json | 144 | 424 | 18 | 30 | 14/14/14 | 28/29/28 | 28/28/28 | 14/15/14 | 2.0 to 2.07 | 7, 11 to 12 |
+| model_high_constraints.json | 11 | 55 | 10 | 11 | 9/9/9 | 11/11/11 | 11/11/11 | 2/2/2 | 1.22 | 6, 9 |
+| model_low_constraints.json | 32 | 80 | 12 | 17 | 10/10/10 | 15/15/15 | 15/15/15 | 5/5/5 | 1.5 | 6, 8 |
+| model_multivalue.json | 30 | 91 | 17 | 23 | 15/15/15 | 22/22/22 | 22/22/22 | 7/7/7 | 1.47 | 7, 11 |
+| my_model.json | 24 | 74 | 13 | 17 | 10/10/10 | 17/17/17 | 17/17/17 | 7/7/7 | 1.7 | 6, 8 |
+
+(The last column repeats the t = 2 sizes from items 25 and 16 for comparison.) Consistency: the Z3-backed locating size equalled the
+enumeration-based size in 20 of 21 runs; the one difference was model_8param.json seed 1 (29 versus 28), where the two searches
+draw different random moves, so one size apart on one seed is within the seed variation already seen on that model at t = 2. The
+locating sizes also equal the item 4 enumeration-based t = 3 sizes (17, 22, 28, 11, 15, 22, 17) except that same case.
+Greedy covering sizes were at or above the SA covering size on every model (equal on model.json: 12 and 12); on
+model_high_constraints.json the locating size, 11, equals the number of valid configurations, so no smaller locating suite exists
+there (which also caps the difference at 2).
+
+What this shows: at t = 3 on these seven small models, distinguishing 3-way interactions needed 2 to 15 more tests than covering them
+(ratio 1.22 to 2.07), against 2 to 5 more (ratio 1.33 to 1.8) at t = 2; the covering size rose roughly 1.5 to 2 times from t = 2 to
+t = 3 (for example 5 to 12 on model.json, 7 to 14 on model_8param), and the locating size rose more (9 to 17, 11 to 28). The covering
+size was identical across the three seeds on every model; the locating size varied only on model_8param. What it does not show: that
+any size is minimal (search results at a fixed budget); anything about larger models or the derived spins model (item 31); a
+statement about how the ratio behaves at other strengths. Seven tiny models, three seeds.
+
+## Strength 3 on the derived spins model (research plan item 31)
+
+Origin: cloud run, not reproduced by the author. Base commit 22dbdda plus the existing scripts `scripts/item31_probe.py`,
+`item31_run.py` and `item31_search.py` (z3-solver 5.3.0, Python 3.11, 4-core container, up to 4 processes at a time, so timings are
+approximate). Model: `examples/model_spins_core.json` (DERIVED from spins; it is not the benchmark), strength 3, 1,313 feasible
+3-way interactions (the plan said at most 1,520 candidates). Interaction localization only; no source-code fault localization.
+
+Timing (probe, 1 run each; 60-move targeted runs, 20 random suites): cost evaluation took 0.022 s (size 30) and 0.032 s (size 45) in
+covering mode, and 1.0 s (size 30, the first evaluation 1.4 s, includes Z3 queries) and 0.17 s (size 45) in locating mode; a move
+took 0.026 to 0.044 s (covering) and 0.057 to 0.114 s (locating) over those 60 moves. A 6000-move run therefore projects to well
+under the 15-minute limit; measured full 6000-move runs took 154 to 323 s (covering, sizes 30 to 70) and 329 to 445 s (locating,
+sizes 70 to 100), so the item continued.
+
+Size sweep, seed 0, one 6000-move run per size, targeted moves, cooling 2.0 to 0.05 (`item31_run.py`; every returned suite had
+valid tests and the independent coverage count matched):
+
+| mode | size | uncovered | avoidable collisions | solved | moves | seconds |
+|---|---|---|---|---|---|---|
+| cover | 30 / 40 / 50 / 60 / 70 | 149 / 68 / 29 / 11 / 1 | 0 | no | 6000 | 154 / 199 / 238 / 280 / 323 |
+| cover | 80 / 100 / 120 | 0 | 0 | yes | 345 / 64 / 37 | 21 / 5 / 4 |
+| locate | 70 / 80 / 90 / 100 | 20 / 18 / 1 / 0 | 258 / 149 / 52 / 17 | no | 6000 | 329 / 366 / 407 / 445 |
+| locate | 120 / 200 / 300 / 450 | 0 | 0 | yes | 1415 / 61 / 3 / 0 | 124 / 11 / 3 / 3 |
+
+Start sizes chosen from the sweep (smallest size solved): covering 80, locating 120 (sizes between 100 and 120 were not swept).
+
+Shrinking search, seeds 0 to 4, cold, targeted moves, 5 restarts x 6000 moves per size, cap 7,200 s per seed (`item31_search.py`;
+every final suite checked: tests valid, all 1,313 interactions covered). "Capped" = the wall-clock cap ended the search; the cost
+shown for the first failed size comes from an attempt the cap may have cut short.
+
+| seed | covering size | locating size | difference | ratio | locating run | cost at first failed locating size (uncovered 0 in all) |
+|---|---|---|---|---|---|---|
+| 0 | 71 | 110 | 39 | 1.549 | capped at 7200 s while trying 109 | 1 |
+| 1 | 71 | 112 | 41 | 1.577 | capped at 7200 s while trying 111 | 1 |
+| 2 | 71 | 110 | 39 | 1.549 | finished, 6150 s, failed at 109 | 1 |
+| 3 | 71 | 111 | 40 | 1.563 | capped at 7200 s while trying 110 | 2 |
+| 4 | 71 | 110 | 39 | 1.549 | capped at 7200 s while trying 109 | 1 |
+
+Covering searches finished without the cap (2,681 to 3,073 s, 45,565 to 50,606 moves); each failed at size 70 with 1 uncovered
+interaction. Median covering 71, median locating 110, median difference 39 (range 39 to 41). Z3 queries in the locating searches:
+12,564 to 14,034 misses and 13.4 to 15.7 million cache hits per seed. The locating sizes of seeds 0, 1, 3 and 4 are upper bounds
+from a capped search (a smaller suite might have been found with more time).
+
+What this shows: on this derived model at t = 3, the search found covering suites of 71 tests for all five seeds and locating suites
+of 110 to 112, about 39 to 41 more tests (1.55 to 1.58 times). At t = 2 on the same model the found sizes were 18 (covering) and 30 to
+32 (locating), so both grew with strength and the extra cost grew from about 13 to about 39 tests (ratio about 1.7 to about 1.55,
+from items 26 and 28). The covering size was the same on all five seeds. What it does not show: that any size is minimal (search
+results at a fixed budget; four of the five locating runs were capped); anything about the original spins model (item 33 is for
+the plan author); a comparison with published sizes. Five seeds, one derived model.
+
+Test suite before this commit (cloud run, not reproduced by the author): 146 tests, OK, 3 skipped, 420 s.
+
+## Summary of research plan items 29 to 31: strength 2 versus strength 3 (research plan item 32)
+
+Origin: cloud run, not reproduced by the author; every number is copied from the items 28, 30 and 31 sections above; none is new.
+Interaction localization only (single deterministic fault); no source-code fault localization. Sizes are what a fixed-budget search
+found, not proven minima.
+
+| model or group | seeds at t = 3 | t = 2 cover / locate / extra / ratio | t = 3 cover / locate / extra / ratio |
+|---|---|---|---|
+| model.json | 3 | 5 / 9 / 4 / 1.8 | 12 / 17 / 5 / 1.42 |
+| model_6param.json | 3 | 6 / 10 / 4 / 1.67 | 12 / 22 / 10 / 1.83 |
+| model_8param.json | 3 | 7 / 11 to 12 / 4 to 5 / 1.57 to 1.71 | 14 / 28 to 29 / 14 to 15 / 2.0 to 2.07 |
+| model_high_constraints.json | 3 | 6 / 9 / 3 / 1.5 | 9 / 11 / 2 / 1.22 |
+| model_low_constraints.json | 3 | 6 / 8 / 2 / 1.33 | 10 / 15 / 5 / 1.5 |
+| model_multivalue.json | 3 | 7 / 11 / 4 / 1.57 | 15 / 22 / 7 / 1.47 |
+| my_model.json | 3 | 6 / 8 / 2 / 1.33 | 10 / 17 / 7 / 1.7 |
+| model_spins_core.json (derived, not the benchmark) | t = 2: 10; t = 3: 5 | 18 / 30 to 32 (median 31) / 12 to 14 (median 13) / 1.67 to 1.78 | 71 / 110 to 112 (median 110) / 39 to 41 (median 39) / 1.549 to 1.577 |
+| spins (original, CCAG) | t = 2: 10; t = 3: not run | 23 to 25 / 42 to 44 / 18 to 20 / 1.72 to 1.87 | not run (item 33, plan author's decision) |
+
+What the numbers show: on the seven small models the covering size went up from t = 2 to t = 3 on every model (for example 5 to 12 on
+model.json), the locating size went up on every model, and the extra tests (locating minus covering) went up on every model except
+model_high_constraints.json, where the t = 3 locating size, 11, equals the number of valid configurations, which caps the difference
+at 2. The ratio went up on four small models and down on three (model.json, model_high_constraints.json, model_multivalue.json), so
+no direction of the ratio is shown for the small models. On the derived spins model the extra tests grew from 12 to 14 to 39 to 41
+while the ratio fell slightly (1.67 to 1.78 to 1.549 to 1.577). Four of five derived-model locating searches at t = 3 were stopped
+by the 7,200 s cap, so those locating sizes are upper bounds from capped searches. On the small models the Z3-backed locating size
+equalled the enumeration-based size in 20 of 21 runs (the exception, model_8param.json seed 1, 29 versus 28).
+What they do not show: that any size is minimal; ten seeds were not run at t = 3 (3 seeds on the small models, 5 on the derived
+model, none on original spins); anything about the original spins model at t = 3; any comparison with published sizes (not made, by
+instruction); behaviour at other strengths or with more than one fault.
+
+Test suite before this commit (cloud run, not reproduced by the author): 146 tests, OK, 3 skipped, 393 s (z3-solver 5.3.0).
+
+## FastZ3CostModel (research plan item 34)
+Added `FastZ3CostModel` to cla_harness/solver.py (subclass of Z3CostModel; parent unchanged). Tests (tests/test_solver.py, class FastCostModel): its cost and detail lists equal Z3CostModel and, in locating mode, annealing.suite_cost, at t = 2 and t = 3 on all 8 example models (100 random suites per model, 10 on model_spins_core.json to keep the suite time down). Full suite in this session: 149 tests OK, 3 skipped (cloud run, not reproduced by the author). No speed measurement yet: that is item 35. The search functions were not yet run with the fast model beyond a small smoke test.
+
+## Cost-evaluation timing, FastZ3CostModel versus Z3CostModel, strength 3, derived spins (research plan item 35)
+Cloud run, not reproduced by the author. model_spins_core.json, t = 3, 1,313 feasible 3-way interactions, 5 random suites of 32 valid tests (seed 0), mean seconds per `suite_cost` call, python 3.13 / z3 5.3.0.0. One model, one suite size, one seed.
+
+| model class | mode | build (s) | first evaluation (s) | repeat evaluation, same suites (s) | Z3 queries (misses) | Z3 time (s) |
+|---|---|---|---|---|---|---|
+| Z3CostModel | cover | 1.61 | 0.0190 | 0.0184 | 0 | 0 |
+| Z3CostModel | locate | 0.57 | 1.5667 | 0.0184 | 12210 | 7.61 |
+| FastZ3CostModel | cover | 0.45 | 0.0025 | 0.0005 | 0 | 0 |
+| FastZ3CostModel | locate | 0.39 | 1.4168 | 0.0040 | 12210 | 6.99 |
+
+What this shows: the repeat evaluation (collision answers cached) is faster with the fast model (0.0040 s versus 0.0184 s locating; 0.0005 s versus 0.0184 s covering). The first locating evaluation on new suites is dominated by Z3 collision queries, which are the same for both classes (12,210 queries), so the fast model changes little there. Not measured: time per move inside a real search, the cache hit rate over a full run, and anything on the original spins model (the CCAG clone was not used in this step). Whether item 33 (original spins, t = 3) is feasible is therefore not settled by this table; the next step would be to time a short search run and one cost evaluation on the original model.
+
+## Search-level timing, fast versus Z3 cost model, derived spins at t = 3 (research plan item 36)
+Cloud run, not reproduced by the author. model_spins_core.json (derived, not the benchmark), t = 3, targeted moves, seed 0, 600 moves, cooling for a 6000-move run, python 3.13 / z3 5.3.0.0. One seed, one run per row.
+
+| mode | size | model class | seconds | seconds per move | final uncovered / avoidable collisions | Z3 cache hits / misses |
+|---|---|---|---|---|---|---|
+| cover | 71 | Z3CostModel | 29.6 | 0.049 | 15 / 0 | 0 / 0 |
+| cover | 71 | FastZ3CostModel | 4.3 | 0.007 | 15 / 0 | 0 / 0 |
+| locate | 110 | Z3CostModel | 46.3 | 0.077 | 14 / 85 | 164,597 / 1,399 |
+| locate | 110 | FastZ3CostModel | 5.3 | 0.009 | 14 / 85 | 164,597 / 1,399 |
+
+For both modes the two classes returned the identical suite and cost, with the same number of accepted moves (392 and 36). In these 600-move runs the fast class took about one seventh (cover) and one ninth (locate) of the time per move. Not measured: whole 6000-move runs or a shrinking search with the fast class, and anything on the original spins model (plan item 37). The Z3 query time was about 1 s of the 46 s in the locating run, so in a search the cost loop, not Z3, dominated here; item 35's first-evaluation timing was a different situation (new suites, many fresh queries).
+
+## Original spins at t = 3: timing with the fast cost model (research plan item 37)
+Cloud run, not reproduced by the author. Model: original CCAG `spins` (clone at depth 1 in a folder outside this repository; nothing from it committed), strength 3, FastZ3CostModel, python 3.13 / z3 5.3.0.0. One size (100 tests), seed 0, targeted moves, cooling for a 6000-move run. The size 100 is a placeholder chosen without a size sweep, so the final costs say nothing about the achievable size. No seed search was started (item 33 stays with the plan author).
+
+- Feasible 3-way interactions: 12,835 (the plan said at most 13,328 candidates). Model build: 4.6 s (covering), 4.5 s (locating).
+- Cost evaluation on 3 random valid suites of 100 tests: covering 0.1809 s first, 0.0415 s repeat; locating 8.9042 s first (35,173 Z3 queries, 25.8 s Z3 time over the 3 suites), 0.0529 s repeat.
+- 300-move targeted runs: covering 15.2 s (0.051 s per move, 123 accepted, final 150 uncovered); locating 69.6 s (0.232 s per move, 53 accepted, final 242 uncovered and 5,304 avoidable collisions; 101,470 Z3 misses, 1,969,703 cache hits, Z3 time reported as 70.8 s, slightly above the wall time, so treat Z3 time as approximate).
+- Full 6000-move targeted runs, started together in two processes (4-core container, so timings are approximate), cap 900 s:
+
+| mode | size | moves | accepted | seconds | final uncovered | final avoidable collisions | Z3 misses / hits |
+|---|---|---|---|---|---|---|---|
+| cover | 100 | 6000 | 488 | 275.4 | 38 | 0 | 0 / 0 |
+| locate | 100 | 6000 | 116 | 544.6 | 197 | 3,857 | 152,136 / 28,347,311 |
+
+Neither run reached the 900 s cap, so a 6000-move run on original spins at t = 3 fits under 15 minutes in both modes at size 100 (measured, one size, two runs running at the same time). Neither reached cost zero at size 100, so size 100 is below what these runs could solve; a size sweep (as in items 19 and 27) is the next step, then a shrinking search. Not measured: larger sizes (cost per move grows with size in the earlier derived-model runs), a shrinking search, other seeds. Interaction localization only.
+
+## Original spins at t = 3: size sweep (research plan item 39)
+Cloud run, not reproduced by the author. `scripts/item39_run.py`, original CCAG spins (clone outside the repo), t = 3, FastZ3CostModel, targeted moves, seed 0, ONE run of up to 6000 moves per size (cooling 2.0 to 0.05 over 6000 moves), cap 3,600 s, 4 processes at a time on a 4-core machine (times approximate), 12,835 feasible 3-way interactions. One seed.
+
+| mode | size | solved | moves used | seconds | Z3 cost queries (misses / hits) |
+|---|---|---|---|---|---|
+| cover | 120 | yes | 5,333 | 157.4 | 0 / 0 |
+| cover | 140 | yes | 1,773 | 58.5 | 0 / 0 |
+| cover | 160 | yes | 402 | 14.1 | 0 / 0 |
+| cover | 200 | yes | 92 | 5.0 | 0 / 0 |
+| locate | 200 | yes | 5,492 | 210.6 | 9,103 / 2,188,489 |
+| locate | 260 | yes | 737 | 33.6 | 1,483 / 281,229 |
+| locate | 320 | yes | 158 | 10.1 | 548 / 60,201 |
+| locate | 400 | yes | 41 | 5.5 | 378 / 14,785 |
+
+Every run reached cost zero with all tests valid, so all eight sizes were solved; the sweep did not find where solving stops, and the smallest solved sizes (covering 120, locating 200) are therefore only upper bounds on what this budget can reach. The moves used fall as the size grows, and the two smallest sizes used most of the 6000 moves (5,333 and 5,492). Item 37's size 100 did not reach cost zero (covering: 38 uncovered after 6000 moves), so the covering threshold for this budget lies between 100 and 120 in these two runs (different seeds of the run are not compared; one run each). Not measured: anything between the sizes. Item 40 starts the shrinking search at 120 (covering) and 200 (locating).
+
+## Original spins at t = 3: shrinking search, seeds 0 to 4 (research plan item 40)
+Cloud run, not reproduced by the author. `scripts/item40_shrink.py`, original CCAG spins (clone outside the repo), t = 3, FastZ3CostModel, `find_small_suite_z3`, targeted moves, 6000 moves per run, 5 restarts per size, cap 7,200 s per seed (never reached), start 120 (covering) and 200 (locating) from item 39, shrinking one test at a time, 4 processes at a time on 4 cores (times approximate). 12,835 feasible 3-way interactions. Sizes are what the search found, not proven minima.
+
+| seed | covering size | locating size | difference | ratio | covering: best cost at first failed size (uncovered) | locating: best cost at first failed size (avoidable collisions) | covering s | locating s |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 114 | 199 | 85 | 1.746 | 5 (at 113) | 1 (at 198) | 3,686 | 2,060 |
+| 1 | 115 | 197 | 82 | 1.713 | 1 (at 114) | 2 (at 196) | 2,509 | 3,563 |
+| 2 | 116 | 199 | 83 | 1.716 | 2 (at 115) | 2 (at 198) | 2,554 | 3,955 |
+| 3 | 116 | 198 | 82 | 1.707 | 1 (at 115) | 2 (at 197) | 2,111 | 2,986 |
+| 4 | 114 | 200 | 86 | 1.754 | 1 (at 113) | 3 (at 199) | 2,574 | 1,815 |
+
+Min / median / max over seeds 0 to 4: covering 114 / 115 / 116; locating 197 / 199 / 200; difference 82 / 83 / 86; ratio 1.707 to 1.754. Locating-mode failures had 0 uncovered interactions; their remaining cost was all avoidable collisions. No seed was capped. Locating seed 4 failed at the very first shrink step (200 to 199), and locating sizes sit within 3 of the start size 200 for every seed, so these locating sizes lie close to the start size chosen from item 39; the start size, not only the search, may limit what is found, and a restart from a larger or smaller start was not run. Item 39 solved locating size 200 only after 5,492 of 6,000 moves, consistent with 200 being near this budget's limit, but that is one run. Not measured: other seeds beyond 0 to 4, longer budgets, strength 2 for comparison on the same budget (items 23 and 27 are strength 2 with different budgets), anything compared with published sizes. Five seeds on one model is a small sample. Interaction localization only.
+
+## Second large CCAG benchmark: feasibility check (research plan item 41)
+Cloud run, not reproduced by the author. `scripts/item41_probe.py` (load + `FastZ3CostModel` build at t = 2), CCAG cloned outside the repo (shallow clone of GIST-NJU/ccag, not committed). Strength 2, interaction localization only. z3-solver 5.3.1 was pip-installed into the container for this run. The clone has 5 named models (apache, bugzilla, gcc, spins, spinv) plus `benchmark_1` to `benchmark_30` (`.model` files only, no `.constraints` files, so not loadable by `load_casa_model` as called here; not tried).
+
+| model | parameters | values | rules | candidate 2-way | feasible 2-way | load s | Z3 build s |
+|---|---|---|---|---|---|---|---|
+| apache | 172 | 367 | 7 | 66,930 | 66,927 | 0.0 | 11.9 |
+| bugzilla | 52 | 109 | 5 | 5,822 | 5,818 | 0.0 | 0.8 |
+| gcc | 199 | 408 | 40 | 82,809 | 82,770 | 0.0 | 18.4 |
+| spinv | 55 | 134 | 49 | 8,797 | 8,741 | 0.0 | 1.9 |
+
+All four load and build in well under 5 minutes, so the setup condition of the item is met. I chose spinv (most rules per parameter, small build) for a covering-versus-locating run at t = 2.
+
+Size sweep on spinv, seed 0, ONE run of 6000 targeted moves per size (`scripts/item39_run.py ... spinv`, 6 processes on 4 cores so times are inflated; cap 900 s):
+
+| mode | size | solved | uncovered | avoidable collisions | moves | seconds |
+|---|---|---|---|---|---|---|
+| cover | 15 | no | 768 | 0 | 6,000 | 517 |
+| cover | 20 | no | 414 | 0 | 6,000 | 527 |
+| cover | 30 | no | 148 | 0 | 6,000 | 545 |
+| locate | 30 | no (hit 900 s cap) | 313 | 9,003 | 4,189 | 900 |
+| locate | 45 | no | 96 | 1,325 | 6,000 | 651 |
+| locate | 60 | no | 17 | 174 | 6,000 | 603 |
+
+No size reached cost zero, so the sizes I guessed were all too small for this budget and no shrinking search or covering-versus-locating comparison was run. Not measured: the size at which spinv is solved. Cost fell with size in every mode, but this is one run each and nothing is extrapolated. Per-move cost is high (about 0.09 s per move in covering at these sizes with oversubscribed cores), which makes a seed search on spinv a long job.
+
+## Open questions (item 41)
+- spinv at t = 2: placeholder sizes 15 to 30 (cover) and 30 to 60 (locate) were all unsolved at 6000 moves. A larger sweep is needed before any covering-versus-locating run; not done in this session.
+- `benchmark_N.model` files have no `.constraints` file in the clone; whether they carry constraints another way was not checked.
+
+## spinv at t = 2: covering versus locating, seeds 0 to 2 (research plan item 41, continued; supersedes the sweep and the .constraints remark in the item 41 section above)
+Cloud run, not reproduced by the author. Written by the live session; an earlier scheduled run wrote the feasibility section above in parallel. Two points in that section disagree with this session's runs: (1) `benchmark_1` ... `benchmark_30` DO have `.constraints` files in the clone used here (`benchmark_1.constraints` etc.), and `benchmark_1` and `benchmark_20` loaded and built (benchmark_1: 97 parameters, 222 values, 24 rules, 24,350 candidate and 23,876 feasible 2-way interactions, Z3 build 4.9 s; benchmark_20: 158 parameters, 370 values, 48 rules, 67,940 candidate and 64,620 feasible, build 17.6 s); (2) its spinv sizes were all too small, while larger sizes are solved here. Scripts: `scripts/item41_probe.py`, `scripts/item39_run.py ... spinv`, `scripts/item40_shrink.py ... spinv`; t = 2, FastZ3CostModel, targeted moves, 8,741 feasible 2-way interactions, 4 cores shared by up to 6 processes (times approximate).
+
+Size sweep, seed 0, one 6000-move run per size: covering unsolved at 20 (414 uncovered), 30 (148) and 40 (30), solved at 50, 60, 70, 80; locating unsolved at 60 (17 uncovered, 174 avoidable collisions) and 80 (0 uncovered, 1 avoidable), solved at 100 (sizes 70 and 90 not run).
+
+Shrinking search (6000 moves, 5 restarts per size, cap 7,200 s per seed), covering from 50 and locating from 100:
+
+| seed | covering size | locating size | difference | ratio | covering: cost at first failed size | locating: cost at first failed size |
+|---|---|---|---|---|---|---|
+| 0 | 48 | 79 (hit the cap while trying 78) | 31 | 1.646 | 1 uncovered (at 47) | 1 avoidable collision (at 78; cap-truncated) |
+| 1 | 49 | 79 | 30 | 1.612 | 1 uncovered (at 48) | 1 avoidable (at 78) |
+| 2 | 48 | 78 | 30 | 1.625 | 1 uncovered (at 47) | 3 avoidable (at 77) |
+
+Min / median / max: covering 48 / 48 / 49; locating 78 / 79 / 79; difference 30 to 31; ratio 1.612 to 1.646. In the sweep the single run at size 80 failed (cost 1) while all three shrinking searches got below 80, so one run per size is not a reliable test of a size. Sizes are search results, not proven minima; three seeds, one model, t = 2, interaction localization only; nothing compared with published sizes.
+
+## Distinguishable-interaction ceiling by Z3 on large models (research plan item 42)
+Cloud run, not reproduced by the author. `scripts/item42_ceiling.py`, t = 2, d = 1, interaction localization only. Method: 400 seeded Z3-sampled valid configurations; pairs of interactions that some sampled test separates are separable (the test is a valid witness); every remaining pair gets the exact Z3 query "is there a valid configuration containing exactly one of them" (Jin & Tsuchiya Lemma 1). An interaction counts as distinguishable if it has no inseparable partner. This is the same quantity as `experiment.ceiling_of`: the Z3 count equals `ceiling_of` on all 8 example models (`scripts/item42_check.py`; for example model_high_constraints 28 of 35, model_spins_core 229 of 239).
+
+| model | feasible 2-way | pairs needing a query after the pool | inseparable pairs | interactions in an inseparable pair | distinguishable | query time (s) |
+|---|---|---|---|---|---|---|
+| spins | 979 | 9 | 9 | 10 | 969 | 0.0 |
+| spinv | 8,741 | 599 | 599 | 1,084 | 7,657 | 0.3 |
+| bugzilla | 5,818 | 0 | 0 | 0 | 5,818 | 0.0 |
+| benchmark_1 | 23,876 | 917 | 917 | 1,354 | 22,522 | 0.4 |
+| benchmark_20 | 64,620 | 11,039 | 11,037 | 2,931 | 61,689 | 4.8 |
+
+The all-pairs counts (for example 478,731 for spins) were never queried; the pool removed all but a few hundred to ~11,000 pairs per model. The pool is one seeded sample, so a different sample could leave a different number of pairs to query but not change the exact answers. On spins the best locating suites of items 21 to 27 reached cost zero, which by the cost definition means no avoidable collision remains, so what they leave unseparated is exactly these inseparable pairs; this is by construction, not a separate measurement. Not measured: t = 3 ceilings, the other CCAG models, d = 2.
+
+## Summary of research plan items 38 to 42 (research plan item 43)
+All numbers below are cloud runs, not reproduced by the author; each is in the section named. Sizes are search results at a fixed budget, not proven minima. Interaction localization only. Nothing is compared with published sizes.
+
+| model, strength | seeds | covering size (min / median / max) | locating size (min / median / max) | difference | ratio | section |
+|---|---|---|---|---|---|---|
+| original spins, t = 2 | 10 | 23 to 25 (median 24) | 42 to 44 (median 43) | 18 to 20 | 1.72 to 1.87 | item 28 summary |
+| original spins, t = 3 | 5 | 114 / 115 / 116 | 197 / 199 / 200 | 82 to 86 | 1.707 to 1.754 | "Original spins at t = 3: shrinking search" (item 40) |
+| spinv, t = 2 | 3 | 48 / 48 / 49 | 78 / 79 / 79 | 30 to 31 | 1.612 to 1.646 | "spinv at t = 2" (item 41) |
+
+(The first row is copied from the item 28 summary; rows 2 and 3 are this session's runs.)
+
+Indistinguishable interactions (t = 2, d = 1, Z3), from the item 42 section: spins 10 of 979 interactions in an inseparable pair, spinv 1,084 of 8,741, bugzilla 0 of 5,818, benchmark_1 1,354 of 23,876, benchmark_20 2,931 of 64,620.
+
+What the numbers show: on the two large benchmarks tried, a suite that distinguishes interactions needed about 1.6 to 1.9 times the tests of a suite that only covers them (original spins t = 2: 1.72 to 1.87; t = 3: 1.707 to 1.754; spinv t = 2: 1.612 to 1.646), at the budgets used. What they do not show: whether this holds on other models, at other budgets (the t = 3 locating searches ended within 3 tests of their start size 200), or against published sizes. The literature check (docs/LITERATURE_CHECK.md section 6) found Garvin et al. (constrained covering arrays by meta-heuristic) and Konishi et al. (SA, unconstrained locating arrays) but no constrained-locating-array metaheuristic paper in three excerpt-only searches; that is a weak negative, not a novelty claim.
+
+## Needs your decision (added by item 43)
+- Comparison with published sizes: needs the primary papers' definitions read first (Jin & Tsuchiya 2020; Konishi et al.), then a model and strength where definitions match.
+- Whether to extend: more seeds on spinv or benchmark_20, a longer or restarted-from-larger t = 3 locating search (sizes were near the start size), d = 2, nondeterminism, anything AI-based.
+
+## Comparison with published CLA sizes (research plan item 44)
+Origin: cloud run, not reproduced by the author. Scripts `scripts/item44_run.py` (search, saves the final suite) and `scripts/item44_verify.py` (checks a saved suite); suites in `docs/item44_suites/`. Interaction localization only. t = 2, d = 1.
+
+**Definitions checked (Jin & Tsuchiya 2020, arXiv 1801.06041, text obtained via a PDF-to-markdown fetch; wording and table figures should be checked against the PDF before quoting).** Their experiments generate (1bar,2)-CLAs: every valid 2-way interaction is covered, and every pair of valid interactions that is distinguishable (Definition 1 / Lemma 1) is separated by some test (their SMT section: coverage constraint plus, for each distinguishable pair, a row covering only one of them). That is the same condition as `cost == 0` in `FastZ3CostModel` (0 uncovered, 0 avoidable collisions). Table 1 columns that match this repo's own numbers: valid 2-way interactions Spins 979, Spinv 8,741, Bugzilla 5,818, and indistinguishable pairs Spins 9, Spinv 599, Bugzilla 0 (the verifier below left exactly 9, 599, 0 inseparable pairs).
+
+**Published heuristic (their Table 1, 10 runs each; min to max over runs; C++, CIT-BACH 3-way covering array then row deletion, 3.2 GHz Xeon):** Spins 49 to 53 (1 s), Bugzilla 41 to 48 (about 9 s), Spinv 91 to 97 (about 58 s). Their SMT method timed out on all three.
+
+**This repo's search (Z3-backed targeted SA, start size shown, 6000 moves x 5 restarts per size, shrink by one; times on a 4-core shared container):**
+
+| model | seed | start | final size | verified (item44_verify) | first failed size: best cost | total moves | time (s) |
+|---|---|---|---|---|---|---|---|
+| spins | 0 | 44 | 43 | yes | not recorded here | 37,420 | 265 |
+| spins | 1 | 44 | 42 | yes | not recorded here | 62,409 | 450 |
+| spins | 2 | 44 | 43 | yes | not recorded here | 44,145 | 325 |
+| bugzilla | 0 | 60 | 37 | yes | 36: 5 avoidable collisions | 74,164 | 2,986 |
+| spinv | 0 | 90 | 79 | yes | 78: 1 avoidable collision | 99,012 | 5,893 |
+| spinv | 1 | 90 | 79 | yes | 78: 1 avoidable collision | 84,271 | 4,833 |
+
+Verification: `item44_verify.py` rechecks each saved suite with its own Z3 encoding (it shares only the .model/.constraints loader with the search): all tests valid, 0 uncovered, 0 avoidable collisions, so each is a (1bar,2)-CLA by the definition above. Reproducibility: spins seed 0 gave 43 tests and 37,420 moves, identical to the item 21 / 23 record.
+
+**What this shows:** on these three CCAG models, at this budget, this search found valid (1bar,2)-CLAs smaller than the sizes in the published table (spins 42 to 43 against 49 to 53; bugzilla 37 against 41 to 48; spinv 79 against 91 to 97). **What it does not show:** that the method is better. The two use different algorithms and very different compute (published heuristic: seconds; this search: 4 to 98 minutes per run), different hardware, and the published numbers are read from a converted PDF. Seeds: 3, 1 and 2, so bugzilla is one data point. Sizes are search results, not proven minima. Not run: apache, gcc, the CitLab/literature benchmarks 1 to 25, t = 3 against anything published (they evaluated only t = 2, d = 1), and a time-matched comparison.
+
+## Needs your decision (added by item 44)
+- Item 44 found sizes below the published heuristic's on spins, bugzilla and spinv. Before this goes in a paper: (a) check Table 1 against the PDF (figures were read from a converted copy); (b) decide whether to run a time-matched comparison (limit our search to their seconds-scale budgets) and whether to add apache, gcc and the CitLab benchmarks; (c) ask whether the authors' CLA tool or SA4LA can be run on the same machine for a like-for-like size comparison.
+
+## Comparison with published CLA sizes, continued (research plan item 45)
+Cloud run, not reproduced by the author. Same scripts and definition as item 44; all suites in `docs/item44_suites/`; every suite below was checked by `scripts/item44_verify.py` (valid tests, 0 uncovered, 0 avoidable collisions). t = 2, d = 1, interaction localization only. Runs shared 4 cores with up to 4 other searches, so times are approximate.
+
+**Table 1 cross-check.** A second rendering (arXiv HTML v2, answered by a direct-quote query) gives the same first two numeric columns as the PDF conversion: Apache 89 / 85, Bugzilla 48 / 41, GCC 68 / 61, Spins 53 / 49, Spinv 97 / 91, and the same valid-pair and indistinguishable-pair columns (the HTML table's column headers were garbled, so these are max / min of the heuristic as in the PDF conversion). This is two conversions agreeing, not the printed PDF; the journal version (J. Syst. Softw. 170, 2020) may differ.
+
+**All runs (final size; "cap" = stopped by the 7,200 s wall-clock cap while still shrinking, so the size is where it was, not where it fails):**
+
+| model | published heuristic, 10 runs (min to max) | this search, seed: size | notes |
+|---|---|---|---|
+| spins | 49 to 53 | 0:43, 1:42, 2:43 | start 44 |
+| bugzilla | 41 to 48 | 0:37, 1:36, 2:36, 3:37 | seed 0 start 60, seeds 1 to 3 start 45; size 35 not recorded for seeds 1 to 3, size 36 failed for seed 0 with 5 avoidable collisions |
+| spinv | 91 to 97 | 0:79, 1:79, 2:78 | seeds 0, 1 start 90; seed 2 start 85; the next size failed with 1, 1 and 3 avoidable collisions |
+| apache | 85 to 89 | 0:82 (cap), 1:82 (cap) | start 100 and 90; size 81 (seed 1) in progress at the cap with 11 avoidable left |
+| gcc | 61 to 68 | 0:63 (cap), 1:61 (cap) | start 75 and 70; ends at the cap, sizes 62 and 60 not completed (12 and 9 avoidable left) |
+
+Median over seeds of the final sizes: spins 43, bugzilla 36.5, spinv 79, apache 82, gcc 62. The inseparable-pair counts left by the verifier equal the paper's column: spins 9, spinv 599, bugzilla 0, apache 0, gcc 46.
+
+**Time-capped runs (same search, wall-clock cap on the whole run, model build excluded, seeds 0 to 2, start 60 for bugzilla and 53 for spins):**
+
+| model | cap | sizes reached | published heuristic (size, time) |
+|---|---|---|---|
+| bugzilla | 60 s | 48, 48, 47 | 41 to 48, about 9 s |
+| bugzilla | 600 s | 39, 39, 40 | same |
+| spins | 10 s | 52, 53, 52 | 49 to 53, about 0.6 s |
+
+**Time to reach sizes (from the logs of the uncapped runs, seed 0):** bugzilla 48 at 49 s, 41 at 302 s, 37 at 1,685 s.
+
+**What the numbers show:** at wall-clock budgets about 7 to 17 times their reported times (bugzilla 60 s, spins 10 s) this search lands inside the published range, not below it. Below the published minimum appears only with budgets of about 10 to 1,000 times theirs, on spins, bugzilla, spinv and apache; on gcc the best size (61, seed 1) only equals the published minimum (61), and both gcc runs were cut off by the cap. **What they do not show:** equal-hardware timing (their machine, language and generator differ from this container, and CPU shares here varied); that the search would beat their method given their own time; anything about the CitLab and literature benchmarks 1 to 25 (not run) or other strengths. Seeds: 2 to 4 per model, so spread is only indicated.
+
+## Needs your decision (added by item 45)
+- Item 46 (STOP FOR USER): to compare at equal time and hardware we would have to run the authors' own tool (the CLA generator, or SA4LA for unconstrained arrays) in this container. That means downloading and executing third-party code; I did not do it. Also the CitLab/literature benchmarks 1 to 25 need their source files.
+- Paper framing: the defensible statement from the data is "at 10 to 1,000 times the published run time, a solver-backed SA reaches smaller (1bar,2)-CLAs on five CCAG benchmarks (verified), and at about 10 times their time it matches their range". A speed or quality win is NOT shown.
+
+## Needs your decision (added by item 46)
+- Item 46 (STOP FOR USER): a time-matched comparison on the same machine needs the authors' CLA tool or SA4LA (external download and run), and the 25 CitLab/literature benchmarks need a source for the files. Both are decisions about third-party code and data.
+
+## Item 46 resolved in the live session: PDF check, time ratios, tool and benchmark sources (research plan items 46 and 47)
+Live session (sandbox), 2026-10-27. Docs only; no code changed, no search run.
+
+**Table 1 checked against the arXiv PDF** (https://arxiv.org/pdf/1801.06041, 29 pages, read by a PDF parser with a direct-quote query; rows 8, 9 and 21 to 24 were not returned). Heuristic (1bar,2)-CLA sizes max / min and average time over 10 runs:
+
+| No. | SUT | max | min | avg time (s) |
+|---|---|---|---|---|
+| 26 | Apache | 89 | 85 | 3,263.15 |
+| 27 | Bugzilla | 48 | 41 | 9.02 |
+| 28 | GCC | 68 | 61 | 2,494.59 |
+| 29 | Spins | 53 | 49 | 0.63 |
+| 30 | Spinv | 97 | 91 | 58.21 |
+
+Sizes agree with the two conversions used in items 44 and 45. Valid-pair and indistinguishable-pair columns also agree (Apache 66,927 / 0, Bugzilla 5,818 / 0, GCC 82,770 / 46, Spins 979 / 9, Spinv 8,741 / 599). Still not checked: the journal version (J. Syst. Softw. 170, 2020).
+
+**Correction to the item 45 framing.** Our run time divided by their average time (our times from items 44 and 45; different hardware and language, so this is a ratio of wall-clock numbers, not of compute):
+
+| model | ratio(s) |
+|---|---|
+| spins | 421, 714, 516 (seeds 0 to 2) |
+| bugzilla | 331 (seed 0) |
+| spinv | 101, 83 (seeds 0, 1) |
+| apache | 2.2 (7,200 s cap) |
+| gcc | 2.9 (7,200 s cap) |
+
+So "10 to 1,000 times the published run time" is wrong for apache: both apache seeds ended at 82 (below the published minimum of 85) within about 2.2 times the published average time. For gcc, 61 (equal to the published minimum) within about 2.9 times. Two seeds each, capped runs, different hardware; this is not a time-matched comparison.
+
+**Tools.** SA4LA (github.com/tatsuhirotsuchiya/SA4LA, Konishi et al., Java) was cloned outside the repo. Its input format is strength, number of parameters and value counts only, and no source file mentions constraints, so it builds unconstrained locating arrays only. It cannot give a like-for-like constrained comparison; it can give a same-machine comparison of the two searches on the CCAG models with constraints removed. Building and running it was blocked by the session's permission check (third-party code); not run. The Jin & Tsuchiya heuristic implementation (C++, CIT-BACH based) was not found in a public repository by web and developer-index searches.
+
+**Literature benchmarks 1 to 25.** 20 of them (Banking1/2, CommProtocol, Concurrency, Healthcare1 to 4, Insurance, NetworkMgmt, ProcessorComm1/2, Services, Storage1 to 5, SystemMgmt, Telecom; Segall et al.) are in the Jia, Cohen, Harman and Petke benchmark archive on Zenodo (DOI 10.5281/zenodo.581657, ICSE15_HHSA_Benchmarks.zip, .model and .constraints files). Download was refused by the container's network policy (zenodo.org not allowed). No source found yet for Aircraft, Car, Movie, Medicitries and Medicitries_small.
+
+## Needs your decision (added by item 47)
+- SA4LA run (item 52): needs a permission rule that allows building and running third-party Java code in the session, or a run on your machine.
+- Literature benchmarks (item 53): add zenodo.org to the environment's allowed domains, or download the archive yourself and put it outside the repo.
+
+## Multiple faults: how far are d = 1 suites from the (bar2,2) condition? (research plan item 48)
+Cloud run, not reproduced by the author. `scripts/item48_sets.py` (new; no library change; z3-solver 5.3.2.0 installed in this session via `python3 -m pip`). Interaction localization only. t = 2, one seed (0).
+Suites: the item 25 locating search re-run (Z3-backed cold shrinking, targeted, 3 restarts x 3000 moves, start = greedy locating size, seed 0); the sizes equal item 25's seed-0 locating column (9, 10, 9 for high_constraints, 8, 11, 8), so the same suites were found again. Sets = every single feasible interaction plus every pair of distinct feasible interactions; a set's signature is the tests (or valid configurations) that contain at least one interaction of the set. Counts are by brute force over bit masks. "Unavoidable" = equal signature over all valid configurations (enumerated); avoidable = colliding minus unavoidable. Command: `PYTHONPATH=. python3 scripts/item48_sets.py`.
+
+| model | valid configs | suite size | interactions | sets (size 1 or 2) | set pairs | colliding pairs | unavoidable | avoidable |
+|---|---|---|---|---|---|---|---|---|
+| model.json | 18 | 9 | 38 | 741 | 274,170 | 1,013 | 406 | 607 |
+| model_6param.json | 36 | 10 | 58 | 1,711 | 1,462,905 | 4,912 | 648 | 4,264 |
+| model_8param.json | 144 | - | 110 | 6,105 | 18,632,460 | skipped (over 5,000,000 set pairs) | | |
+| model_high_constraints.json | 11 | 9 | 35 | 630 | 198,135 | 1,753 | 1,297 | 456 |
+| model_low_constraints.json | 32 | 8 | 40 | 820 | 335,790 | 2,280 | 60 | 2,220 |
+| model_multivalue.json | 30 | 11 | 46 | 1,081 | 583,740 | 1,393 | 261 | 1,132 |
+| my_model.json | 24 | 8 | 39 | 780 | 303,810 | 1,998 | 198 | 1,800 |
+
+Sanity check built into the script: among pairs of single interactions, none were colliding-but-avoidable on any of the six models (all 0), as expected for suites with cost 0.
+What this shows: on these six small models, the d = 1 suites leave every set pair of size 1 or 2 mostly unseparated in the avoidable sense (456 to 4,264 avoidable colliding pairs per model), so a d = 1 suite is not a d = 2 suite; the count says how far, nothing about how many extra tests a d = 2 suite needs. What it does not show: sizes of d = 2 suites (no search run), results on model_8param (skipped by the rule), larger models, or any seed other than 0.
+Test status before commit: 149 tests OK, 3 skipped (z3 installed; before installing, 40 skipped).
+
+## Flaky failures: how often does exact localization survive? (research plan item 49)
+Cloud run, not reproduced by the author. `scripts/item49_flaky.py` (new; library unchanged; `rank_noisy` not used, so I did not need to read it for this item). Interaction localization only. t = 2, one seed (0) for the suite search and for the random failures (`random.Random(0)`, one stream per model).
+Suites: the item 25 locating search re-run per model (Z3-backed cold shrinking, targeted, 3 restarts x 3000 moves, start = greedy locating size, seed 0). All 7 non-slow models, including model_8param.json (item 48 skipped it for set-pair count; this item does not need pairs). Fault model: every feasible interaction is the single fault, 20 trials each; a test that contains it fails with probability p in each of r repeats, and is reported failing if it failed in any repeat; tests without it never fail. `localize_exact` is run on the reported outcomes. exact = it returned exactly the true interaction; empty = empty list; wrong = non-empty but not exactly the true one (includes ambiguous lists). Command: `PYTHONPATH=. python3 scripts/item49_flaky.py`.
+
+| model | suite size | interactions | p | r | exact | empty | wrong |
+|---|---|---|---|---|---|---|---|
+| model.json | 9 | 38 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model.json | 9 | 38 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model.json | 9 | 38 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model.json | 9 | 38 | 0.9 | 1 | 0.7934 | 0.1079 | 0.0987 |
+| model.json | 9 | 38 | 0.9 | 2 | 0.9868 | 0.0039 | 0.0092 |
+| model.json | 9 | 38 | 0.9 | 3 | 0.9947 | 0.0000 | 0.0053 |
+| model.json | 9 | 38 | 0.7 | 1 | 0.4526 | 0.2711 | 0.2763 |
+| model.json | 9 | 38 | 0.7 | 2 | 0.8053 | 0.1184 | 0.0763 |
+| model.json | 9 | 38 | 0.7 | 3 | 0.9289 | 0.0421 | 0.0289 |
+| model.json | 9 | 38 | 0.5 | 1 | 0.2013 | 0.4447 | 0.3539 |
+| model.json | 9 | 38 | 0.5 | 2 | 0.5395 | 0.2289 | 0.2316 |
+| model.json | 9 | 38 | 0.5 | 3 | 0.7395 | 0.1395 | 0.1211 |
+| model_6param.json | 10 | 58 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model_6param.json | 10 | 58 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model_6param.json | 10 | 58 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_6param.json | 10 | 58 | 0.9 | 1 | 0.7991 | 0.0991 | 0.1017 |
+| model_6param.json | 10 | 58 | 0.9 | 2 | 0.9647 | 0.0181 | 0.0172 |
+| model_6param.json | 10 | 58 | 0.9 | 3 | 0.9983 | 0.0000 | 0.0017 |
+| model_6param.json | 10 | 58 | 0.7 | 1 | 0.4190 | 0.3388 | 0.2422 |
+| model_6param.json | 10 | 58 | 0.7 | 2 | 0.7828 | 0.1043 | 0.1129 |
+| model_6param.json | 10 | 58 | 0.7 | 3 | 0.9276 | 0.0241 | 0.0483 |
+| model_6param.json | 10 | 58 | 0.5 | 1 | 0.1836 | 0.5069 | 0.3095 |
+| model_6param.json | 10 | 58 | 0.5 | 2 | 0.5034 | 0.2664 | 0.2302 |
+| model_6param.json | 10 | 58 | 0.5 | 3 | 0.7276 | 0.1345 | 0.1379 |
+| model_8param.json | 11 | 110 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model_8param.json | 11 | 110 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model_8param.json | 11 | 110 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_8param.json | 11 | 110 | 0.9 | 1 | 0.7495 | 0.1173 | 0.1332 |
+| model_8param.json | 11 | 110 | 0.9 | 2 | 0.9732 | 0.0086 | 0.0182 |
+| model_8param.json | 11 | 110 | 0.9 | 3 | 0.9968 | 0.0018 | 0.0014 |
+| model_8param.json | 11 | 110 | 0.7 | 1 | 0.3959 | 0.2700 | 0.3341 |
+| model_8param.json | 11 | 110 | 0.7 | 2 | 0.7655 | 0.1068 | 0.1277 |
+| model_8param.json | 11 | 110 | 0.7 | 3 | 0.9282 | 0.0364 | 0.0355 |
+| model_8param.json | 11 | 110 | 0.5 | 1 | 0.1736 | 0.3918 | 0.4345 |
+| model_8param.json | 11 | 110 | 0.5 | 2 | 0.4586 | 0.2205 | 0.3209 |
+| model_8param.json | 11 | 110 | 0.5 | 3 | 0.6882 | 0.1468 | 0.1650 |
+| model_high_constraints.json | 9 | 35 | 1.0 | 1 | 0.8000 | 0.0000 | 0.2000 |
+| model_high_constraints.json | 9 | 35 | 1.0 | 2 | 0.8000 | 0.0000 | 0.2000 |
+| model_high_constraints.json | 9 | 35 | 1.0 | 3 | 0.8000 | 0.0000 | 0.2000 |
+| model_high_constraints.json | 9 | 35 | 0.9 | 1 | 0.6186 | 0.1271 | 0.2543 |
+| model_high_constraints.json | 9 | 35 | 0.9 | 2 | 0.7900 | 0.0086 | 0.2014 |
+| model_high_constraints.json | 9 | 35 | 0.9 | 3 | 0.7957 | 0.0014 | 0.2029 |
+| model_high_constraints.json | 9 | 35 | 0.7 | 1 | 0.3457 | 0.3200 | 0.3343 |
+| model_high_constraints.json | 9 | 35 | 0.7 | 2 | 0.6271 | 0.1086 | 0.2643 |
+| model_high_constraints.json | 9 | 35 | 0.7 | 3 | 0.7314 | 0.0343 | 0.2343 |
+| model_high_constraints.json | 9 | 35 | 0.5 | 1 | 0.1429 | 0.5214 | 0.3357 |
+| model_high_constraints.json | 9 | 35 | 0.5 | 2 | 0.4057 | 0.2471 | 0.3471 |
+| model_high_constraints.json | 9 | 35 | 0.5 | 3 | 0.5829 | 0.1429 | 0.2743 |
+| model_low_constraints.json | 8 | 40 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model_low_constraints.json | 8 | 40 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model_low_constraints.json | 8 | 40 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_low_constraints.json | 8 | 40 | 0.9 | 1 | 0.8125 | 0.0250 | 0.1625 |
+| model_low_constraints.json | 8 | 40 | 0.9 | 2 | 0.9838 | 0.0025 | 0.0138 |
+| model_low_constraints.json | 8 | 40 | 0.9 | 3 | 0.9988 | 0.0000 | 0.0013 |
+| model_low_constraints.json | 8 | 40 | 0.7 | 1 | 0.5200 | 0.1325 | 0.3475 |
+| model_low_constraints.json | 8 | 40 | 0.7 | 2 | 0.8263 | 0.0213 | 0.1525 |
+| model_low_constraints.json | 8 | 40 | 0.7 | 3 | 0.9487 | 0.0050 | 0.0462 |
+| model_low_constraints.json | 8 | 40 | 0.5 | 1 | 0.2737 | 0.2737 | 0.4525 |
+| model_low_constraints.json | 8 | 40 | 0.5 | 2 | 0.5262 | 0.0963 | 0.3775 |
+| model_low_constraints.json | 8 | 40 | 0.5 | 3 | 0.7762 | 0.0300 | 0.1938 |
+| model_multivalue.json | 11 | 46 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| model_multivalue.json | 11 | 46 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| model_multivalue.json | 11 | 46 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_multivalue.json | 11 | 46 | 0.9 | 1 | 0.8011 | 0.1043 | 0.0946 |
+| model_multivalue.json | 11 | 46 | 0.9 | 2 | 0.9848 | 0.0076 | 0.0076 |
+| model_multivalue.json | 11 | 46 | 0.9 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| model_multivalue.json | 11 | 46 | 0.7 | 1 | 0.4380 | 0.2804 | 0.2815 |
+| model_multivalue.json | 11 | 46 | 0.7 | 2 | 0.7902 | 0.1185 | 0.0913 |
+| model_multivalue.json | 11 | 46 | 0.7 | 3 | 0.9543 | 0.0250 | 0.0207 |
+| model_multivalue.json | 11 | 46 | 0.5 | 1 | 0.2326 | 0.4315 | 0.3359 |
+| model_multivalue.json | 11 | 46 | 0.5 | 2 | 0.5522 | 0.2359 | 0.2120 |
+| model_multivalue.json | 11 | 46 | 0.5 | 3 | 0.7250 | 0.1424 | 0.1326 |
+| my_model.json | 8 | 39 | 1.0 | 1 | 1.0000 | 0.0000 | 0.0000 |
+| my_model.json | 8 | 39 | 1.0 | 2 | 1.0000 | 0.0000 | 0.0000 |
+| my_model.json | 8 | 39 | 1.0 | 3 | 1.0000 | 0.0000 | 0.0000 |
+| my_model.json | 8 | 39 | 0.9 | 1 | 0.8077 | 0.0628 | 0.1295 |
+| my_model.json | 8 | 39 | 0.9 | 2 | 0.9833 | 0.0064 | 0.0103 |
+| my_model.json | 8 | 39 | 0.9 | 3 | 0.9987 | 0.0000 | 0.0013 |
+| my_model.json | 8 | 39 | 0.7 | 1 | 0.4974 | 0.1821 | 0.3205 |
+| my_model.json | 8 | 39 | 0.7 | 2 | 0.8231 | 0.0577 | 0.1192 |
+| my_model.json | 8 | 39 | 0.7 | 3 | 0.9474 | 0.0154 | 0.0372 |
+| my_model.json | 8 | 39 | 0.5 | 1 | 0.2615 | 0.3744 | 0.3641 |
+| my_model.json | 8 | 39 | 0.5 | 2 | 0.5244 | 0.1462 | 0.3295 |
+| my_model.json | 8 | 39 | 0.5 | 3 | 0.7667 | 0.0731 | 0.1603 |
+
+What this shows: at p = 1.0 every model gives exact = 1.0000 except model_high_constraints.json at 0.8000 (wrong 0.2000, all r). I checked separately that 7 of its 35 feasible interactions share their signature over all 11 valid configurations with another interaction, i.e. 7/35 = 0.2, so that 0.2 is the unavoidable ambiguity, not noise. For p < 1, exact localization drops sharply at r = 1 (for p = 0.9 between 0.6186 and 0.8125 across models; for p = 0.5 between 0.1429 and 0.2737) and recovers with repeats (p = 0.9, r = 3: 0.7957 on high_constraints and 0.9947 to 1.0000 on the others; p = 0.5, r = 3: 0.5829 to 0.7762). Failures show up as both empty results (all failing tests missed) and wrong results (a subset of the failing tests looks like another interaction's pattern). What it does not show: any other seed, strength t = 3, larger models, suites built to tolerate flakiness, or how a ranking method (`rank_noisy`) would do; none were run.
+Test status before commit: 149 tests OK, 3 skipped (z3 installed).
+
+## Summary of research plan items 47 to 50 (research plan item 51)
+Cloud run, not reproduced by the author. Interaction localization only; one seed (0) for items 48 and 49. In this session I re-ran `scripts/item48_sets.py` and `scripts/item49_flaky.py` (z3-solver 5.3.2.0 installed via pip) instead of copying numbers. Item 48: all six table rows (sets, set pairs, colliding, unavoidable, avoidable) are identical to the item 48 section, and model_8param.json is skipped again (18,632,460 set pairs, over the 5,000,000 rule). Item 49: all 84 rows (7 models x 4 values of p x 3 values of r; exact, empty, wrong) are identical to the item 49 table. Items 47 and 50 involved no code; their results (PDF table check, time ratios, tool and benchmark sources, literature search) are in the item 46/47 section above and in docs/LITERATURE_CHECK.md, and were not re-measured here (web and PDF access, not repeated).
+
+| item | what was measured | result (see section) |
+|---|---|---|
+| 47 | Table 1 vs PDF; time ratios | sizes agree; apache ratio about 2.2, so the "10 to 1,000 times" framing was wrong for apache (item 46/47 section; not re-run) |
+| 48 | colliding pairs of fault sets of size 1 or 2 in d = 1 suites | 1,013 to 4,912 colliding pairs on six models, of which 456 to 4,264 avoidable (re-run) |
+| 49 | exact localization under flaky failures | p = 1.0: exact 1.0000 on six models, 0.8000 on model_high_constraints.json (unavoidable ambiguity); p = 0.9, r = 1: 0.6186 to 0.8125; p = 0.5, r = 3: 0.5829 to 0.7762 (re-run) |
+| 50 | ML/LLM literature | five sources opened; none builds locating arrays or localizes interactions with a learned model, "did not find" from three queries (not re-run) |
+
+Test status before commit: 149 tests OK, 3 skipped (z3 installed).
+
+What this shows: a suite built for single faults leaves many two-interaction fault sets confusable, and the exact localizer needs repeats to cope with flaky failures. What it does not show: sizes of d = 2 suites, other seeds, t = 3, larger models, `rank_noisy`, or any comparison with published sizes beyond what items 44 to 47 recorded.
+
+## Needs your decision (added by item 51)
+- Items 52 and 53 stay STOP FOR USER (see the entries added by item 47).
+
+## Literature benchmarks: comparison with Jin & Tsuchiya Table 1 rows 6 to 25 (research plan item 53)
+Live session (sandbox), 2026-10-27. Interaction localization only; t = 2, d = 1; seeds 0 to 2 (three data points per model).
+
+**Source and conversion.** Jia, Cohen, Harman and Petke, CIT Benchmarks, Zenodo DOI 10.5281/zenodo.581657, `ICSE15_HHSA_Benchmarks.zip`, folder `segall_issta_11` (20 Segall et al. models; kept outside the repo, not committed). Its `X_yue.cons` files number (parameter, value) pairs from 1 (in every file the largest index equals the number of values and index 0 never occurs), so `scripts/item53_convert.py` shifts every index down by one into the format `load_casa_model` reads; a model with no .cons file gets an empty constraints file (Insurance, Storage2).
+
+**Model check against Table 1.** Feasible 2-way interaction count (FastZ3CostModel, cover mode) equals Table 1's |VI_2| on 18 of 20 models. Two differ and are excluded: ProcessorComm2 (3,081 here, 2,525 in the table) and Storage4 (3,414 here, 3,491). As an independent check, the verifier's inseparable-pair count equals Table 1's * column on all 18 (for example Healthcare3 477, SystemMgmt 130, Services 93). Table 1 rows 1 to 5 (Aircraft, Car, Movie, Medicitries, Medicitries_small) are not in the archive; no source found. Rows 8, 9 and 21 to 24 were read from the arXiv PDF by a freeform (not direct-quote) query; check them against the PDF before quoting.
+
+**Settings.** `scripts/item44_run.py` unchanged: Z3-backed targeted SA, 6000 moves x 5 restarts per size, shrink by one, start = the published maximum size, **wall-clock cap 900 s per run** (item 44 used 7,200 s; reduced to bound the session). Four runs at a time on a 4-core container. Every saved suite (`docs/item53_suites/`, 54 files) passed `scripts/item44_verify.py`: valid tests, 0 uncovered, 0 avoidable collisions.
+
+| No. | model | published min to max | SMT (exact search) | this search, seeds 0/1/2 | median | median vs published min | our time (s), median | published avg time (s) | time ratio |
+|---|---|---|---|---|---|---|---|---|---|
+| 6 | Banking1 | 25 to 28 | 23 | 22/22/22 | 22 | -3 | 71.9 | 0.14 | 514 |
+| 7 | Banking2 | 27 to 30 | T.O. | 23/23/23 | 23 | -4 | 179.5 | 0.17 | 1,056 |
+| 8 | Concurrency | 7 to 7 | 7 | 7/7/7 | 7 | +0 | 41.9 | 0.1 | 419 |
+| 9 | CommProtocol | 33 to 35 | T.O. | 29/30/29 | 29 | -4 | 331.3 | 0.18 | 1,841 |
+| 10 | Healthcare1 | 45 to 50 | 42 | 41/40/41 | 41 | -4 | 226 | 0.2 | 1,130 |
+| 11 | Healthcare2 | 33 to 36 | T.O. | 29/30/29 | 29 | -4 | 192.1 | 0.2 | 960 |
+| 12 | Healthcare3 | 77 to 101 | T.O. | 69c/68c/70c | 69 | -8 | 900 (cap) | 4.38 | 205 |
+| 13 | Healthcare4 | 98 to 105 | T.O. | 94c/94c/94c | 94 | -4 | 900 (cap) | 20.85 | 43 |
+| 14 | Insurance | 789 to 805 | T.O. | 789c/789c/790c | 789 | +0 | 900 (cap) | 84.34 | 11 |
+| 15 | NetworkMgmt | 202 to 210 | T.O. | 179/181/179c | 179 | -23 | 830.2 (cap) | 1.86 | 446 |
+| 16 | ProcessorComm1 | 58 to 63 | T.O. | 50/51/52 | 51 | -7 | 496.8 | 0.59 | 842 |
+| 18 | Services | 194 to 200 | T.O. | 174c/174c/175c | 174 | -20 | 900 (cap) | 4.62 | 195 |
+| 19 | Storage1 | 22 to 22 | 22 | 22/22/22 | 22 | +0 | 37.2 | 0.11 | 338 |
+| 20 | Storage2 | 34 to 37 | 30 | 30/30/30 | 30 | -4 | 78 | 0.12 | 650 |
+| 21 | Storage3 | 87 to 89 | T.O. | 74/76/75 | 75 | -12 | 751.4 | 0.77 | 976 |
+| 23 | Storage5 | 344 to 361 | T.O. | 350c/350c/350c | 350 | +6 | 900 (cap) | 56.18 | 16 |
+| 24 | SystemMgmt | 27 to 31 | T.O. | 25/25/25 | 25 | -2 | 172.1 | 0.16 | 1,076 |
+| 25 | Telecom | 49 to 54 | T.O. | 44/44/45 | 44 | -5 | 219.4 | 0.22 | 997 |
+
+median below published min: 14, equal: 3, above: 1
+
+"c" = stopped by the 900 s cap while still shrinking (the size is where it was, not where it fails). Time ratio = our median run time / their average time; different hardware and language, so this compares wall-clock numbers, not compute. SMT column is the size their SMT method reached (it starts from the heuristic's minimum), not a proven minimum.
+
+**What the numbers show.** Median size below the published heuristic minimum on 14 of 18 models, equal on 3 (Concurrency, Storage1, Insurance), above on 1 (Storage5, capped at 350 against 344). Where their SMT method finished, our sizes were equal (Concurrency 7, Storage1 22, Storage2 30) or smaller (Banking1 22 against 23, Healthcare1 40 to 41 against 42). Our runs used about 11 to 1,841 times their average time; on the two models nearest to equal time (Insurance about 11 times, Storage5 about 16 times) the search did not go below their minimum.
+
+**What they do not show.** That this search beats their heuristic at equal time or hardware; minimum sizes (search results at a fixed budget); anything for Table 1 rows 1 to 5, ProcessorComm2 or Storage4. Three seeds per model.
+
+## Same-machine, equal-time comparison with SA4LA, constraints removed (research plan item 52)
+Live session (sandbox), 2026-10-27, after the plan author committed `.claude/settings.json` allowing javac/java. Interaction localization only; t = 2, d = 1; seeds 0 to 2.
+
+**What was run.** SA4LA (github.com/tatsuhirotsuchiya/SA4LA, commit 07fdcb0, Konishi et al.) built from source outside the repo (never committed). Its sources mix UTF-8-with-BOM and Shift-JIS (one file, comments only), so a copy was re-encoded to plain UTF-8 before `javac`; no code was changed. The source was checked for network, process and file-write calls (none besides its optional output file). Default settings (temperature 4.0, cooling 0.999, 4,096 iterations, 3 retries), seeds 0 to 2, 3,600 s cap. SA4LA cannot express constraints, so all four CCAG models (spins, bugzilla, spinv, apache) were run with their constraints **removed** (the .model file is SA4LA's input format; spins matched SA4LA's own `spin-s-2` input exactly). Then `scripts/item44_run.py` (Z3-backed targeted SA, unchanged) on the same unconstrained models, same seeds, **wall-clock cap = SA4LA's own run time for that model and seed** (3,600 s for apache), start size = the upper bound SA4LA printed for that model. Both phases ran 4 processes at a time on the same 4-core container. Our model build (0.2 s spins to 8.8 s apache) is outside our cap. `scripts/item52_parse.py` turns SA4LA's printed array into suite JSON; every array below passed `scripts/item44_verify.py` (valid, 0 uncovered, 0 avoidable collisions). Suites in `docs/item52_suites/`.
+
+| model (unconstrained) | SA4LA size, seeds 0/1/2 | SA4LA time (s) | this search, same cap | this search start |
+|---|---|---|---|---|
+| spins | 35 / 35 / 35 | 31.9 / 30.2 / 40.5 | 45 / 44 / 43 (capped) | 62 |
+| bugzilla | 32 / 32 / 32 | 191.2 / 158.2 / 197.4 | 43 / 44 / 43 (capped) | 73 |
+| spinv | 51 / 51 / 52 | 408.3 / 421.3 / 380.2 | 66 / 68 / 67 (capped) | 74 |
+| apache | cut off at 3,600 s; log shows 63 / 63 / 64 rows reached (not printed, not verified) | 3,600 (cap) | 89 / 90 / 90 (capped) | 147 |
+
+**What the numbers show.** At equal wall-clock time on the same machine, SA4LA's arrays are smaller on every model and seed: by 8 to 10 rows on spins, 11 to 12 on bugzilla, 14 to 17 on spinv, and (unverified for SA4LA) about 26 on apache. Every one of our runs was still shrinking when it hit the cap. A single seed-0 spins run of SA4LA alone took 24.8 s (35 rows), so the parallel load slowed SA4LA too.
+
+**What they do not show.** Anything about constrained models (SA4LA cannot run them); minimum sizes; behaviour at our item 44 budgets. Likely contributors, not tested: SA4LA binary-searches the size between bounds while this search shrinks by one test from the start; Java versus Python; SA4LA's incremental cost evaluation. Implication for the paper: the size results of items 44, 45 and 53 rest on much larger time budgets, and at equal time this search's engine is clearly slower than SA4LA's on unconstrained arrays. Any claim must be about constrained arrays and must state the time budgets.
+
+## Needs your decision (added by the scheduled research run, 2026-10-27)
+- Every item in docs/RESEARCH_PLAN.md (1 to 53) is ticked. The scheduled run has nothing left to do until you add new items; the open choices are the ones listed in the earlier "Needs your decision" entries (published-size framing, more seeds, d = 2, AI-based work).
+
+## Why SA4LA won: size schedule or moves? (research plan item 54)
+Live session (sandbox), 2026-10-28. Unconstrained spins, bugzilla, spinv (as item 52), seeds 0 to 2. Interaction localization only.
+
+**Test.** `scripts/item44_run.py` (targeted move, 6000 moves x 5 restarts per size) started AT SA4LA's own final size, with cap 1x and 10x SA4LA's time. If the shrink-by-one schedule were the only problem, the search would solve that size.
+
+**Result.** It solved SA4LA's size in none of the 18 runs, even when all 5 x 6,000 = 30,000 moves finished before the 10x cap. Best costs at 10x: spins 4, 5, 6; bugzilla 49, 26, 11; spinv 30, 51, 27. SA4LA reached those sizes inside single anneals of at most 4,096 moves. Moves per second over item 52's runs: SA4LA 1,043 to 1,094 on spins, 163 to 172 on bugzilla, 81 to 85 on spinv; this search 118 to 138, 18 to 22, about 20. **So the gap is the move, not the size schedule.** Reading SA4LA's `AnealSearch.java`: it inserts an interaction by overwriting only its t columns in an existing row, and breaks a collision by changing one column of the colliding interaction; this repo's targeted move replaced the whole test with a fresh Z3-drawn configuration (random values everywhere else) and paid several Z3 queries per move.
+
+## A local move, and the race re-run (research plan item 55)
+Live session (sandbox), 2026-10-28. Code change (approved by the plan author: "whatever is next I give you permission to do"): `anneal_suite_z3(..., neighbor="local")` with new `_z3_local_move` in `cla_harness/solver.py`; `Z3CostModel` now keeps `self.forbidden`. "random" and "targeted" are unchanged (all 37 existing solver tests pass unchanged). The local move makes the same choices as "targeted" but edits tests in place: an interaction is written into an existing test (only its t values change), kept if no forbidden rule is broken (plain Python check), else the old Z3 draw; a test leaves a collision by one change to one of the colliding interaction's own values, else `_one_change_neighbor`, else a Z3 draw. Every test stays valid. New tests: the local move reaches the proven minima of the three small models (2 seeds, 20,000 moves) and cannot solve one below; changes at most t values when no rule applies; unknown move names rejected. 152 tests OK.
+
+Single-run check, unconstrained spins, size 35, seed 0, 6,000 moves: local 904 moves/s, final cost 4; targeted 129 moves/s, final cost 13.
+
+**Race re-run** (`scripts/item55_run.py` = item44_run.py with a move argument; same unconstrained models, same seeds, cap = SA4LA's own time, start = SA4LA's upper bound, 4 processes at a time as in item 52). All saved suites verified with `item44_verify.py` (`docs/item55_suites/`).
+
+| model | SA4LA (item 52) | targeted, same cap (item 52) | **local, same cap** | local, start at SA4LA size, 10x cap |
+|---|---|---|---|---|
+| spins | 35 / 35 / 35 | 45 / 44 / 43 | **35 / 36 / 35** | 35 / unsolved at 35 / 34 |
+| bugzilla | 32 / 32 / 32 | 43 / 44 / 43 | **32 / 32 / 32** | 32 / 32 / 32 |
+| spinv | 51 / 51 / 52 | 66 / 68 / 67 | **51 / 51 / 52** | 50 / 50 / 50 |
+
+The 10x runs finished all moves before the cap (44 to 622 s). **What this shows:** with the local move, this search matches SA4LA at equal time on the same machine on all three unconstrained models (one spins seed one test worse), and given more moves it went one below SA4LA's size on spinv (all three seeds) and spins (one seed). **What it does not show:** apache (not re-run); constrained models (next item); more than three seeds.
+
+## Constrained CCAG models with the local move (research plan item 56)
+Live session (sandbox), 2026-10-28, code at ac324c7 (no code change in this item). t = 2, d = 1, interaction localization only, seeds 0 to 2. `scripts/item55_run.py` with neighbor "local", CCAG clone outside the repo, start = Jin & Tsuchiya's published maximum, 6000 moves x 5 restarts per size, cap = their average time from Table 1 (minimum 5 s; model build of 0.2 s to 18.7 s is outside the cap), and 10x that cap on the three smaller models. 4 processes at a time. Every suite verified with `item44_verify.py` (valid, 0 uncovered, 0 avoidable collisions; inseparable pairs left 9, 0, 599, 0, 46 for spins, bugzilla, spinv, apache, gcc, equal to Table 1's column). Suites in `docs/item56_suites/`.
+
+| model | published heuristic: min to max (avg time) | targeted move, items 44 and 45 (time) | **local, cap = their time** | local, 10x their time |
+|---|---|---|---|---|
+| spins | 49 to 53 (0.63 s) | 42 to 43 (265 to 450 s); 52 to 53 at a 10 s cap | 51 / 50 / 51 (5 s) | 42 / 42 / 43 (50 s) |
+| bugzilla | 41 to 48 (9.02 s) | 36 to 37 (up to 2,986 s); 47 to 48 at 60 s; 39 to 40 at 600 s | 46 / 46 / 46 (9 s) | 36 / 35 / 34 (90 s) |
+| spinv | 91 to 97 (58.21 s) | 78 to 79 (4,833 to 5,893 s) | 95 / 96 / 95 (58 s) | 83 / 83 / 83 (580 s) |
+| apache | 85 to 89 (3,263 s) | 82 / 82 (7,200 s cap) | **69 / 69 / 69** (3,263 s) | not run |
+| gcc | 61 to 68 (2,495 s) | 63 / 61 (7,200 s cap) | **54 / 54 / 55** (2,495 s) | not run |
+
+All runs ended at their cap while still shrinking.
+
+**What the numbers show.** On apache and gcc, with a wall-clock budget equal to the published average time, this search (Python, this 4-core container) returned verified (1bar,2)-CLAs of 69 and 54 to 55 tests against the published heuristic's 85 to 89 and 61 to 68, and below what the targeted move reached in 7,200 s (82; 61 to 63). On the three smaller models at their time (spins: 8 times theirs because of the 5 s minimum) the sizes fall inside the published range, not below it; at 10 times their time they fall below it (spins 42 to 43, bugzilla 34 to 36, spinv 83). Bugzilla at 90 s (34 to 36) is smaller than the targeted move reached in about 3,000 s (36 to 37).
+
+**What they do not show.** A same-machine comparison with their heuristic (their tool is not public; their machine was a 3.2 GHz Xeon running C++); minimum sizes; more than three seeds. Spinv at 10x (83) is still above the targeted move's 78 to 79 at about 85 to 100 times their time. The search-time cap excludes model build time.
+
+## Summary of research plan items 54 to 57 (research plan item 58)
+Scheduled cloud run, 2026-10-28. No new search was run for this item: every number below is copied from the sections named in the table notes (items 44, 45, 52, 55, 56), which were produced in earlier sessions (items 44 to 45 cloud runs; items 52, 54 to 56 live-session sandbox runs), not re-run here and not reproduced by the author. Item 57 produced no numbers (see Open questions). t = 2, d = 1, interaction localization only; three seeds (spins/bugzilla/spinv also seed counts of 2 to 4 for the targeted column); sizes are search results, not proven minima.
+
+**One table: constrained CCAG models.** Published = Jin & Tsuchiya Table 1 heuristic, min to max over 10 runs (average time; C++, 3.2 GHz Xeon). Targeted = items 44/45 (7,200 s cap or run to the end, so 4 to 98 minutes unless stated). Local = `neighbor="local"`, item 56, this 4-core container, cap = their average time (minimum 5 s), and 10x that cap.
+
+| model | published range (avg time) | targeted move | local, cap = their time | local, 10x their time |
+|---|---|---|---|---|
+| spins | 49 to 53 (0.63 s) | 42 to 43; 52 to 53 at a 10 s cap | 51 / 50 / 51 (5 s) | 42 / 42 / 43 (50 s) |
+| bugzilla | 41 to 48 (9.02 s) | 36 to 37; 47 to 48 at 60 s; 39 to 40 at 600 s | 46 / 46 / 46 (9 s) | 36 / 35 / 34 (90 s) |
+| spinv | 91 to 97 (58.21 s) | 78 to 79 | 95 / 96 / 95 (58 s) | 83 / 83 / 83 (580 s) |
+| apache | 85 to 89 (3,263 s) | 82 / 82 (cap) | 69 / 69 / 69 (3,263 s) | not run |
+| gcc | 61 to 68 (2,495 s) | 63 / 61 (cap) | 54 / 54 / 55 (2,495 s) | not run |
+
+All suites in item 56 passed `item44_verify.py`; all local runs ended at their cap while still shrinking.
+
+**Diagnosis behind it (items 54, 55, unconstrained, same machine as SA4LA).** Starting the targeted search at SA4LA's size solved it in none of 18 runs, even at 10x SA4LA's time; with the local move the search matched SA4LA at equal time (spins 35/36/35 against 35, bugzilla 32 against 32, spinv 51/51/52 against 51/51/52).
+
+**What the numbers show.** The local move reaches, in seconds to minutes, sizes the targeted move needed hours for or did not reach: at the published average time it lands inside the published range on spins, bugzilla and spinv, and below it on apache (69 against 85 to 89) and gcc (54 to 55 against 61 to 68). At 10x their time it is below the published range on the three smaller models; on spinv (83) it is still above the targeted move's 78 to 79, which used far more time. **What they do not show:** a same-machine comparison with the published heuristic (not public; different hardware and language); minimum sizes; more than three seeds; the 18 literature benchmarks with the local move (item 57 not run).
+
+## Needs your decision (added by item 58)
+- Item 57 is still not run: it needs zenodo.org allowed in the cloud environment's network policy (or the archive supplied). Everything else in docs/RESEARCH_PLAN.md is ticked once item 58 is; no further unchecked items remain.
+
+## Literature benchmarks with the local move (research plan item 59, = item 57 as written)
+Live session (sandbox), 2026-10-28, code at ac324c7 (no code change). The scheduled run could not reach zenodo.org (item 57 ticked as not run); this session still had the 18 converted models from item 53 (outside the repo). `scripts/item55_run.py`, neighbor local, seeds 0 to 2, start = published maximum, 6000 moves x 5 restarts per size, cap = max(5 s, Jin & Tsuchiya's average time) and 10x that, 4 processes at a time. 103 of 108 runs saved a suite and all 103 passed `item44_verify.py` (valid, 0 uncovered, 0 avoidable collisions). The other 5 ("none") did not solve the start size within the 5 s cap, so they have no suite. Suites in `docs/item59_suites/`. Targeted-move column from item 53 (900 s cap).
+
+| No. | model | published min to max (avg s) | targeted, item 53 (up to 900 s) | local, cap = max(5 s, their time) | local, 10x cap |
+|---|---|---|---|---|---|
+| 6 | Banking1 | 25 to 28 (0.14) | 22/22/22 | 22/22/23 (5 s) | 22/21/21 (50 s) |
+| 7 | Banking2 | 27 to 30 (0.17) | 23/23/23 | 22/22/22 (5 s) | 22/22/22 (50 s) |
+| 8 | Concurrency | 7 to 7 (0.1) | 7/7/7 | 7/7/7 (5 s) | 7/7/7 (50 s) |
+| 9 | CommProtocol | 33 to 35 (0.18) | 29/30/29 | 35/none/34 (5 s) | 33/34/31 (50 s) |
+| 10 | Healthcare1 | 45 to 50 (0.2) | 41/40/41 | 46/46/45 (5 s) | 38/38/38 (50 s) |
+| 11 | Healthcare2 | 33 to 36 (0.2) | 29/30/29 | 32/30/30 (5 s) | 27/27/27 (50 s) |
+| 12 | Healthcare3 | 77 to 101 (4.38) | 69/68/70 | 99/99/99 (5 s) | 82/81/82 (50 s) |
+| 13 | Healthcare4 | 98 to 105 (20.85) | 94/94/94 | 102/103/102 (21 s) | 89/90/89 (210 s) |
+| 14 | Insurance | 789 to 805 (84.34) | 789/789/790 | 803/803/803 (84 s) | 776/776/775 (840 s) |
+| 15 | NetworkMgmt | 202 to 210 (1.86) | 179/181/179 | 210/210/210 (5 s) | 200/199/199 (50 s) |
+| 16 | ProcessorComm1 | 58 to 63 (0.59) | 50/51/52 | 59/59/59 (5 s) | 49/47/47 (50 s) |
+| 18 | Services | 194 to 200 (4.62) | 174/174/175 | none/none/none (5 s) | 197/197/196 (50 s) |
+| 19 | Storage1 | 22 to 22 (0.11) | 22/22/22 | 22/22/22 (5 s) | 22/22/22 (50 s) |
+| 20 | Storage2 | 34 to 37 (0.12) | 30/30/30 | 30/30/30 (5 s) | 30/30/30 (50 s) |
+| 21 | Storage3 | 87 to 89 (0.77) | 74/76/75 | 89/89/89 (5 s) | 82/81/81 (50 s) |
+| 23 | Storage5 | 344 to 361 (56.18) | 350/350/350 | 361/361/361 (56 s) | 349/349/348 (560 s) |
+| 24 | SystemMgmt | 27 to 31 (0.16) | 25/25/25 | 26/27/none (5 s) | 25/25/25 (50 s) |
+| 25 | Telecom | 49 to 54 (0.22) | 44/44/45 | 50/50/50 (5 s) | 42/43/42 (50 s) |
+
+x1 median below min / within range / above max (models with a result): [5, 12, 0]
+x10 median below min / within range / above max (models with a result): [12, 6, 0]
+
+"x1" counts are medians over seeds with a result, against the published range. **Note:** for 13 of the 18 models their time is under 1 s, so the 5 s minimum gives this search 5 to 50 times their time even in the first column.
+
+**What the numbers show.** At the first cap, the median lands inside the published range on 12 models and below it on 5 (Banking1, Banking2, Healthcare2, Storage2, SystemMgmt; for these the cap was 25 to 50 times their time); Services did not solve its start size in 5 s. At 10x the cap, the median is below the published minimum on 12 of 18 and inside the range on 6 (Concurrency and Storage1, where the published minimum also equals the SMT result; CommProtocol, Healthcare3, Services, Storage5). Insurance at 840 s (775 to 776) is below both the published minimum (789) and item 53's targeted result (789 to 790); Healthcare4 (89 to 90), ProcessorComm1 (47 to 49), Healthcare2 (27), Banking1 (21 to 22) and Telecom (42 to 43) are also below item 53's targeted sizes in less time. On CommProtocol, Healthcare3, NetworkMgmt, Services and Storage3 the 10x runs are still above item 53's targeted sizes; all were capped while shrinking from the published maximum.
+
+**What they do not show.** A same-machine comparison (their tool is not public; different hardware and language); minimum sizes; more than three seeds; Table 1 rows 1 to 5, ProcessorComm2 or Storage4.
+
+## Ten seeds on apache, gcc and Insurance with the local move (research plan item 60)
+Live session (sandbox), 2026-10-29, code at ac324c7 (no code change). Seeds 3 to 9 added to seeds 0 to 2 of items 56 (apache, gcc) and 59 (Insurance), same settings: `scripts/item55_run.py`, neighbor local, start = published maximum, 6000 moves x 5 restarts per size, cap = Jin & Tsuchiya's average time for apache (3,263 s) and gcc (2,495 s), 840 s (10x their 84 s) for Insurance; 4 processes at a time. Seeds 7 to 9 were run twice: the first attempt died when the container was shut down while idle (a detached process does not keep it running), so they were re-run from scratch; only the second run is reported. All 21 new suites passed `item44_verify.py`; `docs/item60_suites/`. Every run ended at its cap while still shrinking.
+
+| model | published min to max (avg time) | this search, seeds 0 to 9 | min / median / max |
+|---|---|---|---|
+| apache | 85 to 89 (3,263 s) | 69, 69, 69, 68, 68, 67, 67, 69, 68, 69 | 67 / 68.5 / 69 |
+| gcc | 61 to 68 (2,495 s) | 54, 54, 55, 54, 54, 54, 54, 54, 55, 55 | 54 / 54 / 55 |
+| Insurance | 789 to 805 (84.34 s; our cap 840 s) | 776, 776, 775, 778, 778, 778, 778, 781, 782, 782 | 775 / 778 / 782 |
+
+**What the numbers show.** All 10 seeds on each model returned verified (1bar,2)-CLAs below the published heuristic's minimum: apache 67 to 69 against 85, gcc 54 to 55 against 61, Insurance 775 to 782 against 789. The spread over seeds is 2 tests on apache, 1 on gcc and 7 on Insurance. Apache and gcc used a wall-clock cap equal to their reported average time; Insurance used 10 times theirs.
+
+**What they do not show.** A same-machine comparison (their tool is not public; their runs were C++ on a 3.2 GHz Xeon, ours Python on a shared 4-core container); minimum sizes; behaviour on the other models with ten seeds.
+
+## Needs your decision (added by the scheduled research run, 2026-10-29)
+- Every item in docs/RESEARCH_PLAN.md (1 to 60) is ticked. The scheduled run did nothing else; add new items or say what to do next (open choices are in the earlier "Needs your decision" entries, e.g. d = 2, AI-based work, same-machine comparison with the published tool).
+- Item 61 was done in the live session and is ticked, so every item in docs/RESEARCH_PLAN.md (1 to 61) is now ticked; the line above, which says 1 to 60, is superseded. The scheduled run (2026-10-29 22:08 UTC, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
+- Items 64 and 65 were added and done in the live session on 2026-10-30.
+- Item 63 (exact minima on the small models) was added and done in the live session on 2026-10-30.
+- Item 62 was done in the live session on 2026-10-30 and is ticked (section "RQ1 at t = 3 with the local move"), so items 1 to 62 are all ticked. Superseded: item 62 (RQ1 at t = 3 with the local move) is the only unchecked item and is marked STOP FOR USER (being run in the live session 2026-10-30). The scheduled run (2026-10-30 12:13 UTC, cloud run, no numbers produced) did nothing else; say whether to run it live or hand it over.
+- Every item in docs/RESEARCH_PLAN.md (1 to 63) is now ticked, so the lines above are superseded. The scheduled run (2026-10-30, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
+
+## Covering versus locating with the local move (research plan item 61)
+Live session (sandbox), 2026-10-29, code at ac324c7 plus `scripts/item61_run.py` (item55_run.py with a cover/locate mode argument). t = 2, d = 1, interaction localization only, seeds 0 to 2. Both modes: local move, start = the published locating maximum, 6000 moves x 5 restarts per size, same cap per model. Apache and gcc locating sizes are the item 56 runs (same settings and cap); all other runs are new. 4 processes at a time. All 24 new suites verified with `item44_verify.py` (covering: valid and 0 uncovered; locating: also 0 avoidable collisions). Suites in `docs/item61_suites/`. "(finished)" = the search stopped because the next size failed all 5 restarts, not at the cap.
+
+| model | cap | seed | covering | locating | extra tests | locating / covering |
+|---|---|---|---|---|---|---|
+| spins | 600 s | 0 | 20 (finished) | 38 (finished) | 18 | 1.90 |
+| spins | 600 s | 1 | 21 (finished) | 39 (finished) | 18 | 1.86 |
+| spins | 600 s | 2 | 21 (finished) | 39 (finished) | 18 | 1.86 |
+| bugzilla | 600 s | 0 | 16 (finished) | 32 (finished) | 16 | 2.00 |
+| bugzilla | 600 s | 1 | 16 (finished) | 32 (finished) | 16 | 2.00 |
+| bugzilla | 600 s | 2 | 16 (finished) | 32 (finished) | 16 | 2.00 |
+| spinv | 600 s | 0 | 51 | 82 | 31 | 1.61 |
+| spinv | 600 s | 1 | 50 | 82 | 32 | 1.64 |
+| spinv | 600 s | 2 | 49 | 82 | 33 | 1.67 |
+| apache | 3,263 s | 0 | 36 | 69 | 33 | 1.92 |
+| apache | 3,263 s | 1 | 37 | 69 | 32 | 1.86 |
+| apache | 3,263 s | 2 | 36 | 69 | 33 | 1.92 |
+| gcc | 2,495 s | 0 | 26 | 54 | 28 | 2.08 |
+| gcc | 2,495 s | 1 | 28 | 54 | 26 | 1.93 |
+| gcc | 2,495 s | 2 | 28 | 55 | 27 | 1.96 |
+
+ratio range 1.61 to 2.08
+
+**What the numbers show.** With the same move and the same budget for both, a locating array needed 1.61 to 2.08 times the tests of a covering array on these five benchmarks (16 to 33 extra tests). On spins and bugzilla both searches finished before the cap. Against the targeted-move runs of item 43 (spins covering 23 to 25, locating 42 to 44; spinv 48 to 49 and 78 to 79), the local move found smaller covering and locating arrays on spins in 600 s, and a smaller covering but larger locating array on spinv (82 against 78 to 79 in far longer runs).
+
+**What they do not show.** Minimum sizes (spinv, apache and gcc runs were capped); other strengths or d > 1; a covering comparison with published covering-array sizes (not made).
+
+## RQ1 at t = 3 with the local move (research plan item 62)
+Live session (sandbox), 2026-10-30, code at 79c0b10 (`scripts/item62_run.py`, local move, `FastZ3CostModel`, 6000 moves x 5 restarts per size, shrinking one test at a time). t = 3, d = 1, interaction localization only, seeds 0 to 2, 4 processes at a time. Original CCAG spins (12,835 feasible 3-way interactions): cap 2,700 s, start 140 (covering) and 200 (locating). Seven small example models: cap 60 s, start = the item 32 t = 3 locating size, for both modes. All 48 suites verified with `scripts/item62_verify.py` (small models: enumeration with `annealing.suite_cost`; spins: `Z3CostModel` at t = 3): every test valid, 0 uncovered, and for locating 0 avoidable collisions. Suites in `docs/item62_suites/`. One seed = one data point; three seeds is a small sample.
+
+| model | covering (seeds 0 / 1 / 2) | locating (seeds 0 / 1 / 2) | extra tests | locating / covering | item 32 / 40 (targeted move): cover / locate |
+|---|---|---|---|---|---|
+| model.json | 12 / 12 / 12 | 17 / 17 / 17 | 5 | 1.42 | 12 / 17 |
+| model_6param.json | 12 / 12 / 12 | 22 / 22 / 22 | 10 | 1.83 | 12 / 22 |
+| model_8param.json | 14 / 14 / 14 | 27 / 27 / 28 | 13 to 14 | 1.93 to 2.00 | 14 / 28 to 29 |
+| model_high_constraints.json | 9 / 9 / 9 | 11 / 11 / 11 | 2 | 1.22 | 9 / 11 |
+| model_low_constraints.json | 10 / 10 / 10 | 15 / 15 / 15 | 5 | 1.50 | 10 / 15 |
+| model_multivalue.json | 15 / 15 / 15 | 22 / 22 / 22 | 7 | 1.47 | 15 / 22 |
+| my_model.json | 10 / 10 / 10 | 17 / 17 / 17 | 7 | 1.70 | 10 / 17 |
+| spins (original) | 107 / 108 / 108 (capped) | 195 / 193 / 192 (capped) | 84 to 88 | 1.78 to 1.82 | 114 to 116 / 197 to 200 (item 40, 5 seeds, 7,200 s cap, not reached) |
+
+Run status: every small-model covering run and 19 of 21 small-model locating runs stopped because the next size failed all 5 restarts; model_8param.json locating seeds 0 and 1 hit the 60 s cap. All six spins runs hit the 2,700 s cap while still shrinking, so the spins sizes are upper bounds for this budget.
+
+**What the numbers show.** On the seven small models the local move found exactly the item 32 sizes in both modes, except model_8param.json locating (27 to 28 against 28 to 29), so the t = 3 ratios there (1.22 to 2.00) are essentially the earlier ones (1.22 to 2.07). On original spins, in 2,700 s, the local move found smaller covering (107 to 108 against 114 to 116) and locating (192 to 195 against 197 to 200) arrays than the targeted move had with up to 7,200 s; ratio 1.78 to 1.82 against 1.707 to 1.754 then. At t = 2 on spins the same move gave 1.86 to 1.90 (item 61).
+
+**What they do not show.** Minimum sizes. On the small models the locating searches started at the item 32 size and, except model_8param.json, never solved one test fewer, so those sizes may be limited by the start or budget as much as by the model; whether any is minimal was not checked here. Spins was capped. Other strengths, d > 1, more seeds.
+
+## Exact minimum sizes on the small models (research plan item 63)
+Live session (sandbox), 2026-10-30, `scripts/item63_exact.py` (code at a9b7f61 plus the cover-check fix in this commit). Each valid configuration is a Boolean; every feasible t-way interaction must be in a chosen test; in locating mode every pair of interactions whose signatures over all valid configurations differ must be split by a chosen test (inseparable pairs exempt, as in `suite_cost`). Z3 `Optimize` (z3-solver 5.3) minimizes the number chosen; "sat" from `Optimize` means it finished, so the size is a proven minimum under this encoding. Every returned suite was re-checked with `annealing.suite_cost` (cover: 0 uncovered; locate: cost 0). Deterministic, no seeds. d = 1, interaction localization only.
+
+| model | valid configs | t = 2 cover: exact / search | t = 2 locate: exact / search | t = 3 cover: exact / search | t = 3 locate: exact / search |
+|---|---|---|---|---|---|
+| model.json | 18 | 5 / 5 | 9 / 9 | 12 / 12 | 17 / 17 |
+| model_6param.json | 36 | 6 / 6 | 10 / 10 | 12 / 12 | 22 / 22 |
+| model_8param.json | 144 | 7 / 7 | 11 / 11 to 12 | 14 / 14 | **26** / 27 to 28 (item 62), 28 to 29 (item 32) |
+| model_high_constraints.json | 11 | 6 / 6 | 9 / 9 | 9 / 9 | 11 / 11 |
+| model_low_constraints.json | 32 | 6 / 6 | 8 / 8 | 10 / 10 | 15 / 15 |
+| model_multivalue.json | 30 | 7 / 7 | 11 / 11 | 15 / 15 | 22 / 22 |
+| my_model.json | 24 | 6 / 6 | 8 / 8 | 10 / 10 | 17 / 17 |
+
+"search": t = 2 covering from the item 32 table, t = 2 locating from the item 16 table (seeds 0 to 2), t = 3 from item 62 (local move, seeds 0 to 2). Exact solve times were under 3 s per case except model_8param.json t = 2 locate (15.6 s) and t = 3 locate (316.9 s, 305.0 s on a re-run; 84,131 separation and coverage clauses). The t = 2 locating minima 9, 9 and 8 for model.json, model_high_constraints.json and my_model.json agree with the earlier brute-force `exact_minimum_suite_size` results. The 26-test model_8param.json array is saved in `docs/item63_suites/` and passed `scripts/item62_verify.py`.
+model_spins_core.json at t = 2 (978 valid configurations): Z3 returned "unknown" after the 3,600 s limit in both modes, so its minimum is still not known.
+
+**What the numbers show.** On the seven small models the best of three seeds reaches the proven minimum in 27 of 28 (model, strength, mode) cases, and every seed does in 26 (model_8param.json t = 2 locating seed 1 found 12, one above). The one gap is model_8param.json locating at t = 3: minimum 26, search 27 to 28 within its 60 s cap (two of three seeds hit the cap). So the RQ1 t = 3 ratio on that model at the minimum is 26 / 14 = 1.86, against 1.93 to 2.00 from the search. At the minimum, the small-model locating / covering ratio is 1.33 to 1.80 at t = 2 and 1.22 to 1.86 at t = 3.
+
+**What they do not show.** Anything about the CCAG models (far too many valid configurations for this encoding); model_spins_core.json; the minimum depends on the encoding matching the locating definition, which was checked only through `suite_cost` on the returned suites, not by a second solver route (a plain Z3 Solver with an at-most-25 constraint did not finish within 30 minutes).
+
+## model_8param.json at t = 3: more budget for the search (research plan item 64)
+Live session (sandbox), 2026-10-30, `scripts/item62_run.py` unchanged (local move, start 29, 5 restarts per size, cap 1,800 s), seeds 0 to 2, 3 processes at a time. Item 63 proved the minimum locating size here is 26; item 62 (60 s cap) found 27 to 28. All six suites (size 27) passed `scripts/item62_verify.py`; saved in `docs/item64_suites/`.
+
+| moves per restart | seed | final size | best cost at 26 (avoidable collisions, best of 5 restarts) | total moves | seconds |
+|---|---|---|---|---|---|
+| 6,000 | 0 / 1 / 2 | 27 / 27 / 27 | 4 / 4 / 2 | 35,208 / 36,250 / 46,933 | 38.3 / 38.1 / 49.4 |
+| 30,000 | 0 / 1 / 2 | 27 / 27 / 27 | 2 / 2 / 2 | 169,102 / 161,794 / 171,479 | 161.6 / 153.7 / 164.2 |
+
+No run hit the cap; every run stopped because all 5 restarts at 26 failed. **What this shows:** on this model the gap to the minimum is not the time cap: with five times the moves per restart the search still stops at 27, two avoidable collisions short at 26. **What it does not show:** whether other schedules (slower cooling, restarting from the exact 26 array perturbed, more restarts) close it; one model.
+
+
+## Needs your decision (added by the scheduled research run, 2026-10-30)
+- Items 1 to 64 are ticked and the only open item, 65 (d = 2 exact minimum sizes and search), is marked STOP FOR USER (being run in the live session). The scheduled run did nothing else; say whether to hand item 65 to a scheduled run or add new items. Superseded: item 65 was done later the same day (section "Two faults (d = 2): exact minima and a search").
+- Every item in docs/RESEARCH_PLAN.md (1 to 65) is ticked. The scheduled run (2026-10-31, cloud run, no numbers produced) did nothing else; add new items or say what to do next.
+
+## Two faults (d = 2): exact minima and a search (research plan item 65)
+Live session (sandbox), 2026-10-30. Interaction localization only, t-way interactions, at most two faulty interactions. A fault set is 1 or 2 distinct feasible interactions; its signature is the tests containing at least one of them. A (2bar, t) constrained locating array: every interaction covered, and any two fault sets whose signatures over all valid configurations differ also differ over the suite (sets with equal full signatures are exempt, as in Jin & Tsuchiya's distinguishability for d = 1). New code: `cla_harness/multifault.py` (`MultiFaultModel` cost over distinct full signatures, `anneal_multifault` with a targeted swap move, `find_small_multifault` shrinking search with a time cap; enumeration of valid configurations, so small and medium models only), tests in `tests/test_multifault.py` (cost equals a brute-force reading of the definition on random suites; search reaches four exact minima). Scripts: `scripts/item65_exact.py` (MaxSAT with lazily added separation clauses; agreed with a non-lazy version on five cases), `scripts/item65_search.py`, `scripts/item65_verify.py` (independent check with tuples and sets, no bit masks), `scripts/item65_random.py`. Every saved array in `docs/item65_suites/` passed `item65_verify.py`. Full test suite: 157 tests, OK, 3 skipped, 410 s.
+
+Exact minimum sizes (Z3 Optimize finished, so proven minima under this encoding; d = 1 values from item 63):
+
+| model | valid configs | t = 2: d = 1 / d = 2 | t = 3: d = 1 / d = 2 |
+|---|---|---|---|
+| model.json | 18 | 9 / 17 | 17 / 18 |
+| model_6param.json | 36 | 10 / 22 | 22 / 34 |
+| model_8param.json | 144 | 11 / at most 26 (not solved in 3,600 s; search, seeds 0 / 1 / 2: 28 / 27 / 28) | 26 / not solved in 3,600 s |
+| model_high_constraints.json | 11 | 9 / 11 | 11 / 11 |
+| model_low_constraints.json | 32 | 8 / 15 | 15 / 28 |
+| model_multivalue.json | 30 | 11 / 22 | 22 / 30 |
+| my_model.json | 24 | 8 / 17 | 17 / 24 |
+
+Search (`find_small_multifault`, 6000 moves x 5 restarts per size, seeds 0 to 2): reached the exact d = 2, t = 2 minimum on every seed for model_6param (22), model_low_constraints (15) and model_multivalue (22), and in the unit tests for model.json, model_high_constraints and my_model. On model_spins_core.json (978 valid configurations, 239 interactions, 26,057 distinct fault-set signatures at d = 2), start 120, cap 1,800 s, no run capped:
+
+| model_spins_core.json, t = 2 | seed 0 | seed 1 | seed 2 | seconds |
+|---|---|---|---|---|
+| d = 1 | 30 | 30 | 30 | 12 to 19 |
+| d = 2 | 83 | 84 | 82 | 933 to 1,718 |
+
+Best cost one size below the d = 2 result: 16 to 36 unseparated pairs of fault-set classes. The d = 1 size 30 is inside the earlier range 30 to 32 (item 32 table).
+
+**Observation: d = 2 at t = 2 versus d = 1 at t = 3.** On the six example models where both are solved the minima are equal, and each exact array of one kind passed the other's check (7 of 7 d = 1, t = 3 arrays are (2bar, 2) arrays, including the 26-test model_8param array, which gives the "at most 26" above; 6 of 6 d = 2, t = 2 arrays are (1bar, 3) arrays). This is not general: on random models (`item65_random.py`, seed 0, 3 to 6 parameters with 2 or 3 values, 0 to 4 forbidden pairs, at most 100 configurations; run stopped after model 51; 18 skipped as too large; 2 not solved in 600 s), the minima were equal on 27 of 33 and differed on 6, always with d = 2 at t = 2 smaller (for example 28 against 34, 24 against 27). By number of 3-valued parameters: equal on all 14 models with 0 or 1, different on 6 of 19 with 2 or more. On model_spins_core.json the d = 2, t = 2 search sizes (82 to 84) are far below the d = 1, t = 3 search sizes (110 to 112, item 32). Whether a relation like this is known for (unconstrained or constrained) locating arrays was not checked: the web search tool returned HTTP 403 in this session. Check `docs/LITERATURE_CHECK.md` sources (Colbourn & McClary 2008; Jin & Tsuchiya 2020) before writing anything about it.
+
+**What the numbers show.** Locating up to two faults costs much more than one: at t = 2 the exact minimum roughly doubles on the small models (9 to 17, 10 to 22, 8 to 15, 11 to 22, 8 to 17; 9 to 11 on model_high_constraints, which has only 11 valid configurations), and the search on model_spins_core needs 82 to 84 tests against 30. At t = 3, d = 2 needs every valid configuration on four of six solved models.
+
+**What they do not show.** Anything on the CCAG benchmarks: the cost is computed over enumerated valid configurations and all fault-set pairs, which does not scale to them in this prototype (bugzilla alone has 5,818 feasible pairs, about 17 million fault sets). d > 2. Whether the search is near-minimal on model_spins_core (no lower bound). One seed for the random-model sample.
+
+
+## scripts/reproduce.py dry run in the cloud (follow-up to items 64 and 65)
+Live session (sandbox), 2026-10-30, commit 40f3ef5 plus the edits in this commit. `python3 scripts/reproduce.py quick` ran end to end (about 25 minutes on 4 cores, other jobs running): all 52 rows (28 exact minima of item 63, 14 t = 3 seed-0 searches of item 62) equalled the recorded cloud values and every suite passed its verifier. After adding the 6 exact d = 2 rows of item 65, those 6 were run on their own and also matched and verified. This is the same kind of machine as the original runs, so it checks that the script works and that the runs are deterministic; it is **not** a local reproduction. The report header now says "Re-run ... on this machine" and asks to label rows "reproduced locally" only on the author's machine. Next step for the plan author: `.\.venv\Scripts\python.exe scripts\reproduce.py quick` (needs `pip install z3-solver`), then `spins` (needs `..\external\CCAG\benchmark`).
+
+## Does every (1bar, 3) array also locate two faults at t = 2? (research plan item 66)
+Live session (sandbox), 2026-10-31, `cla_harness/multifault.py` unchanged. Follow-up to the item 65 observation. "C3" = (1bar, 3) constrained locating (one fault, 3-way interactions); "C22" = (2bar, 2) constrained locating (up to two faults, 2-way interactions); both with the inseparable-set exemption. Scripts: `scripts/item66_equiv.py` (random suites), `scripts/item66_stress.py` (near-minimal arrays from the search, checked against the other condition), `scripts/item66_sparse.py` (unconstrained binary models), `scripts/item66_adversary.py` (local search that tries to keep C3 and break C22). Outputs in `results/` (not committed; rerun to regenerate).
+
+Random suites (`item66_equiv.py`; models with 3 to 6 parameters, 0 to 4 forbidden pairs, at most 200 configurations; suites = uniform random subsets of the valid configurations):
+
+| run | models | suites | both | neither | C22 only | C3 only |
+|---|---|---|---|---|---|---|
+| seed 0, 2 values | 60 | 3,000 | 508 | 2,492 | 0 | 0 |
+| seed 0, 2 or 3 values | 55 | 2,750 | 394 | 2,288 | 68 | 0 |
+| seed 1, 2 to 4 values | 58 | 5,800 | 593 | 4,947 | 260 | 0 |
+
+Near-minimal arrays (`item66_stress.py`: for each random model, search a small C3 array and a small C22 array, 1500 moves x 2 restarts per size, and check each against the other condition; 0 to 6 forbidden pairs):
+
+| run | models | C3 arrays failing C22 | C22 arrays failing C3 |
+|---|---|---|---|
+| seed 1, 2 values, 3 to 6 parameters | 63 | 0 | 1 |
+| seed 1, 2 or 3 values, 3 to 6 parameters | 70 | 0 | 41 |
+| seed 1, 2 to 4 values, 3 to 6 parameters | 60 | 0 | 38 |
+| seed 2, 2 values, 3 to 8 parameters, at most 260 configurations | 72 | 0 | 4 |
+| seed 2, 2 or 3 values, 3 to 6 parameters | 73 | 0 | 39 |
+| seed 3, 2 to 4 values, 3 to 5 parameters | 72 | 0 | 43 |
+| total | 410 | 0 | 166 |
+
+Sparse unconstrained binary models (`item66_sparse.py`, seed 0): the C3 arrays found for 7, 8 and 9 parameters (24, 28, 29 tests out of 128, 256, 512 configurations) all satisfy C22. Adversarial search (`item66_adversary.py`, seed 0): 3,000 moves on unconstrained binary models with 5, 6, 7 parameters and 2,000 moves on model_6param, model_8param, model_low_constraints, model_multivalue and my_model never reached C3 with C22 failing.
+
+C22 without C3 is common once a parameter has 3 or more values, and also happens with only binary values (one model in the seed-1 binary run: 6 binary parameters, no constraints, a 20-test C22 array that is not C3, while the search found a 19-test C3 array).
+
+**Partial argument (proved here, not checked against the literature).** If every feasible 3-way interaction is covered (a constrained strength-3 covering array, so in particular C3), then for any two 2-way interactions a, b with some valid configuration containing a but not b, some test contains a but not b. Proof: take such a configuration v and a parameter p of b where v differs from b. If p is a parameter of a, every test containing a avoids b, and a is covered. Otherwise a together with (p, v[p]) is a feasible 3-way interaction, covered by some test, which contains a and avoids b. This is the constrained analogue of the covering-to-detecting argument of Colbourn & McClary for d = 1. For two faults the same argument needs a with two avoided interactions, which can take 4 parameters; it does not prove C3 implies C22, and I did not find a proof.
+
+**What this shows.** On every model and suite tried, C3 implied C22 (0 counterexamples) while the converse often failed; so it is a conjecture with evidence, not a result. **Superseded by item 67: the conjecture is false**; the samples above only looked at small or random suites, and the counterexamples are near-complete suites. It would explain why the item 65 d = 2, t = 2 minima are never above the d = 1, t = 3 minima.
+
+**What it does not show.** A proof, or anything about models larger than about 260 configurations or with more than 9 parameters; random models are dense, and a counterexample may need large sparse arrays. Whether this is known: not found (LITERATURE_CHECK section 11).
+
+## The (1bar, 3) => (2bar, 2) conjecture is false: exact check and counterexamples (research plan item 67)
+Live session (sandbox), 2026-10-31. `scripts/item67_exact_implication.py` decides the question exactly for one model. Both conditions are monotone and are of the form "every clause contains a chosen test" (a clause = the valid configurations covering an interaction, or separating two fault sets whose full signatures differ). So some C3 array fails C22 iff some C22 clause M contains no C3 clause, and then the suite "all valid configurations except M" is a counterexample. The script checks every C22 clause against the inclusion-minimal C3 clauses. Negative controls (implications known to be false) were all reported false with a counterexample: d2_t2 => d1_t3 on ter4 and bin6, d1_t2 => d2_t2 on bin5, d1_t2 => d1_t3 on ter4; the true d1_t3 => d1_t2 held on ter4.
+
+| models | implication holds | counterexample found |
+|---|---|---|
+| unconstrained binK, K = 3 to 6; terK, K = 3, 4 | all 6 | none |
+| the 7 example models | all 7 | none |
+| unconstrained bin7, bin8, ter5 | none | all 3 |
+| 198 random models (3 to 7 parameters, 2 to 4 values, 0 to 8 forbidden pairs, at most 200 configurations; seeds 670000 + k) | 185 | 13 (4 to 6 parameters, 60 to 192 valid configurations) |
+
+Three counterexamples were rebuilt as suites and passed **both independent verifiers**: `item62_verify.py` at t = 3 says C3 holds (valid, 0 uncovered, 0 avoidable collisions), and `item65_verify.py` says C22 fails with exactly 1 unseparated pair of fault-set classes. Saved in `docs/item67_counterexamples/`:
+- ter5 (5 parameters with values 0, 1, 2, no constraints): the 203 of 243 configurations that leave out 40; it cannot tell {(p0=0, p1=0), (p0=0, p2=0)} from {(p0=0, p3=0), (p0=0, p4=0)}. Separating them needs a test with p0 = 0 in which exactly one of "p1 = 0 or p2 = 0" and "p3 = 0 or p4 = 0" holds, a condition on 5 parameters that no 3-way requirement sees.
+- bin7 (7 binary parameters, no constraints): 64 of 128 configurations; cannot tell {(p0=0, p3=0), (p1=0, p2=0)} from {(p4=0, p6=1), (p5=0, p6=0)}.
+- r249 (4 parameters with 3 values, 3 forbidden pairs, 60 valid configurations): a 52-test suite.
+
+**What this shows.** (1bar, 3) constrained locating does not imply (2bar, 2) constrained locating, with or without constraints. Item 66 found no counterexample because its suites were random or near-minimal, while these counterexamples are near-complete suites missing exactly the configurations that split one pair; sampling was the wrong tool for a universal claim. The partial argument in item 66 (strength-3 coverage gives "a but not b") still stands. The item 65 observation that the minima coincide on the example models stays an observation about those models.
+
+**What it does not show.** Whether minimum-size C3 arrays are always C22 (the counterexamples are large); how often near-minimal arrays fail on larger models.
+
+
+## Two faults at t = 2 versus one fault at t = 3: minimum sizes on the item 67 counterexample models (research plan item 68)
+Live session (sandbox), 2026-10-31, parent commit b93d841. Question: is the minimum (2bar, 2) size (C22) ever larger than the minimum (1bar, 3) size (C13)? Item 65 found them equal on the example models; item 67 showed neither condition implies the other, so the size comparison is open. Tested on the 15 models where item 67's implication failed (13 random r*.json, plus unconstrained ter5 and bin7; models and the bin7 suites in `docs/item68/`, per-model table in `docs/item68/summary.jsonl`).
+
+Methods: exact sizes from `scripts/item65_exact.py` (2800 s, then 900 s); upper bounds from `scripts/item65_search.py` (seed 0, 6000 steps, 5 restarts, cap 900 s; bin7 also seeds 1 to 4 with 20000 steps); lower bounds from the exact t = 3 covering minimum (`scripts/item63_exact.py ... cover`, a lower bound because every (1bar, 3) array covers every 3-way interaction) and from the new `scripts/item68_bound.py` (the optimum of each finished lazy-MaxSAT round satisfies a subset of the conditions, so it is a proven lower bound; 1200 s). One seed per search unless stated.
+
+| models | result |
+|---|---|
+| r122, r249, r264 | both exact: C22 = 40, 28, 37; C13 = 44, 40, 51 |
+| r121, r171, r246, r77, r67 | C22 search 40, 38, 37, 32, 44 below exact C13 48, 66, 52, 40, 64 |
+| r137, r61, r387 | C22 search 43, 45, 45 below the t = 3 covering minimum 44, 48, 48 |
+| r78 | C22 search 38 below the item68_bound lower bound 48 on C13 |
+| r334 | not settled: C22 in [24, 30], C13 in [27, 34] |
+| ter5 | not settled: C22 in [11, 34], C13 at most 56 (no lower bound beyond trivial in 1200 s) |
+| bin7 | not settled: C22 in [6, 22], C13 in [12, 22]; the best search suites tie at 22 (C22 seeds 0 to 4: 23, 23, 22, 23, 23; C13 seeds 0 to 2: 22, 23, 22); both 22-test suites pass `item65_verify.py` |
+
+**What this shows.** On 12 of the 15 models C22 < C13 (by 4 to 28 tests where both sides are known or bounded by search and exact values; by at least 1 to 10 where only a lower bound on C13 is known); on none is C22 shown to be larger. Together with item 65 (equal on the example models), no model so far needs more tests for two faults at t = 2 than for one fault at t = 3.
+
+**What it does not show.** It is not a proof, and three models are open. bin7 is the closest case: the searches tie at 22 and neither minimum is known. The lower bounds on C22 for bin7 and ter5 are far below the search sizes, so a proof there needs a stronger method (for example symmetry breaking for unconstrained models).
+
+## A SAT decision tool with symmetry breaking; exact minima on small unconstrained models (research plan item 69)
+Live session (sandbox), 2026-10-31. `scripts/item69_decide.py MODEL t d K [--fix-first | --fix-two] [OUT]` asks "is there a (dbar, t) array with at most K tests?" with PySAT (CaDiCaL 1.9.5, sequential-counter cardinality encoding; `pip install python-sat`, needed by this script only). Same conditions and lazy separation clauses as `item65_exact.py`. UNSAT proves the minimum is at least K + 1. Symmetry breaking, for unconstrained models only (the script refuses otherwise): `--fix-first` adds "configuration 0 (all first values) is chosen", sound because renaming values acts transitively on configurations and preserves both conditions; `--fix-two` (all parameters share one value list) also fixes the chosen configuration of least positive weight to "second value on the first w parameters", sound because parameter permutations and value renamings that keep the first value fix configuration 0 and preserve weights.
+
+Validation, each against a minimum found independently (Z3 `item65_exact.py`, or the plain SAT run without symmetry breaking): K = minimum - 1 gives UNSAT and K = minimum gives SAT, with no flag, `--fix-first` and `--fix-two`, on model.json (d = 1: 9, d = 2: 17), bin5 (t = 2: 8, d = 2 t = 2: 15, t = 3: 15), bin6 (t = 2: 9, d = 2 t = 2: 19, t = 3: 19) and ter4 (t = 2: 16). On ter4 t = 2 the SAT run took 2 to 13 s against 814 s for Z3. Saved minimum suites in `docs/item69/` pass `item65_verify.py`.
+
+Minimum (1bar, 3) size C13 versus minimum (2bar, 2) size C22 on small unconstrained models (exact unless stated):
+
+| model | C13 | C22 |
+|---|---|---|
+| bin3 | 8 | 8 |
+| bin4 | 14 | 14 |
+| bin5 | 15 | 15 |
+| bin6 | 19 | 19 |
+| bin7 | 12 to 22 | 6 to 22 (searches tie at 22, item 68) |
+| ter3 | 27 (all configurations; t = number of parameters) | 18 |
+| ter4 | at least 27 (3 of the 4 parameters need all 27 value triples); search 46 | search 23 (verified) |
+
+Not settled within the budget: "at most 21 tests" on bin7 for both conditions (two runs of 7000 s each, with `--fix-first` and with `--fix-two`), and "at most 29 tests" on r334 for both conditions (5000 s each; no symmetry breaking, it is constrained).
+
+**What this shows.** The new tool decides small cases far faster than Z3 MaxSAT, and the symmetry breaking is checked against independent minima. On unconstrained binary models with 3 to 6 parameters the two minima are equal, so the "never larger" observation of item 68 is tight there; on ternary models C22 is much smaller.
+
+**What it does not show.** Why the binary minima coincide (no argument yet), and bin7, r334 and ter5 remain open.

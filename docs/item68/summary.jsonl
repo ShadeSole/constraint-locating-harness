@@ -1,0 +1,15 @@
+{"model": "r122", "C22": "40 exact", "C13": "44 exact", "settled": "C22 < C13"}
+{"model": "r249", "C22": "28 exact", "C13": "40 exact", "settled": "C22 < C13"}
+{"model": "r264", "C22": "37 exact", "C13": "51 exact", "settled": "C22 < C13"}
+{"model": "r121", "C22": "<= 40 search seed 0", "C13": "48 exact", "settled": "C22 < C13"}
+{"model": "r171", "C22": "<= 38 search seed 0", "C13": "66 exact", "settled": "C22 < C13"}
+{"model": "r246", "C22": "<= 37 search seed 0", "C13": "52 exact", "settled": "C22 < C13"}
+{"model": "r77", "C22": "<= 32 search seed 0", "C13": "40 exact", "settled": "C22 < C13"}
+{"model": "r67", "C22": "<= 44 search seed 0", "C13": "64 exact", "settled": "C22 < C13"}
+{"model": "r137", "C22": "<= 43 search seed 0", "C13": ">= 44 (t=3 covering minimum); <= 60 search", "settled": "C22 < C13"}
+{"model": "r61", "C22": "<= 45 search seed 0", "C13": ">= 48 (t=3 covering minimum)", "settled": "C22 < C13"}
+{"model": "r387", "C22": "<= 45 search seed 0", "C13": ">= 48 (t=3 covering minimum)", "settled": "C22 < C13"}
+{"model": "r78", "C22": "<= 38 search seed 0", "C13": ">= 48 (item68_bound, 10 rounds, 1200 s)", "settled": "C22 < C13"}
+{"model": "r334", "C22": ">= 24 (item68_bound), <= 30 search seed 0", "C13": ">= 27 (item68_bound), <= 34 search seed 0", "settled": "no"}
+{"model": "ter5", "C22": ">= 11 (item68_bound), <= 34 search seed 0", "C13": "<= 56 search seed 0 (no bound in 1200 s)", "settled": "no"}
+{"model": "bin7", "C22": ">= 6 (item68_bound), <= 22 search (seeds 0-4: 23,23,22,23,23)", "C13": ">= 12 (t=3 covering minimum), <= 22 search (seeds 0-2: 22,23,22)", "settled": "no"}
