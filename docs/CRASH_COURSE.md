@@ -374,3 +374,6 @@ So far every suite assumed only one pair of settings is broken. If two can be br
 ## A pattern we can't prove yet (plan item 66)
 A suite that pinpoints one broken triple of settings seems to always also pinpoint up to two broken pairs. We tried hard to break this: hundreds of random models, thousands of random suites, and a search designed to find an exception. Never failed. The reverse is often false. Until someone proves it (or finds a counterexample), it is a conjecture, and the paper should say so.
 
+## ...and the pattern was wrong (plan item 67)
+Instead of more random tries, I wrote a check that answers the question exactly for a given model. It found models where the pattern breaks, and two separate checkers confirmed them. The smallest clean example: five settings with three options each; a suite that pinpoints any one broken triple still can't tell "setting 0 is 0 together with setting 1 or 2 being 0" from the same thing with settings 3 and 4. The lesson: hundreds of random tests found nothing because the counterexamples are unusual, nearly-complete suites. Random testing can't prove a rule for every case.
+

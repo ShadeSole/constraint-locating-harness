@@ -2233,7 +2233,26 @@ C22 without C3 is common once a parameter has 3 or more values, and also happens
 
 **Partial argument (proved here, not checked against the literature).** If every feasible 3-way interaction is covered (a constrained strength-3 covering array, so in particular C3), then for any two 2-way interactions a, b with some valid configuration containing a but not b, some test contains a but not b. Proof: take such a configuration v and a parameter p of b where v differs from b. If p is a parameter of a, every test containing a avoids b, and a is covered. Otherwise a together with (p, v[p]) is a feasible 3-way interaction, covered by some test, which contains a and avoids b. This is the constrained analogue of the covering-to-detecting argument of Colbourn & McClary for d = 1. For two faults the same argument needs a with two avoided interactions, which can take 4 parameters; it does not prove C3 implies C22, and I did not find a proof.
 
-**What this shows.** On every model and suite tried, C3 implied C22 (0 counterexamples) while the converse often failed; so it is a conjecture with evidence, not a result. It would explain why the item 65 d = 2, t = 2 minima are never above the d = 1, t = 3 minima.
+**What this shows.** On every model and suite tried, C3 implied C22 (0 counterexamples) while the converse often failed; so it is a conjecture with evidence, not a result. **Superseded by item 67: the conjecture is false**; the samples above only looked at small or random suites, and the counterexamples are near-complete suites. It would explain why the item 65 d = 2, t = 2 minima are never above the d = 1, t = 3 minima.
 
 **What it does not show.** A proof, or anything about models larger than about 260 configurations or with more than 9 parameters; random models are dense, and a counterexample may need large sparse arrays. Whether this is known: not found (LITERATURE_CHECK section 11).
+
+## The (1bar, 3) => (2bar, 2) conjecture is false: exact check and counterexamples (research plan item 67)
+Live session (sandbox), 2026-10-31. `scripts/item67_exact_implication.py` decides the question exactly for one model. Both conditions are monotone and are of the form "every clause contains a chosen test" (a clause = the valid configurations covering an interaction, or separating two fault sets whose full signatures differ). So some C3 array fails C22 iff some C22 clause M contains no C3 clause, and then the suite "all valid configurations except M" is a counterexample. The script checks every C22 clause against the inclusion-minimal C3 clauses. Negative controls (implications known to be false) were all reported false with a counterexample: d2_t2 => d1_t3 on ter4 and bin6, d1_t2 => d2_t2 on bin5, d1_t2 => d1_t3 on ter4; the true d1_t3 => d1_t2 held on ter4.
+
+| models | implication holds | counterexample found |
+|---|---|---|
+| unconstrained binK, K = 3 to 6; terK, K = 3, 4 | all 6 | none |
+| the 7 example models | all 7 | none |
+| unconstrained bin7, bin8, ter5 | none | all 3 |
+| 198 random models (3 to 7 parameters, 2 to 4 values, 0 to 8 forbidden pairs, at most 200 configurations; seeds 670000 + k) | 185 | 13 (4 to 6 parameters, 60 to 192 valid configurations) |
+
+Three counterexamples were rebuilt as suites and passed **both independent verifiers**: `item62_verify.py` at t = 3 says C3 holds (valid, 0 uncovered, 0 avoidable collisions), and `item65_verify.py` says C22 fails with exactly 1 unseparated pair of fault-set classes. Saved in `docs/item67_counterexamples/`:
+- ter5 (5 parameters with values 0, 1, 2, no constraints): the 203 of 243 configurations that leave out 40; it cannot tell {(p0=0, p1=0), (p0=0, p2=0)} from {(p0=0, p3=0), (p0=0, p4=0)}. Separating them needs a test with p0 = 0 in which exactly one of "p1 = 0 or p2 = 0" and "p3 = 0 or p4 = 0" holds, a condition on 5 parameters that no 3-way requirement sees.
+- bin7 (7 binary parameters, no constraints): 64 of 128 configurations; cannot tell {(p0=0, p3=0), (p1=0, p2=0)} from {(p4=0, p6=1), (p5=0, p6=0)}.
+- r249 (4 parameters with 3 values, 3 forbidden pairs, 60 valid configurations): a 52-test suite.
+
+**What this shows.** (1bar, 3) constrained locating does not imply (2bar, 2) constrained locating, with or without constraints. Item 66 found no counterexample because its suites were random or near-minimal, while these counterexamples are near-complete suites missing exactly the configurations that split one pair; sampling was the wrong tool for a universal claim. The partial argument in item 66 (strength-3 coverage gives "a but not b") still stands. The item 65 observation that the minima coincide on the example models stays an observation about those models.
+
+**What it does not show.** Whether minimum-size C3 arrays are always C22 (the counterexamples are large); how often near-minimal arrays fail on larger models.
 

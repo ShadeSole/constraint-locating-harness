@@ -116,9 +116,10 @@ configurations; the search is `cla_harness/multifault.py`, seeds 0 to 2.
 The search reached the exact d = 2 minimum on all six models where it is known. The CCAG benchmarks were not run at
 d = 2: this prototype scores all pairs of fault sets over enumerated valid configurations, which does not scale to
 them. An observation to check against the literature before use: on the example models the d = 2, t = 2 minimum
-equals the d = 1, t = 3 minimum, but random models show it is not general. Item 66 found no case, in 410 random
-models plus random and adversarial suites, where a (1bar, 3) array failed (2bar, 2); the converse failed often.
-That is a conjecture with evidence, not a theorem (only the d = 1 covering step is proved in the notes).
+equals the d = 1, t = 3 minimum, but random models show it is not general. Item 66 sampled suites and found no (1bar, 3)
+array failing (2bar, 2), but item 67's exact check found counterexamples (for example on 5 unconstrained
+three-valued parameters and on 13 of 198 random constrained models), verified independently. So (1bar, 3) does not
+imply (2bar, 2); do not claim it.
 
 ## Threats to validity (to expand)
 
