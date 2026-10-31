@@ -371,3 +371,6 @@ On the seven small practice models there are few enough valid tests that a solve
 ## Two broken things at once (plan item 65)
 So far every suite assumed only one pair of settings is broken. If two can be broken at the same time, the suite has to tell apart "A is broken", "B is broken", "A and B are both broken", and so on. On the small practice models the smallest such suite is about twice the size of the one-fault suite (for example 9 tests become 17), and on the 978-configuration spins-derived model the search needed 82 to 84 tests instead of 30. A curiosity: on the practice models, "two faults among pairs" needs exactly as many tests as "one fault among triples", but random models show that is not a rule.
 
+## A pattern we can't prove yet (plan item 66)
+A suite that pinpoints one broken triple of settings seems to always also pinpoint up to two broken pairs. We tried hard to break this: hundreds of random models, thousands of random suites, and a search designed to find an exception. Never failed. The reverse is often false. Until someone proves it (or finds a counterexample), it is a conjecture, and the paper should say so.
+

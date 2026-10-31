@@ -2203,3 +2203,37 @@ Best cost one size below the d = 2 result: 16 to 36 unseparated pairs of fault-s
 
 ## scripts/reproduce.py dry run in the cloud (follow-up to items 64 and 65)
 Live session (sandbox), 2026-10-30, commit 40f3ef5 plus the edits in this commit. `python3 scripts/reproduce.py quick` ran end to end (about 25 minutes on 4 cores, other jobs running): all 52 rows (28 exact minima of item 63, 14 t = 3 seed-0 searches of item 62) equalled the recorded cloud values and every suite passed its verifier. After adding the 6 exact d = 2 rows of item 65, those 6 were run on their own and also matched and verified. This is the same kind of machine as the original runs, so it checks that the script works and that the runs are deterministic; it is **not** a local reproduction. The report header now says "Re-run ... on this machine" and asks to label rows "reproduced locally" only on the author's machine. Next step for the plan author: `.\.venv\Scripts\python.exe scripts\reproduce.py quick` (needs `pip install z3-solver`), then `spins` (needs `..\external\CCAG\benchmark`).
+
+## Does every (1bar, 3) array also locate two faults at t = 2? (research plan item 66)
+Live session (sandbox), 2026-10-31, `cla_harness/multifault.py` unchanged. Follow-up to the item 65 observation. "C3" = (1bar, 3) constrained locating (one fault, 3-way interactions); "C22" = (2bar, 2) constrained locating (up to two faults, 2-way interactions); both with the inseparable-set exemption. Scripts: `scripts/item66_equiv.py` (random suites), `scripts/item66_stress.py` (near-minimal arrays from the search, checked against the other condition), `scripts/item66_sparse.py` (unconstrained binary models), `scripts/item66_adversary.py` (local search that tries to keep C3 and break C22). Outputs in `results/` (not committed; rerun to regenerate).
+
+Random suites (`item66_equiv.py`; models with 3 to 6 parameters, 0 to 4 forbidden pairs, at most 200 configurations; suites = uniform random subsets of the valid configurations):
+
+| run | models | suites | both | neither | C22 only | C3 only |
+|---|---|---|---|---|---|---|
+| seed 0, 2 values | 60 | 3,000 | 508 | 2,492 | 0 | 0 |
+| seed 0, 2 or 3 values | 55 | 2,750 | 394 | 2,288 | 68 | 0 |
+| seed 1, 2 to 4 values | 58 | 5,800 | 593 | 4,947 | 260 | 0 |
+
+Near-minimal arrays (`item66_stress.py`: for each random model, search a small C3 array and a small C22 array, 1500 moves x 2 restarts per size, and check each against the other condition; 0 to 6 forbidden pairs):
+
+| run | models | C3 arrays failing C22 | C22 arrays failing C3 |
+|---|---|---|---|
+| seed 1, 2 values, 3 to 6 parameters | 63 | 0 | 1 |
+| seed 1, 2 or 3 values, 3 to 6 parameters | 70 | 0 | 41 |
+| seed 1, 2 to 4 values, 3 to 6 parameters | 60 | 0 | 38 |
+| seed 2, 2 values, 3 to 8 parameters, at most 260 configurations | 72 | 0 | 4 |
+| seed 2, 2 or 3 values, 3 to 6 parameters | 73 | 0 | 39 |
+| seed 3, 2 to 4 values, 3 to 5 parameters | 72 | 0 | 43 |
+| total | 410 | 0 | 166 |
+
+Sparse unconstrained binary models (`item66_sparse.py`, seed 0): the C3 arrays found for 7, 8 and 9 parameters (24, 28, 29 tests out of 128, 256, 512 configurations) all satisfy C22. Adversarial search (`item66_adversary.py`, seed 0): 3,000 moves on unconstrained binary models with 5, 6, 7 parameters and 2,000 moves on model_6param, model_8param, model_low_constraints, model_multivalue and my_model never reached C3 with C22 failing.
+
+C22 without C3 is common once a parameter has 3 or more values, and also happens with only binary values (one model in the seed-1 binary run: 6 binary parameters, no constraints, a 20-test C22 array that is not C3, while the search found a 19-test C3 array).
+
+**Partial argument (proved here, not checked against the literature).** If every feasible 3-way interaction is covered (a constrained strength-3 covering array, so in particular C3), then for any two 2-way interactions a, b with some valid configuration containing a but not b, some test contains a but not b. Proof: take such a configuration v and a parameter p of b where v differs from b. If p is a parameter of a, every test containing a avoids b, and a is covered. Otherwise a together with (p, v[p]) is a feasible 3-way interaction, covered by some test, which contains a and avoids b. This is the constrained analogue of the covering-to-detecting argument of Colbourn & McClary for d = 1. For two faults the same argument needs a with two avoided interactions, which can take 4 parameters; it does not prove C3 implies C22, and I did not find a proof.
+
+**What this shows.** On every model and suite tried, C3 implied C22 (0 counterexamples) while the converse often failed; so it is a conjecture with evidence, not a result. It would explain why the item 65 d = 2, t = 2 minima are never above the d = 1, t = 3 minima.
+
+**What it does not show.** A proof, or anything about models larger than about 260 configurations or with more than 9 parameters; random models are dense, and a counterexample may need large sparse arrays. Whether this is known: not found (LITERATURE_CHECK section 11).
+

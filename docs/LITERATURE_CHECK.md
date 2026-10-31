@@ -174,3 +174,22 @@ Result: no source found that states the relation. Colbourn & McClary 2008, the m
 an abstract. So: "we did not find it", not "it is new". Also not found: any constrained (2bar, t) locating array
 construction or minimum-size result; Jin & Tsuchiya 2020 define the (dbar, t) variants but their Table 1 results are
 for d = 1 (section 7 above).
+
+## 11. Addendum: prior results relating strength and number of faults (research plan item 66, 2026-10-31, live session; excerpts only)
+
+- Colbourn & McClary, "Locating and Detecting Arrays for Interaction Faults" (Dagstuhl Seminar Proceedings 09281;
+  journal version J. Comb. Optim. 15(1), 2008). Excerpts read: Theorem 8.5, "Every CA(N; t + d, k, v) with d < v is a
+  (d, t)-detecting array" (mixed-level version for d < s1 <= ... <= sk); Theorem 8.1, every (d, t)-detecting array with
+  all sk = d + 1 is a (t + 1)-covering array; a (1, t-hat)-locating array is a (1, t)-locating array and a t-covering
+  array. Unconstrained throughout. The item 66 conjecture ((1bar, 3)-locating implies (2bar, 2)-locating, with
+  constraints) is not this theorem: it would follow from strength t + d = 4 coverage, not from (1bar, 3) location.
+- Lanus et al. (NSF PAR 10118967, PSCR): summarise that known general methods build (d, t)-locating arrays from covering
+  arrays of strength t + d, and that every (d, t)-detecting array is (dbar, t)- and (d, t)-locating.
+- Shi, Tang & Yin, "Optimal locating arrays for at most two faults", Science China Mathematics, 2011 (title and venue
+  only): unconstrained (2bar, t) results exist and must be cited for any d = 2 claim.
+- Konishi et al. 2019 (arXiv 1904.07480), Proposition 2.4: an array is (1bar, t)-locating iff (1, t)-locating and
+  t-covering.
+
+Not found: a statement that (1bar, t + 1)-locating implies (2bar, t)-locating, constrained or not. Colbourn & McClary
+was read only in excerpts, so this is "not found", not "new".
+
