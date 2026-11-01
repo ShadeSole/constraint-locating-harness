@@ -2319,3 +2319,21 @@ Both suites pass `item65_verify.py` and are saved in `docs/item70/`. The d = 2 s
 **What this shows.** Every entry of the item 65 exact table is now known. On model_8param the (2bar, 2) minimum (26) equals the (1bar, 3) minimum (26, item 63), so all seven example models have equal minima. For t = 3, d = 2 the SAT route finds the minimum in seconds while the search, given 30 minutes, stays 5 tests above it.
 
 **What it does not show.** Larger models: on model_spins_core.json (978 valid configurations) the size-29 question at t = 2, d = 1 (search finds 30) did not finish: `scripts/item69_decide.py examples/model_spins_core.json 2 1 29` (sandbox, commit b75e04a, no symmetry breaking) completed 29 lazy-separation rounds in 4694.6 s, each round slower than the last, and was stopped at the 7000 s process limit with no answer. So 30 for spins_core t = 2, d = 1 is still an upper bound only; whether 29 tests suffice is open.
+
+## Lower bounds on model_spins_core at t = 2 (research plan item 71)
+
+Sandbox (cloud) runs, 2026-11-01, branch `auto/research` at 20d7736, 4-core container. Logs are in `docs/item71/`.
+
+**Question.** The search finds 30 tests for (1bar, 2) and 82 to 84 for (2bar, 2) on model_spins_core.json (978 valid configurations, 239 feasible pairs). No lower bound was known for either (items 65 and 70).
+
+**Runs.**
+- `scripts/item68_bound.py examples/model_spins_core.json 2 D 3600`, with D = 1 and D = 2. This is Z3 lazy MaxSAT, where each finished round is a lower bound. Both runs stopped at 3,600 s without finishing round 1, the coverage-only MaxSAT, so they gave no bound.
+- New `scripts/item71_cover_bound.py MODEL t K TIMEOUT` asks "does a t-way covering array of at most K valid configurations exist?". It uses CaDiCaL 1.9.5 through PySAT with a sequential-counter cardinality constraint. Every locating array in this harness also covers every feasible interaction, so UNSAT at K would prove at least K + 1 tests for any d.
+  - K = 25, 20, 19 and 18: SAT in 0.3, 0.8, 1.4 and 15.4 s.
+  - K = 17 and K = 16 (run in parallel): no answer, killed at the 900 s process limit.
+  - An earlier K = 15 probe also gave no answer within 400 s; its 300 s solver interrupt did not stop it.
+- Counting argument: parameters P14 and P15 have 16 feasible value pairs, and each test contains exactly one of them. So every covering array, and therefore every locating array of strength 2, has at least 16 tests.
+
+**What this shows.** The t = 2 covering minimum on model_spins_core is between 16 and 18. The best proven lower bound on both locating minima is 16, from counting alone. So (1bar, 2) is somewhere from 16 to 30, and (2bar, 2) from 16 to 82. At this size, neither the Z3 MaxSAT nor the CaDiCaL covering question finished within its time limit.
+
+**What it does not show.** Whether the search's 30 or 82 is close to optimal. The bounds are far too weak to tell. A useful bound here would need a different method, for example a lower bound that uses separation, not only coverage, or a symmetry-reduced encoding. One run per question; no seeds are involved.

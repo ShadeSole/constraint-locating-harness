@@ -68,4 +68,5 @@
 - [x] 68. Done 2026-10-31 in the live session (PROJECT_NOTES "Two faults at t = 2 versus one fault at t = 3"). Minimum (2bar, 2) versus (1bar, 3) size on the 15 item 67 counterexample models: (2bar, 2) is smaller on 12, open on 3 (bin7 ties at 22 by search); never larger so far.
 - [x] 69. Done 2026-10-31 in the live session (PROJECT_NOTES "A SAT decision tool with symmetry breaking"). `scripts/item69_decide.py` (PySAT) with validated symmetry breaking for unconstrained models; (1bar, 3) and (2bar, 2) minima are equal on bin3 to bin6; bin7, r334, ter5 still open.
 - [x] 70. Done 2026-11-01 in the live session (PROJECT_NOTES "The SAT decision tool closes the model_8param two-fault gaps"). SAT agrees with all 19 Z3 minima; model_8param (2bar, 2) = 26 and (2bar, 3) = 50.
+- [x] 71. Done 2026-11-01 in the live session (PROJECT_NOTES "Lower bounds on model_spins_core at t = 2"). Lower bounds for model_spins_core t = 2: Z3 lazy MaxSAT gives none in 3,600 s; t = 2 covering minimum is 16 to 18 (SAT at 18, no answer at 16 and 17 in 900 s); proven bound 16 by counting.
 

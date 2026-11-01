@@ -133,4 +133,4 @@ exactly equal (item 69: bin3 8, bin4 14, bin5 15, bin6 19), so the bound would b
 - Data provenance: Table 1 rows 8, 9 and 21 to 24 were read by a freeform query of a PDF conversion; ProcessorComm2
   and Storage4 differ from Table 1 and were excluded; rows 1 to 5 were not available.
 - RQ1 at t = 3 rests on one CCAG model (spins, capped) and seven small hand-made models. Minimality is proven only on
-  the small models (item 63); on the CCAG models no lower bound is known.
+  the small models (item 63); on the CCAG models no lower bound is known, and on model_spins_core the only proven bound at t = 2 is 16 (item 71) against search sizes of 30 (d = 1) and 82 to 84 (d = 2).
