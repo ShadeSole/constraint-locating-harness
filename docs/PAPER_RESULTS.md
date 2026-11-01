@@ -106,14 +106,14 @@ configurations; the search is `cla_harness/multifault.py`, seeds 0 to 2.
 |---|---|---|---|
 | model.json | 18 | 9 (exact) | 17 (exact) |
 | model_6param.json | 36 | 10 (exact) | 22 (exact) |
-| model_8param.json | 144 | 11 (exact) | at most 26; search 28 / 27 / 28 |
+| model_8param.json | 144 | 11 (exact) | 26 (exact, SAT, item 70); search 28 / 27 / 28 |
 | model_high_constraints.json | 11 | 9 (exact) | 11 (exact) |
 | model_low_constraints.json | 32 | 8 (exact) | 15 (exact) |
 | model_multivalue.json | 30 | 11 (exact) | 22 (exact) |
 | my_model.json | 24 | 8 (exact) | 17 (exact) |
 | model_spins_core.json (derived from spins) | 978 | search 30 / 30 / 30 | search 83 / 84 / 82 |
 
-The search reached the exact d = 2 minimum on all six models where it is known. The CCAG benchmarks were not run at
+The search reached the exact d = 2 minimum on six of the seven models; on model_8param it stayed 1 to 2 above it. The CCAG benchmarks were not run at
 d = 2: this prototype scores all pairs of fault sets over enumerated valid configurations, which does not scale to
 them. An observation to check against the literature before use: on the example models the d = 2, t = 2 minimum
 equals the d = 1, t = 3 minimum, but random models show it is not general. Item 66 sampled suites and found no (1bar, 3)

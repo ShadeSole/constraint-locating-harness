@@ -2181,7 +2181,7 @@ Exact minimum sizes (Z3 Optimize finished, so proven minima under this encoding;
 |---|---|---|---|
 | model.json | 18 | 9 / 17 | 17 / 18 |
 | model_6param.json | 36 | 10 / 22 | 22 / 34 |
-| model_8param.json | 144 | 11 / at most 26 (not solved in 3,600 s; search, seeds 0 / 1 / 2: 28 / 27 / 28) | 26 / not solved in 3,600 s |
+| model_8param.json | 144 | 11 / at most 26 (not solved in 3,600 s; search, seeds 0 / 1 / 2: 28 / 27 / 28); 26 by SAT, item 70 | 26 / not solved in 3,600 s; 50 by SAT, item 70 |
 | model_high_constraints.json | 11 | 9 / 11 | 11 / 11 |
 | model_low_constraints.json | 32 | 8 / 15 | 15 / 28 |
 | model_multivalue.json | 30 | 11 / 22 | 22 / 30 |
@@ -2300,3 +2300,19 @@ Not settled within the budget: "at most 21 tests" on bin7 for both conditions (t
 **What this shows.** The new tool decides small cases far faster than Z3 MaxSAT, and the symmetry breaking is checked against independent minima. On unconstrained binary models with 3 to 6 parameters the two minima are equal, so the "never larger" observation of item 68 is tight there; on ternary models C22 is much smaller.
 
 **What it does not show.** Why the binary minima coincide (no argument yet), and bin7, r334 and ter5 remain open.
+
+## The SAT decision tool closes the model_8param two-fault gaps (research plan item 70)
+Live session (sandbox), 2026-11-01. `scripts/item69_decide.py` (no symmetry breaking; model_8param is constrained).
+
+Cross-check first: on all 19 exact minima in the item 63 and item 65 tables for the six other example models and model_8param (d = 1 and d = 2, t = 2 and 3), K = minimum - 1 gives UNSAT and K = minimum gives SAT, so the SAT route agrees with Z3 MaxSAT everywhere both finish.
+
+| model_8param.json (144 valid configurations) | before (item 65) | now |
+|---|---|---|
+| t = 2, d = 2 | at most 26; Z3 not solved in 3,600 s | **26**: K = 25 UNSAT in 1.6 s, K = 26 SAT in 0.9 s |
+| t = 3, d = 2 | not solved in 3,600 s | **50**: K = 45 to 49 UNSAT (1.1 to 1.7 s each), K = 50 SAT in 2.8 s |
+
+Both suites pass `item65_verify.py` and are saved in `docs/item70/`. The d = 2 search (`item65_search.py`, seed 0, cap 1,800 s, capped) reached 55 at t = 3, 5 above the minimum.
+
+**What this shows.** Every entry of the item 65 exact table is now known. On model_8param the (2bar, 2) minimum (26) equals the (1bar, 3) minimum (26, item 63), so all seven example models have equal minima. For t = 3, d = 2 the SAT route finds the minimum in seconds while the search, given 30 minutes, stays 5 tests above it.
+
+**What it does not show.** Larger models: on model_spins_core.json the size-29 question at t = 2, d = 1 (search finds 30) had not finished at the time of writing.

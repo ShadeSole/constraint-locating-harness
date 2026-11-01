@@ -22,7 +22,7 @@ EXACT = {  # item 63, "Exact minimum sizes on the small models": (t, mode) -> si
     (2, "cover"): [5, 6, 7, 6, 6, 7, 6], (2, "locate"): [9, 10, 11, 9, 8, 11, 8],
     (3, "cover"): [12, 12, 14, 9, 10, 15, 10], (3, "locate"): [17, 22, 26, 11, 15, 22, 17]}
 T3_START = [17, 22, 29, 11, 15, 22, 17]  # item 62 start sizes
-D2_T2 = [17, 22, None, 11, 15, 22, 17]  # item 65 exact (2bar, 2) minima; model_8param not solved, skipped
+D2_T2 = [17, 22, None, 11, 15, 22, 17]  # item 65 exact (2bar, 2) minima; model_8param (26, item 70 by SAT) skipped: Z3 does not finish
 T3_SEED0 = {"cover": [12, 12, 14, 9, 10, 15, 10], "locate": [17, 22, 27, 11, 15, 22, 17]}  # item 62, seed 0
 
 
