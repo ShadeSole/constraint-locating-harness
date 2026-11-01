@@ -2317,4 +2317,4 @@ Both suites pass `item65_verify.py` and are saved in `docs/item70/`. The d = 2 s
 
 **What this shows.** Every entry of the item 65 exact table is now known. On model_8param the (2bar, 2) minimum (26) equals the (1bar, 3) minimum (26, item 63), so all seven example models have equal minima. For t = 3, d = 2 the SAT route finds the minimum in seconds while the search, given 30 minutes, stays 5 tests above it.
 
-**What it does not show.** Larger models: on model_spins_core.json the size-29 question at t = 2, d = 1 (search finds 30) had not finished at the time of writing.
+**What it does not show.** Larger models: on model_spins_core.json (978 valid configurations) the size-29 question at t = 2, d = 1 (search finds 30) did not finish: `scripts/item69_decide.py examples/model_spins_core.json 2 1 29` (sandbox, commit b75e04a, no symmetry breaking) completed 29 lazy-separation rounds in 4694.6 s, each round slower than the last, and was stopped at the 7000 s process limit with no answer. So 30 for spins_core t = 2, d = 1 is still an upper bound only; whether 29 tests suffice is open.
