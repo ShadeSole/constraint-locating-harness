@@ -606,6 +606,7 @@ Comparison: the locating suites of item 23 (all ten seeds, sizes 42 to 44) left 
 - Item 3: rows with more than 4 rules rest on fewer orderings (survivors only); see that section.
 
 ## Needs your decision
+- Item 72 is also ticked, so every item in docs/RESEARCH_PLAN.md (1 to 72) is ticked; the lines below that say 1 to 71 or earlier are superseded. The scheduled run (2026-11-03, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
 - Items 70 and 71 are also ticked, so every item in docs/RESEARCH_PLAN.md (1 to 71) is ticked; the line below that says 1 to 69 is superseded. The scheduled run (2026-11-02, cloud run, no numbers produced) did nothing else. Add new items or say what to do next.
 - Item 69 is also ticked, so every item in docs/RESEARCH_PLAN.md (1 to 69) is ticked; the lines below that say 1 to 67 or 1 to 68 are superseded. The scheduled run (2026-11-01, cloud run, no numbers produced) did nothing else. Add new items or say what to do next; bin7, r334 and ter5 in item 69 are still open.
 - Every item in docs/RESEARCH_PLAN.md (1 to 67) is ticked. The scheduled run has nothing left to do until you add new items (2026-10-31 scheduled run, cloud run, no numbers produced).
