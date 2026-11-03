@@ -2339,3 +2339,22 @@ Sandbox (cloud) runs, 2026-11-01, branch `auto/research` at 20d7736, 4-core cont
 **What this shows.** The t = 2 covering minimum on model_spins_core is between 16 and 18. The best proven lower bound on both locating minima is 16, from counting alone. So (1bar, 2) is somewhere from 16 to 30, and (2bar, 2) from 16 to 82. At this size, neither the Z3 MaxSAT nor the CaDiCaL covering question finished within its time limit.
 
 **What it does not show.** Whether the search's 30 or 82 is close to optimal. The bounds are far too weak to tell. A useful bound here would need a different method, for example a lower bound that uses separation, not only coverage, or a symmetry-reduced encoding. One run per question; no seeds are involved.
+
+## Separation-aware SAT bounds on model_spins_core, t = 2, d = 1 (research plan item 72)
+
+Sandbox (cloud) runs, 2026-11-03, branch `auto/research` at 8b3cf2e. The 4 runs ran in parallel on the 4-core container. Logs are in `docs/item72/`.
+
+**Question.** Item 71's only proven lower bound was 16, from counting. Does adding the separation requirement prove more? That is, is "at most K tests" UNSAT for some K between 20 and 26?
+
+**Runs.** `scripts/item69_decide.py examples/model_spins_core.json 2 1 K`, with no symmetry breaking because the model is constrained. Each run had a 1,800 s process limit.
+
+| K | last finished round | time of that round | result |
+|---|---|---|---|
+| 20 | 1 | 1.3 s | no answer by 1,800 s |
+| 22 | 3 | 523.9 s | no answer by 1,800 s |
+| 24 | 4 | 203.1 s | no answer by 1,800 s |
+| 26 | 6 | 94.9 s | no answer by 1,800 s |
+
+**What this shows.** The lazy SAT tool gives no bound above 16 on this model within 30 minutes. Smaller K was slower, not faster: every K here is close to the covering minimum (16 to 18, item 71), and proving UNSAT near it is hard for CaDiCaL with a sequential-counter encoding. The proven range for (1bar, 2) on model_spins_core stays 16 to 30.
+
+**What it does not show.** Whether longer runs, another cardinality encoding (totalizer or cardinality networks), or a dedicated MaxSAT solver would finish. Each K was run once.
