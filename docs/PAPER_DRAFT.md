@@ -10,7 +10,7 @@
 >   - Check every Jin & Tsuchiya Table 1 figure against the journal PDF.
 >   - Resolve the remaining **[verify]** marker (origin of the 18 literature models).
 > - Citations are limited to sources listed in `docs/LITERATURE_CHECK.md`. Their bibliographic details were confirmed
->   against Crossref and arXiv on 2026-11-05. One [verify] remains: whether Segall et al. 2011 is the origin of the 18
+>   against Crossref and arXiv on 2026-11-05. One [verify] remains: which Segall et al. paper the Zenodo archive cites for the 18
 >   literature models.
 > - Wording rule: no "first", "novel" or "no prior work". Where a search found nothing, the text says "we did not find".
 
@@ -172,7 +172,7 @@ spinv, apache and gcc).
 **Models.**
 - **Five constrained systems** (apache, bugzilla, gcc, spins, spinv) from the CCAG repository. Their parameter and value
   counts match the systems of Cohen, Dwyer & Shi (2008).
-- **18 literature benchmarks** (Segall et al. 2011 [verify origin]), taken from the Jia et al. CIT benchmark archive (Zenodo, DOI
+- **18 literature benchmarks** (Segall et al. 2011; the archive attributes them to "Segall et al." [verify that its reference is this paper]), taken from the Jia et al. CIT benchmark archive (Zenodo, DOI
   10.5281/zenodo.581657). 18 of 20 match Jin & Tsuchiya's Table 1 interaction counts. ProcessorComm2 and Storage4
   differ and were excluded.
 - **Seven small example models** (11 to 144 valid configurations) bundled with the prototype.
@@ -392,7 +392,7 @@ authors and venues were checked, not the papers' contents. Each source is also l
     presence of constraints: a greedy approach. *IEEE Transactions on Software Engineering* 34(5):633-650, 2008. DOI
     10.1109/TSE.2008.50.
 13. I. Segall, R. Tzoref-Brill and E. Farchi. Using binary decision diagrams for combinatorial test design. In *ISSTA
-    2011*, pp. 254-264. DOI 10.1145/2001420.2001451. [verify that this is the paper the 18 benchmark models come from]
+    2011*, pp. 254-264. DOI 10.1145/2001420.2001451. The Jia et al. archive (ref. 14) attributes its 20 real-world models to "a recent benchmark created by Segall et al."; [verify that the archive's reference is this paper]
 14. Y. Jia, M. B. Cohen, M. Harman and J. Petke. Combinatorial Interaction Testing (CIT) Benchmarks. Zenodo, DOI
     10.5281/zenodo.581657.
 15. SA4LA, github.com/tatsuhirotsuchiya/SA4LA. CCAG, github.com/GIST-NJU/CCAG.
