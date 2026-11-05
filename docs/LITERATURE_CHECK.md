@@ -193,3 +193,18 @@ for d = 1 (section 7 above).
 Not found: a statement that (1bar, t + 1)-locating implies (2bar, t)-locating, constrained or not. Colbourn & McClary
 was read only in excerpts, so this is "not found", not "new".
 
+
+## 12. Addendum: bibliographic details confirmed (2026-11-05, live session; Crossref API records and arXiv abstract pages, metadata only)
+Only titles, authors and venues were checked. No paper content was read for this addendum.
+- Colbourn & McClary, J. Comb. Optim. 15(1):17-48, 2008 (online 2007), DOI 10.1007/s10878-007-9082-4.
+- Jin & Tsuchiya, J. Syst. Softw. 170:110771, 2020, DOI 10.1016/j.jss.2020.110771.
+- Konishi, Kojima, Nakagawa & Tsuchiya, "Using simulated annealing for locating array construction", Inf. Softw. Technol. 126:106346, 2020, DOI 10.1016/j.infsof.2020.106346.
+- Same four authors, "Finding minimum locating arrays using a CSP solver", arXiv 1904.07480. No journal reference on the arXiv page.
+- Jin, Shi & Tsuchiya, "Constrained Detecting Arrays: Mathematical Structures for Fault Identification in Combinatorial Interaction Testing", arXiv 2110.06449. A two-page summary appeared at ICSTW 2024, pp. 215-216.
+- Garvin, Cohen & Dwyer: SSBSE 2009, pp. 13-22, DOI 10.1109/SSBSE.2009.25; Empir. Softw. Eng. 16(1):61-102, DOI 10.1007/s10664-010-9135-7.
+- Dougherty, Green & Kim (Ryan E., Dylan N., Grace M.), arXiv 2310.07448.
+- Wu, Nie, Petke, Jia & Harman, survey, arXiv 1908.02480.
+- Shi, Tang & Yin, "Optimal locating arrays for at most two faults", Sci. China Math. 55(1):197-206, DOI 10.1007/s11425-011-4307-5.
+- "Locating arrays with mixed alphabet sizes" is by Shi, Jin & Tsuchiya, Mathematics 8(5):831, 2020, DOI 10.3390/math8050831.
+- Cohen, Dwyer & Shi, IEEE TSE 34(5):633-650, 2008, DOI 10.1109/TSE.2008.50 ("... a greedy approach").
+- Segall, Tzoref-Brill & Farchi, "Using binary decision diagrams for combinatorial test design", ISSTA 2011, pp. 254-264, DOI 10.1145/2001420.2001451. NOT confirmed: that this is the source of the 18 literature models.

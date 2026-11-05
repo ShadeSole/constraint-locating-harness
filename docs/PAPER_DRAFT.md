@@ -8,9 +8,10 @@
 > - Before submission:
 >   - Re-run the headline rows locally (`scripts/reproduce.py quick`).
 >   - Check every Jin & Tsuchiya Table 1 figure against the journal PDF.
->   - Resolve each **[verify]** and **[cite]** marker.
-> - Citations are limited to sources listed in `docs/LITERATURE_CHECK.md`. Volume, page and year details marked
->   [verify] were not confirmed: the citation database could not be reached from this session (HTTP 403).
+>   - Resolve the remaining **[verify]** marker (origin of the 18 literature models).
+> - Citations are limited to sources listed in `docs/LITERATURE_CHECK.md`. Their bibliographic details were confirmed
+>   against Crossref and arXiv on 2026-11-05. One [verify] remains: whether Segall et al. 2011 is the origin of the 18
+>   literature models.
 > - Wording rule: no "first", "novel" or "no prior work". Where a search found nothing, the text says "we did not find".
 
 ## Abstract
@@ -57,7 +58,7 @@ This paper applies simulated annealing to constrained locating arrays. Every tes
 We evaluate it against the published CLA heuristic, against SA4LA on unconstrained versions of the same models, and
 against exact minima where these can be computed. We did not find a published metaheuristic for constrained locating
 arrays (three literature searches, excerpts only; see Section 7). Metaheuristics with constraint handling exist for
-constrained **covering** arrays (Garvin, Cohen & Dwyer [verify venue and year]). This work combines the two settings,
+constrained **covering** arrays (Garvin, Cohen & Dwyer 2009, 2011). This work combines the two settings,
 and we make no claim that it is the first to do so.
 
 **Contributions.**
@@ -169,9 +170,9 @@ spinv, apache and gcc).
 ## 4. Experimental setup
 
 **Models.**
-- **Five constrained systems** (apache, bugzilla, gcc, spins, spinv) from the CCAG repository [cite repository]. Their
-  parameter and value counts match the systems of Cohen, Dwyer & Shi (2008) [verify].
-- **18 literature benchmarks** (Segall et al. [verify]), taken from the Jia et al. CIT benchmark archive (Zenodo, DOI
+- **Five constrained systems** (apache, bugzilla, gcc, spins, spinv) from the CCAG repository. Their parameter and value
+  counts match the systems of Cohen, Dwyer & Shi (2008).
+- **18 literature benchmarks** (Segall et al. 2011 [verify origin]), taken from the Jia et al. CIT benchmark archive (Zenodo, DOI
   10.5281/zenodo.581657). 18 of 20 match Jin & Tsuchiya's Table 1 interaction counts. ProcessorComm2 and Storage4
   differ and were excluded.
 - **Seven small example models** (11 to 144 valid configurations) bundled with the prototype.
@@ -331,15 +332,15 @@ larger than a (1bar, 3) array.
 
 - **Locating arrays.** Colbourn & McClary (2008) introduced locating and detecting arrays for interaction faults and
   related detecting arrays to covering arrays of higher strength. Other work: optimal locating arrays for at most two
-  faults (Shi, Tang & Yin 2011 [verify]); mixed alphabets [cite arXiv 2001.11712]; faster location and d = 2
+  faults (Shi, Tang & Yin 2012); mixed alphabet sizes (Shi, Jin & Tsuchiya 2020); faster location and d = 2
   constructions in the unconstrained case (Dougherty, Green & Kim 2023, arXiv 2310.07448).
 - **Constrained locating arrays.** Jin & Tsuchiya (2020) define CLAs and distinguishability, prove existence, and give
   a heuristic and an SMT construction. Constrained detecting arrays are studied by Jin, Shi & Tsuchiya (arXiv
   2110.06449).
 - **Search-based construction.** Konishi et al. find minimum locating arrays with a CSP solver (arXiv 1904.07480) and
-  build unconstrained locating arrays by SA in SA4LA (Inf. Softw. Technol. 126, 2020, 106346 [verify]). Our cost and
+  build unconstrained locating arrays by SA in SA4LA (Konishi et al. 2020). Our cost and
   our local move follow theirs. Garvin, Cohen & Dwyer apply meta-heuristic search with constraint handling to
-  constrained **covering** arrays [verify venue and year]. A survey of constrained combinatorial testing is Wu et al.
+  constrained **covering** arrays (2009, 2011). A survey of constrained combinatorial testing is Wu et al.
   (arXiv 1908.02480).
 - **Not found.** In three searches (excerpts only) we did not find a metaheuristic for constrained locating arrays, or
   a minimum-size result for constrained (2bar, t) locating arrays.
@@ -360,34 +361,46 @@ Open questions:
 
 ## References
 
-Only sources listed in `docs/LITERATURE_CHECK.md`. Fields marked [verify] were not confirmed against the publisher.
+Bibliographic details were confirmed on 2026-11-05 against Crossref records and arXiv abstract pages; only the titles,
+authors and venues were checked, not the papers' contents. Each source is also listed in `docs/LITERATURE_CHECK.md`.
 
-1. C. J. Colbourn and D. W. McClary. Locating and detecting arrays for interaction faults. *J. Comb. Optim.* 15(1),
-   2008. (Also Dagstuhl Seminar Proceedings 09281.)
-2. H. Jin and T. Tsuchiya. Constrained locating arrays for combinatorial interaction testing. *J. Syst. Softw.* 170,
-   2020. arXiv 1801.06041. [verify title and pages]
+1. C. J. Colbourn and D. W. McClary. Locating and detecting arrays for interaction faults. *Journal of Combinatorial
+   Optimization* 15(1):17-48, 2008 (online 2007). DOI 10.1007/s10878-007-9082-4.
+2. H. Jin and T. Tsuchiya. Constrained locating arrays for combinatorial interaction testing. *Journal of Systems and
+   Software* 170:110771, 2020. DOI 10.1016/j.jss.2020.110771. arXiv 1801.06041.
 3. T. Konishi, H. Kojima, H. Nakagawa and T. Tsuchiya. Using simulated annealing for locating array construction.
-   *Inf. Softw. Technol.* 126, 2020, 106346. arXiv 1909.13090. [verify title]
-4. T. Konishi et al. Finding minimum locating arrays using a CSP solver. arXiv 1904.07480. [verify authors and venue]
-5. H. Jin, C. Shi and T. Tsuchiya. Constrained detecting arrays. arXiv 2110.06449. [verify title and venue]
+   *Information and Software Technology* 126:106346, 2020. DOI 10.1016/j.infsof.2020.106346. arXiv 1909.13090.
+4. T. Konishi, H. Kojima, H. Nakagawa and T. Tsuchiya. Finding minimum locating arrays using a CSP solver. arXiv
+   1904.07480, 2019. (Journal version not checked.)
+5. H. Jin, C. Shi and T. Tsuchiya. Constrained detecting arrays: mathematical structures for fault identification in
+   combinatorial interaction testing. arXiv 2110.06449, 2021. (Summary in ICSTW 2024, pp. 215-216, DOI
+   10.1109/ICSTW60967.2024.00049.)
 6. B. J. Garvin, M. B. Cohen and M. B. Dwyer. An improved meta-heuristic search for constrained interaction testing.
-   SSBSE 2009; and Evaluating improvements to a meta-heuristic search for constrained interaction testing, *Empirical
-   Softw. Eng.*, DOI 10.1007/s10664-010-9135-7. [verify volume and year]
-7. R. Dougherty, D. Green and H. Kim. Faster location in combinatorial interaction testing. arXiv 2310.07448.
-   [verify authors]
-8. H. Wu et al. A survey of constrained combinatorial testing. arXiv 1908.02480. [verify authors]
-9. C. Shi, Y. Tang and J. Yin. Optimal locating arrays for at most two faults. *Sci. China Math.*, 2011. [verify]
-10. M. B. Cohen, M. B. Dwyer and J. Shi. (Constrained covering array benchmarks.) *IEEE TSE* 34, 2008. [verify title]
-11. Y. Jia, M. B. Cohen, M. Harman and J. Petke. Combinatorial Interaction Testing (CIT) Benchmarks. Zenodo, DOI
+   In *1st International Symposium on Search Based Software Engineering (SSBSE)*, pp. 13-22, 2009. DOI
+   10.1109/SSBSE.2009.25.
+7. B. J. Garvin, M. B. Cohen and M. B. Dwyer. Evaluating improvements to a meta-heuristic search for constrained
+   interaction testing. *Empirical Software Engineering* 16(1):61-102, 2011 (online 2010). DOI
+   10.1007/s10664-010-9135-7.
+8. R. E. Dougherty, D. N. Green and G. M. Kim. Faster location in combinatorial interaction testing. arXiv 2310.07448,
+   2023.
+9. H. Wu, C. Nie, J. Petke, Y. Jia and M. Harman. A survey of constrained combinatorial testing. arXiv 1908.02480, 2019.
+10. C. Shi, Y. Tang and J. Yin. Optimal locating arrays for at most two faults. *Science China Mathematics*
+    55(1):197-206, 2012 (online 2011). DOI 10.1007/s11425-011-4307-5.
+11. C. Shi, H. Jin and T. Tsuchiya. Locating arrays with mixed alphabet sizes. *Mathematics* 8(5):831, 2020. DOI
+    10.3390/math8050831. arXiv 2001.11712.
+12. M. B. Cohen, M. B. Dwyer and J. Shi. Constructing interaction test suites for highly-configurable systems in the
+    presence of constraints: a greedy approach. *IEEE Transactions on Software Engineering* 34(5):633-650, 2008. DOI
+    10.1109/TSE.2008.50.
+13. I. Segall, R. Tzoref-Brill and E. Farchi. Using binary decision diagrams for combinatorial test design. In *ISSTA
+    2011*, pp. 254-264. DOI 10.1145/2001420.2001451. [verify that this is the paper the 18 benchmark models come from]
+14. Y. Jia, M. B. Cohen, M. Harman and J. Petke. Combinatorial Interaction Testing (CIT) Benchmarks. Zenodo, DOI
     10.5281/zenodo.581657.
-12. I. Segall, R. Tzoref-Brill and E. Farchi. (Real-world models.) ISSTA 2011. [verify; origin of the 18 models]
-13. SA4LA repository, github.com/tatsuhirotsuchiya/SA4LA. CCAG repository, GIST-NJU/CCAG on GitHub.
-14. Locating arrays with mixed alphabet sizes. arXiv 2001.11712. [verify authors]
+15. SA4LA, github.com/tatsuhirotsuchiya/SA4LA. CCAG, github.com/GIST-NJU/CCAG.
 
 ## Author checklist before submission
 
 - [ ] Reproduce headline rows locally and relabel them "reproduced locally".
 - [ ] Check Table 1 numbers against the journal PDF.
-- [ ] Resolve every [verify] and [cite].
+- [ ] Confirm the origin of the 18 literature models (the last [verify]).
 - [ ] Read Colbourn & McClary (2008) in full before keeping the "not found" sentence in RQ4.
 - [ ] Decide the target venue and trim to its page limit. RQ4 could be a separate short paper.
