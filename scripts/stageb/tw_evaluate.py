@@ -1,5 +1,5 @@
 """Stage B (plan item 75): diagnose each textwrap mutant with three suites and compare with ground truth.
-Usage: PYTHONPATH=. python3 -I scripts/stageb/tw_evaluate.py MUTANTS.jsonl L1.json L2.json [--cover-k K] > out.json
+Usage: PYTHONPATH=. python3 scripts/stageb/tw_evaluate.py MUTANTS.jsonl L1.json L2.json [--cover-k K] > out.json
 
 Ground truth for a mutant is F, the exact set of valid configurations on which it fails (from tw_mutants.py).
 Only configuration-dependent mutants are used: 0 < |F| < number of valid configurations, status ok.

@@ -2477,3 +2477,63 @@ So the guarantee above is a constrained-setting consequence of a known unconstra
   - the size cost of the construction that does not mislead.
 
 **What it does not show.** Real programs (Stage B). Models with more than 978 configurations.
+
+## Stage B: a real program with mutation-injected faults (research plan item 75)
+
+Sandbox (cloud) runs, 2026-11-07, branch `auto/research` with `scripts/stageb/` (tw_model.py, tw_mutants.py, tw_evaluate.py, tw_shapes.py). Output is in `docs/item75/`. The container restarted twice during the runs; mutants were resumed by id, and none was lost or duplicated (131 distinct ids).
+
+**Subject.** CPython 3.13's `textwrap.TextWrapper`, copied to `docs/item75/textwrap_original.py`.
+- **Options.** 10 parameters: width 5/12/30, expand_tabs, replace_whitespace, drop_whitespace, break_long_words, break_on_hyphens, fix_sentence_endings, max_lines none/1/3, placeholder long/short, and indent none/init/sub/both. That gives 4,608 configurations.
+- **Constraints.** These are the library's own: 4 forbidden combinations of (width, max_lines, placeholder, indent) for which TextWrapper raises "placeholder too large for max width". That leaves 4,352 valid configurations.
+- **Pass/fail.** A test is one configuration run on 7 fixed texts. It fails if wrap() or fill() output, or the raised exception type, differs from the unmodified module. Sanity check: the unmodified copy fails on 0 configurations.
+
+**Faults.** All 131 single-point mutants of class TextWrapper under standard operators (ROR, LCR, UOI, NEG, CRP), with none chosen by hand.
+- Each mutant ran on all 4,352 valid configurations, in its own process with a 1 GB memory cap and a 180 s limit.
+- Results: 114 ran normally and 17 timed out (infinite loops, excluded). Of the 114, 24 never fail and 7 always fail.
+- That leaves **83 configuration-dependent mutants**, with 61 distinct failure sets.
+
+**Suites** (t = 2), each with its own decoder:
+
+| suite | size | how obtained |
+|---|---|---|
+| C, covering | 12 | SAT; equals the trivial lower bound of 12 (indent x width) |
+| L1, (1bar, 2) | 21 | item65_search, seed 0, finished |
+| L2, (2bar, 2) | 58 | item65_search, seed 0, capped at 900 s, so an upper bound |
+
+L1 and L2 pass `item65_verify.py`.
+
+**Ground truth: what the real failure sets look like** (`tw_shapes.py`; the greedy count gives an upper bound on how many interactions are needed):
+
+| shape | mutants |
+|---|---|
+| exactly the configurations containing some 1 or 2 option pairs | 11 (all exactly two pairs; none is a single pair) |
+| union of 3 or more pairs | 8 |
+| union of 3-way interactions, not of pairs | 16 |
+| needs 4-way or wider combinations | 48 |
+
+Failing configurations per mutant: minimum 64, median 1,536, maximum 4,256 of 4,352.
+
+**Diagnosis outcomes (83 mutants).** *Misleading* means no candidate matches the failure set and at least one named cause includes configurations that pass. *Flagged* means no candidate explains the failing tests. *Missed* means no test in the suite failed.
+
+| suite | correct | misleading | flagged | missed |
+|---|---|---|---|---|
+| C (12 tests) | 0 | 24 (29%) | 51 | 8 |
+| L1 (21 tests) | 0 | 5 (6%) | 69 | 9 |
+| L2 (58 tests) | 11 (13%) | 3 (4%) | 64 | 5 |
+
+- On the 11 two-pair faults, L2 was correct on all 11, while C and L1 flagged all 11.
+- No suite diagnosed any of the 72 wider faults correctly, which none is designed to do.
+- L2's 3 misleading cases are 2 faults needing 4-way or wider combinations and 1 union of triples. The item 74 guarantee covers a single higher-strength interaction, not a union of several, so these are consistent with it.
+
+**What this shows.**
+1. On this real program, **mutation faults rarely fit the locating-array fault model**. Only 11 of 83 (13%) are explainable by at most 2 pairs, and none by a single pair, which is the case (1bar, 2) arrays are built for. 48 need 4-way or wider combinations.
+2. Even so, locating arrays mostly **flag** a fault they cannot explain instead of misleading. The misleading rate falls from 29% for a covering suite to 6% for L1 and 4% for L2.
+3. Only the two-fault array diagnosed anything correctly: the 11 two-pair bugs. The one-fault array diagnosed none of the 83.
+
+**What it does not show.**
+- Real historical bugs (Stage C).
+- More than one program.
+- Inputs beyond the fixed 7-text corpus.
+- More than one seed per suite. L2 is a capped search result, not a minimum.
+- Mutants are weighted equally even when they share a failure set (83 mutants, 61 distinct sets).
+- Higher-strength (t = 3) suites, and adaptive follow-up testing, were not tried.
