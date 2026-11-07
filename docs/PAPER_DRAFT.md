@@ -40,6 +40,17 @@ heuristic's time, the median over 3 seeds was below the published minimum on 12.
 strength 3. We show by verified counterexamples that a (1bar, 3)-locating array need not be (2bar, 2)-locating, so that
 equality is not a general rule.
 
+**Does localization work when faults break the assumptions?**
+- **Simulated violations, 8 models.** A one-fault array met a single faulty 3-way interaction and gave a wrong diagnosis in
+  7 to 85% of cases. A two-fault array never did; it flags such failures instead. This follows from a
+  known property (Colbourn & McClary's Lemma 7.1), applied to constrained arrays.
+- **Real code, two programs.** On two Python standard-library modules with 131 and 258 mutation-injected faults:
+  - Single-pair faults, the case the standard construction targets, were 0 of 83 and 1 of 110 configuration-dependent
+    faults.
+  - The standard one-fault array correctly diagnosed 0 and 1 faults.
+  - The two-fault array, at 2.6 to 2.8 times the size, correctly diagnosed 11 and 48: every fault that fit its model.
+    It named a wrong cause in 3 and 0 cases.
+
 ## 1. Introduction
 
 Combinatorial interaction testing chooses a small set of test configurations so that every combination of t parameter
@@ -73,6 +84,9 @@ and we make no claim that it is the first to do so.
 5. Exact minimum sizes for (2bar, 2) and (2bar, 3) CLAs on small models, using a MaxSAT and SAT formulation with lazily
    added separation constraints. We also give verified counterexamples showing that (1bar, 3)-locating does not imply
    (2bar, 2)-locating (RQ4).
+6. A measurement of how locating arrays behave when faults violate their assumptions (RQ5):
+   - in simulation, with more faulty pairs than planned, a higher-strength fault, or flaky tests;
+   - on two real programs, with automatically generated mutation faults whose exact failing configurations are known.
 
 All suites reported were re-checked by an independent verifier that shares only the model loader with the search.
 
@@ -308,6 +322,87 @@ excerpts, so this is "not found", not "new".
 building a (1bar, 3) array does not guarantee two-fault location. On the models tested, a (2bar, 2) array was never
 larger than a (1bar, 3) array.
 
+### 5.5 RQ5: What happens when real faults break the assumptions?
+
+A (dbar, t)-CLA guarantees the right answer only for at most d deterministic t-way faults. We measured what the
+standard construction and its alternatives report when this does not hold. Sources: PROJECT_NOTES items 73 to 76.
+
+**Suites and decoders.** For each model we compare three suites at t = 2, each decoded with its own decoder:
+
+| suite | what it is | decoder |
+|---|---|---|
+| C | a minimum covering suite | one-pair |
+| L1 | a (1bar, 2) CLA | one-pair |
+| L2 | a (2bar, 2) CLA | up-to-two-pairs |
+
+A diagnosis is *misleading* when no candidate is equivalent to the true fault, and some candidate is present in a
+valid configuration that passes.
+
+**Simulated violations (8 models, 5 seeds; items 73 and 74).** Range over models and seeds of the share of faults with a
+wrong diagnosis:
+
+| real fault | C | L1 | L2 |
+|---|---|---|---|
+| one faulty pair (as designed) | 0% | 0% | 0% |
+| two faulty pairs | 14 to 52% | 3 to 22% | 0% |
+| one faulty 3-way interaction | 11 to 60% | 7 to 85% | 0% |
+| one pair, 5% of outcomes flipped | 2 to 21% | 9 to 18% | 0 to 8% |
+
+L2's zero for a single higher-strength fault is not chance:
+- **Claim.** In a (dbar, t)-CLA with d >= 2, every explanation of the failing tests of a feasible fault T of strength
+  greater than t names only interactions whose every valid configuration contains T.
+- **Proof.** For a t-subset p of T and a candidate s, rho(s) is contained in rho(T), which is contained in rho(p). So
+  {p} and {p, s} produce the same failing tests. The array must therefore treat them as indistinguishable, which means
+  every valid configuration containing s contains p.
+- **Prior art.** This is the constrained analogue of Colbourn & McClary's Lemma 7.1: a (dbar, t)-locating array is
+  (d - 1, t)-detecting. We do not claim it as new.
+- **Exhaustive check.** On 7 small models, every 3-way and 4-way fault had 0 violations for L2, and violations on 6 of
+  7 models for L1.
+
+**Real programs (items 75 and 76).**
+- **Subjects.** Two CPython 3.13 standard-library modules: `textwrap` (10 options, 4,352 valid configurations, with the
+  library's own validity rule as the constraint) and `configparser` (10 options, 3,456 configurations, unconstrained).
+- **Pass/fail.** A test is a configuration run on a fixed set of inputs. It fails if its output or the exception it
+  raises differs from the unmodified module's.
+- **Faults.** Every single-point mutant of the main classes under standard mutation operators: 131 and 258 mutants. We
+  ran each mutant on every valid configuration, which gives its exact set of failing configurations as ground truth.
+- **Faults kept.** Configuration-dependent faults, those failing on some but not all valid configurations: 83 for
+  textwrap (61 distinct failure sets) and 110 for configparser (29 distinct).
+
+How the real faults fit the model:
+
+| failure set is exactly the configurations containing | textwrap (83) | configparser (110) |
+|---|---|---|
+| one pair | 0 | 1 |
+| two pairs | 11 | 47 |
+| a union of 3 or more pairs | 8 | 59 |
+| a union of 3-way interactions | 16 | 2 |
+| needs 4-way or wider | 48 | 1 |
+
+Diagnoses (counted per mutant; per distinct failure set in brackets):
+
+| | textwrap correct | textwrap misleading | configparser correct | configparser misleading |
+|---|---|---|---|---|
+| C (12 / 9 tests) | 0 (0) | 24 (21) | 0 (0) | 56 (6) |
+| L1 (21 / 19 tests) | 0 (0) | 5 (4) | 1 (1) | 2 (1) |
+| L2 (58 / 49 tests) | 11 (5) | 3 (3) | 48 (11) | 0 (0) |
+
+All remaining faults were flagged (no explanation matched) or missed (no test failed).
+- **L2.** On both programs, L2 diagnosed correctly every fault that fit its model. Its 3 misleading cases on textwrap
+  are unions of several higher-strength interactions, which the claim above does not cover.
+- **L1.** L1 diagnosed one fault correctly in total, because single-pair faults were almost absent.
+- **Suite sizes.** L1 and L2 are search results, seed 0. L2 was capped at 900 s, so it is an upper bound. All suites
+  pass the independent verifier.
+
+**Answer.**
+- On these two programs, configuration-dependent faults rarely have the single-pair form the standard (1bar, 2)
+  construction targets.
+- That construction rarely misleads (2 to 6% of faults), but it almost never diagnoses either.
+- A (2bar, 2) CLA costs 2.6 to 2.8 times as many tests. It was the only suite that diagnosed faults correctly at scale
+  (11 and 48), and it misled least.
+- For practice: if a test budget allows only a one-fault locating array, its main value on these programs is to signal
+  that a failure does not fit the model; it rarely names the cause.
+
 ## 6. Threats to validity
 
 - **External.**
@@ -315,6 +410,9 @@ larger than a (1bar, 3) array.
     differ.
   - RQ4 uses only small models and one derived model; no CCAG benchmark was run at d = 2. The prototype scores all
     pairs of fault sets over enumerated configurations, which does not scale to them.
+  - RQ5 uses two programs, both Python standard-library modules, each with one fixed input corpus. The faults are
+    mutation faults, not historical bugs. configparser has no constraints, so it does not exercise the constrained
+    setting.
   - Six Table 1 rows (8, 9 and 21 to 24) were read by a freeform query of a PDF conversion and must be checked. Rows
     1 to 5 were not available.
 - **Internal.**
@@ -354,9 +452,15 @@ only the target interaction's values. Localization costs roughly 1.6 to 2 times 
 locating two faults at strength 2 costs about twice as much as one fault and, on the models tested, never more than
 locating one fault at strength 3. A (1bar, 3) array does not guarantee two-fault location.
 
+When faults break the model, the standard one-fault array seldom names a wrong cause, but on two real programs it
+almost never named the right one either. A two-fault array, at about 2.6 to 2.8 times the tests, diagnosed every
+mutation fault that fit its model, and by a known property it never names a cause unrelated to a single
+higher-strength fault.
+
 Open questions:
 - Lower bounds that make the search's sizes on mid-sized models such as model_spins_core interpretable.
 - d = 2 on real benchmarks, which needs a scoring method that does not enumerate configurations.
+- More programs, historical (not mutation) faults, and strength-3 suites for RQ5.
 - Local reproduction of all results.
 
 ## References
@@ -365,7 +469,8 @@ Bibliographic details were confirmed on 2026-11-05 against Crossref records and 
 authors and venues were checked, not the papers' contents. Each source is also listed in `docs/LITERATURE_CHECK.md`.
 
 1. C. J. Colbourn and D. W. McClary. Locating and detecting arrays for interaction faults. *Journal of Combinatorial
-   Optimization* 15(1):17-48, 2008 (online 2007). DOI 10.1007/s10878-007-9082-4.
+   Optimization* 15(1):17-48, 2008 (online 2007). DOI 10.1007/s10878-007-9082-4. Lemma numbers in RQ5 are from the
+   Dagstuhl Seminar Proceedings 09281 version, DOI 10.4230/DagSemProc.09281.3 (check against the journal version).
 2. H. Jin and T. Tsuchiya. Constrained locating arrays for combinatorial interaction testing. *Journal of Systems and
    Software* 170:110771, 2020. DOI 10.1016/j.jss.2020.110771. arXiv 1801.06041.
 3. T. Konishi, H. Kojima, H. Nakagawa and T. Tsuchiya. Using simulated annealing for locating array construction.
