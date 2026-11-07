@@ -2537,3 +2537,51 @@ Failing configurations per mutant: minimum 64, median 1,536, maximum 4,256 of 4,
 - More than one seed per suite. L2 is a capped search result, not a minimum.
 - Mutants are weighted equally even when they share a failure set (83 mutants, 61 distinct sets).
 - Higher-strength (t = 3) suites, and adaptive follow-up testing, were not tried.
+
+## Stage B, second program: configparser (research plan item 76)
+
+Sandbox (cloud) runs, 2026-11-07, branch `auto/research`, using the same pipeline as item 75 (`scripts/stageb/cp_model.py`, `cp_mutants.py`, plus `tw_evaluate.py` and `tw_shapes.py` with `--model`). Output is in `docs/item76/`.
+
+**Subject.** CPython 3.13's `configparser`, copied to `docs/item76/configparser_original.py`.
+- **Options.** 10 parameters, 3,456 configurations: delimiters (3), comment_prefixes (2), inline_comment_prefixes (3), strict, empty_lines_in_values, allow_no_value, interpolation basic/extended/none, default_section DEFAULT/common, allow_unnamed_section, and optionxform lower/keep.
+- **Constraints.** The constructor rejects no combination, so **the model is unconstrained**. This differs from textwrap.
+- **Pass/fail.** A test is one configuration run on 7 fixed INI texts. It compares the sections, the options, every get() value (or its exception type), the write() output, and the read_string() exception against the unmodified module.
+- **Sanity checks.** The unmodified copy fails on 0 configurations. The baseline produces 1,556 distinct behaviours over the 3,456 configurations, so the options matter.
+
+**Faults.** All 258 single-point mutants, same operators as item 75, of RawConfigParser, ConfigParser, BasicInterpolation, ExtendedInterpolation and SectionProxy. None timed out. 128 never fail and 20 always fail, leaving **110 configuration-dependent mutants with only 29 distinct failure sets**.
+
+**Suites.** C = 9 tests (SAT; equals the trivial bound of 3 x 3). L1 = 19 (search, seed 0, finished). L2 = 49 (search, seed 0, capped at 900 s). L1 and L2 pass `item65_verify.py`.
+
+**Shape of the failure sets** (per mutant): at most 2 pairs, 48 (1 single pair, 47 two pairs); union of 3 or more pairs, 59; union of triples, 2; 4-way or wider, 1. Per distinct set: 1 single pair, 10 two pairs, 18 other.
+
+**Diagnosis outcomes, per mutant (110) and per distinct failure set (29):**
+
+| suite | correct | misleading | flagged | missed |
+|---|---|---|---|---|
+| C (9 tests) | 0 / 0 | 56 (51%) / 6 | 53 / 22 | 0 / 0 (plus 1 / 1 ambiguous) |
+| L1 (19 tests) | 1 / 1 | 2 (2%) / 1 | 107 / 27 | 0 / 0 |
+| L2 (49 tests) | 48 (44%) / 11 | **0 / 0** | 62 / 18 | 0 / 0 |
+
+- L2 was correct on the 1 single-pair fault and on all 47 two-pair faults.
+- L1 was correct only on the single-pair fault and flagged all 47 two-pair faults.
+- L1's 2 misleading cases are unions of triples.
+
+**Item 75 recounted per distinct failure set** (61 sets, `docs/item75/dedup.jsonl`):
+
+| suite | correct | misleading |
+|---|---|---|
+| C | 0 | 21 |
+| L1 | 0 | 4 |
+| L2 | 5 | 3 |
+
+**What the two programs show together.**
+1. Configuration-dependent mutation faults often do not fit the one-fault model. Single-pair faults were 0 of 83 (textwrap) and 1 of 110 (configparser).
+2. A covering suite names a wrong cause often (29% and 51% of mutants). The one-fault locating array rarely does (6% and 2%), but it almost never names the right cause either (0 and 1); it mostly flags.
+3. The two-fault array is the only suite that diagnosed faults correctly in bulk: 11 of 83 and 48 of 110 mutants, every fault that fit its model on both programs. It misled on 3 and 0.
+
+**What it does not show.**
+- Historical bugs.
+- More than two programs; both are Python standard-library modules.
+- More than one input corpus or more than one seed per suite. The L2 suites are capped search results.
+- configparser has no constraints, so its result does not exercise the constrained aspect.
+- Strength-3 suites and adaptive follow-up testing.

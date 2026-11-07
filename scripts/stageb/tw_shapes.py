@@ -5,7 +5,7 @@ Usage: PYTHONPATH=. python3 scripts/stageb/tw_shapes.py docs/item75/mutants.json
 import json, sys
 from cla_harness.io import load_model
 from cla_harness.core import valid_configurations, feasible_interactions, contains_interaction
-params, forb = load_model("docs/item75/textwrap_model.json")
+params, forb = load_model(sys.argv[sys.argv.index("--model") + 1] if "--model" in sys.argv else "docs/item75/textwrap_model.json")
 configs = valid_configurations(params, forb)
 n = len(configs)
 def masks(t):
@@ -34,7 +34,7 @@ cat = lambda r: ("<=2 pairs" if r["pairs_needed"] and r["pairs_needed"] <= 2 els
                  "union of 3+ pairs" if r["pairs_needed"] else
                  "union of triples" if r["triples_needed"] else "needs 4+ way")
 from collections import Counter
-print("shape of 83 failure sets:", dict(Counter(cat(r) for r in rows)))
+print(f"shape of {len(rows)} failure sets:", dict(Counter(cat(r) for r in rows)))
 print("failing configs per mutant: min", min(r["n_fail"] for r in rows), "median", sorted(r["n_fail"] for r in rows)[len(rows)//2], "max", max(r["n_fail"] for r in rows), "of", n)
 for p in ev["per_mutant"]:
     if p["outcome"] == "misleading":

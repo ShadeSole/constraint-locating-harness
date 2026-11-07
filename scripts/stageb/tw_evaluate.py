@@ -25,7 +25,7 @@ from cla_harness.core import valid_configurations, feasible_interactions, contai
 
 mpath, l1, l2 = sys.argv[1:4]
 cover_k = int(sys.argv[sys.argv.index("--cover-k") + 1]) if "--cover-k" in sys.argv else 1
-params, forb = load_model("docs/item75/textwrap_model.json")
+params, forb = load_model(sys.argv[sys.argv.index("--model") + 1] if "--model" in sys.argv else "docs/item75/textwrap_model.json")
 configs = valid_configurations(params, forb)
 n = len(configs)
 key = lambda c: tuple(sorted(c.items()))
