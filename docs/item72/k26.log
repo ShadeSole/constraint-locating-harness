@@ -1,0 +1,7 @@
+{"round": 1, "clauses_added": 304, "seconds": 0.5}
+{"round": 2, "clauses_added": 360, "seconds": 0.7}
+{"round": 3, "clauses_added": 412, "seconds": 2.2}
+{"round": 4, "clauses_added": 456, "seconds": 10.4}
+{"round": 5, "clauses_added": 512, "seconds": 13.0}
+{"round": 6, "clauses_added": 558, "seconds": 94.9}
+{"exit": 124}

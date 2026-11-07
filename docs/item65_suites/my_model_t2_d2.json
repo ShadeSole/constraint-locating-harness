@@ -1,0 +1,126 @@
+{
+ "model": "my_model.json",
+ "strength": 2,
+ "d": 2,
+ "suite": [
+  {
+   "Protocol": "TCP",
+   "Encryption": "None",
+   "Authentication": "Password",
+   "Network": "LAN",
+   "Compression": "Off"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "None",
+   "Authentication": "Password",
+   "Network": "WAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "None",
+   "Authentication": "Certificate",
+   "Network": "LAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "None",
+   "Authentication": "Certificate",
+   "Network": "WAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "None",
+   "Authentication": "Certificate",
+   "Network": "WAN",
+   "Compression": "Off"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "TLS",
+   "Authentication": "Password",
+   "Network": "LAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "TLS",
+   "Authentication": "Password",
+   "Network": "WAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "TLS",
+   "Authentication": "Password",
+   "Network": "WAN",
+   "Compression": "Off"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "TLS",
+   "Authentication": "Certificate",
+   "Network": "LAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "TLS",
+   "Authentication": "Certificate",
+   "Network": "LAN",
+   "Compression": "Off"
+  },
+  {
+   "Protocol": "TCP",
+   "Encryption": "TLS",
+   "Authentication": "Certificate",
+   "Network": "WAN",
+   "Compression": "Off"
+  },
+  {
+   "Protocol": "UDP",
+   "Encryption": "None",
+   "Authentication": "Password",
+   "Network": "LAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "UDP",
+   "Encryption": "None",
+   "Authentication": "Password",
+   "Network": "WAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "UDP",
+   "Encryption": "None",
+   "Authentication": "Password",
+   "Network": "WAN",
+   "Compression": "Off"
+  },
+  {
+   "Protocol": "UDP",
+   "Encryption": "None",
+   "Authentication": "Certificate",
+   "Network": "LAN",
+   "Compression": "On"
+  },
+  {
+   "Protocol": "UDP",
+   "Encryption": "None",
+   "Authentication": "Certificate",
+   "Network": "LAN",
+   "Compression": "Off"
+  },
+  {
+   "Protocol": "UDP",
+   "Encryption": "None",
+   "Authentication": "Certificate",
+   "Network": "WAN",
+   "Compression": "Off"
+  }
+ ]
+}
