@@ -2360,3 +2360,79 @@ Sandbox (cloud) runs, 2026-11-03, branch `auto/research` at 8b3cf2e. The 4 runs 
 **What this shows.** The lazy SAT tool gives no bound above 16 on this model within 30 minutes. Smaller K was slower, not faster: every K here is close to the covering minimum (16 to 18, item 71), and proving UNSAT near it is hard for CaDiCaL with a sequential-counter encoding. The proven range for (1bar, 2) on model_spins_core stays 16 to 30.
 
 **What it does not show.** Whether longer runs, another cardinality encoding (totalizer or cardinality networks), or a dedicated MaxSAT solver would finish. Each K was run once.
+
+## When faults break the assumptions: misdiagnosis rates (research plan item 73, Stage A of the real-use study)
+
+Sandbox (cloud) runs, 2026-11-07, branch `auto/research` at 39598bd plus the new scripts `scripts/item73_robust.py` and `scripts/item73_partial.py`. Output is in `docs/item73/`. One seed (0), 2,000 sampled fault sets per scenario, and exhaustive where there are fewer. Interaction localization only.
+
+**Question.** A locating array guarantees the right answer only when there is at most d deterministic faulty pair. Real failures can involve more pairs, a 3-way combination, or flaky tests. When that happens, how often does the decoder point confidently at the wrong cause?
+
+**Setup.** t = 2 throughout. For each of the 8 example models there are three suites, and each is decoded with the decoder it was built for.
+
+| suite | how it was obtained | decoder |
+|---|---|---|
+| C | minimum 2-way covering suite, by SAT | one-pair |
+| L1 | minimum (1bar, 2) CLA, by `item69_decide.py`; for model_spins_core, the item 65 search suite of 30 | one-pair |
+| L2 | (2bar, 2) array from item 65 or 70; for model_spins_core, the search suite of 83 | up-to-two-pairs |
+
+An outcome counts as:
+- *correct*: every candidate is equivalent to the true fault over all valid configurations;
+- *wrong*: there are candidates and none is equivalent;
+- *flagged*: no candidate matches;
+- *missed*: no test failed.
+
+`item73_partial.py` splits *wrong* into *partial* (every candidate pair is one of the true pairs, or lies inside the true triple) and *unrelated*.
+
+**Results: unrelated-wrong rate, range over the 8 models.**
+
+| suite | one faulty pair (P1) | two faulty pairs (P2) | one faulty triple (T1) |
+|---|---|---|---|
+| C (covering) | 0% (but mostly ambiguous) | 6 to 44% | 7 to 59% |
+| L1 (one-fault locating) | 0% | 1 to 9% | 7 to 42% |
+| L2 (two-fault locating) | 0% | 0% | 0% |
+
+For three faulty pairs (P3) the wrong rate, counting both partial and unrelated, was 1 to 3% for L1 and 0 to 4% for L2; most cases were flagged.
+
+Flaky tests: one faulty pair, with each outcome flipped with probability p, decoded by nearest signature. Wrong rate (all wrong answers):
+
+| suite | p = 0.05 | p = 0.10 |
+|---|---|---|
+| L1 | 9 to 18% | 23 to 35% |
+| L2 | 0 to 7% | 2 to 18% |
+
+Suite sizes (C / L1 / L2):
+
+| model | C | L1 | L2 |
+|---|---|---|---|
+| model | 5 | 9 | 17 |
+| model_6param | 6 | 10 | 22 |
+| model_8param | 7 | 11 | 26 |
+| model_high_constraints | 6 | 9 | 11 |
+| model_low_constraints | 6 | 8 | 15 |
+| model_multivalue | 7 | 11 | 22 |
+| my_model | 6 | 8 | 17 |
+| model_spins_core | 18 | 30 | 83 (search sizes) |
+
+Per-model counts are in `docs/item73/*.jsonl`.
+
+**Why L2 never names an unrelated pair for a faulty triple (proof sketch, not yet checked carefully).**
+1. Let T be the faulty triple and q a pair whose test set in the array equals T's.
+2. For every pair p inside T, the tests containing T are a subset of the tests containing p. So the sets {p} and {p, q} have the same failing tests in the array.
+3. A (2bar, 2) CLA separates every distinguishable pair of sets of at most 2 interactions. So {p} and {p, q} must be indistinguishable, which means every valid configuration containing q also contains p.
+4. This holds for all three pairs inside T, so every valid configuration containing q contains T.
+5. The same argument applies to each member of a two-pair candidate.
+
+Hence a (2bar, 2) CLA decoded with its own decoder can only name candidates that imply the true triple. An L1 array has no such guarantee, and the table shows it fails often. Whether this is known: Colbourn & McClary (2008) relate detecting arrays and higher strengths, and they were read only in excerpts. Check before claiming.
+
+**What this shows.**
+- A one-fault locating array that meets a 3-way fault names an unrelated pair as the cause in 7 to 42% of cases on these models. A plain covering suite does so in 7 to 59%.
+- Under two faulty pairs, L1 is unrelated-wrong in 1 to 9% of cases and mostly flags the result instead.
+- The two-fault arrays, at about 1.2 to 2.8 times L1's size, were never unrelated-wrong in either scenario on any model. That fits the sketch above.
+- Under 5% flaky outcomes, L1 is wrong in 9 to 18% of cases.
+
+**What it does not show.**
+- Real programs or real bugs (Stages B and C).
+- Larger models: only one model has more than 144 configurations.
+- More than one seed.
+- Any comparison with adaptive approaches, which run follow-up tests after a failure.
+- The L1 and L2 suites on model_spins_core are search results, not minima.

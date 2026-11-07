@@ -70,4 +70,5 @@
 - [x] 70. Done 2026-11-01 in the live session (PROJECT_NOTES "The SAT decision tool closes the model_8param two-fault gaps"). SAT agrees with all 19 Z3 minima; model_8param (2bar, 2) = 26 and (2bar, 3) = 50.
 - [x] 71. Done 2026-11-01 in the live session (PROJECT_NOTES "Lower bounds on model_spins_core at t = 2"). Lower bounds for model_spins_core t = 2: Z3 lazy MaxSAT gives none in 3,600 s; t = 2 covering minimum is 16 to 18 (SAT at 18, no answer at 16 and 17 in 900 s); proven bound 16 by counting.
 - [x] 72. Done 2026-11-03 in the live session (PROJECT_NOTES "Separation-aware SAT bounds on model_spins_core, t = 2, d = 1"). item69_decide at K = 20, 22, 24, 26: no answer in 1,800 s each; proven range stays 16 to 30.
+- [x] 73. Done 2026-11-07 in the live session (PROJECT_NOTES "When faults break the assumptions"). Misdiagnosis rates of C, L1, L2 suites under 2-3 faulty pairs, a faulty triple and flaky tests on 8 models; L2 never unrelated-wrong, L1 7-42% on a faulty triple.
 
