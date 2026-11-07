@@ -50,6 +50,9 @@ equality is not a general rule.
   - The standard one-fault array correctly diagnosed 0 and 1 faults.
   - The two-fault array, at 2.6 to 2.8 times the size, correctly diagnosed 11 and 48: every fault that fit its model.
     It named a wrong cause in 3 and 0 cases.
+  - **Equal-budget controls.** Random suites of the same size, with the same two-pair decoder, came close: 5 to 11 and
+    39 to 48 correct over 5 seeds. In some seeds they misled more: up to 6 against 3, and 16 against 0. So most of the
+    gain comes from test budget and decoder; the construction mainly adds consistency.
 
 ## 1. Introduction
 
@@ -394,12 +397,32 @@ All remaining faults were flagged (no explanation matched) or missed (no test fa
 - **Suite sizes.** L1 and L2 are search results, seed 0. L2 was capped at 900 s, so it is an upper bound. All suites
   pass the independent verifier.
 
+**Equal-budget controls (item 77).** Is L2's advantage just its size? We compared it with two alternatives:
+- R: suites of exactly |L2| valid configurations drawn uniformly at random (5 seeds), with the same up-to-two-pairs
+  decoder.
+- L13: a (1bar, 3) CLA, the other natural way to spend a larger budget (71 and 57 tests, verified).
+
+| suite | textwrap correct / misleading | configparser correct / misleading |
+|---|---|---|
+| L2 | 11 / 3 | 48 / 0 |
+| R, same size, 5 seeds | 5 to 11 / 3 to 6 | 39 to 48 / 0 to 16 |
+| L13, one-interaction decoder | 0 / 0 | 1 / 0 |
+| L13, up-to-two-pairs decoder | 11 / 4 | 48 / 0 |
+
+- **Budget and decoder explain most of the effect.** Random suites of the same size reach about the same number of
+  correct diagnoses in most seeds. So does the (1bar, 3) suite once it is decoded with two-pair explanations.
+- **The construction removes the bad draws.** In 3 of 5 seeds, random suites misled on 16 configparser faults, against
+  0 for L2. On textwrap they misled on up to 6, against 3, and got as few as 5 correct, against 11. L2 also carries
+  the guarantee above.
+
 **Answer.**
 - On these two programs, configuration-dependent faults rarely have the single-pair form the standard (1bar, 2)
   construction targets.
 - That construction rarely misleads (2 to 6% of faults), but it almost never diagnoses either.
-- A (2bar, 2) CLA costs 2.6 to 2.8 times as many tests. It was the only suite that diagnosed faults correctly at scale
-  (11 and 48), and it misled least.
+- A (2bar, 2) CLA costs 2.6 to 2.8 times as many tests and diagnosed every fault that fit its model (11 and 48).
+- Equal-size random suites with the same decoder came close in most seeds. So the main lever is a test budget large
+  enough, plus a decoder that allows two-pair explanations. The (2bar, 2) construction mainly makes the outcome
+  reliable: no bad draws, and the guarantee for single higher-strength faults.
 - For practice: if a test budget allows only a one-fault locating array, its main value on these programs is to signal
   that a failure does not fit the model; it rarely names the cause.
 
@@ -455,7 +478,8 @@ locating one fault at strength 3. A (1bar, 3) array does not guarantee two-fault
 When faults break the model, the standard one-fault array seldom names a wrong cause, but on two real programs it
 almost never named the right one either. A two-fault array, at about 2.6 to 2.8 times the tests, diagnosed every
 mutation fault that fit its model, and by a known property it never names a cause unrelated to a single
-higher-strength fault.
+higher-strength fault. Equal-size random suites with the same decoder came close in most seeds but misled more in
+some. The budget and the decoder drive most of the gain; the construction makes it dependable.
 
 Open questions:
 - Lower bounds that make the search's sizes on mid-sized models such as model_spins_core interpretable.

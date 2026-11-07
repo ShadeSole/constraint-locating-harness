@@ -2587,3 +2587,42 @@ Sandbox (cloud) runs, 2026-11-07, branch `auto/research`, using the same pipelin
 - More than one input corpus or more than one seed per suite. The L2 suites are capped search results.
 - configparser has no constraints, so its result does not exercise the constrained aspect.
 - Strength-3 suites and adaptive follow-up testing.
+
+## Equal-budget controls for RQ5: random suites and a (1bar, 3) suite (research plan item 77)
+
+Sandbox (cloud) runs, 2026-11-07, branch `auto/research`, with `scripts/stageb/controls.py`. Output is in `docs/item75/controls.json` and `docs/item76/controls.json`. The new (1bar, 3) suites come from `item65_search.py` (t = 3, d = 1, seed 0, finished before the cap): 71 tests for textwrap and 57 for configparser. Both pass `item65_verify.py`.
+
+**Question.** L2 has 2.6 to 2.8 times L1's tests. Is its advantage in RQ5 just size?
+
+**Controls.**
+- **R0 to R4:** |L2| valid configurations drawn uniformly at random (seeds 0 to 4), decoded with the same up-to-two-pairs decoder.
+- **L13:** a (1bar, 3) suite, the other natural way to spend a larger budget, decoded two ways: one interaction of strength 2 or 3, or up to two pairs.
+
+The L2 rows below reproduce item 75 and item 76 exactly (consistency check).
+
+| suite | textwrap correct / misleading (83 mutants) | configparser correct / misleading (110 mutants) |
+|---|---|---|
+| L2 (58 / 49 tests) | 11 / 3 | 48 / 0 |
+| random, same size, 5 seeds | 5 to 11 / 3 to 6 | 39 to 48 / 0 to 16 (16 in 3 of 5 seeds) |
+| L13 (71 / 57), one-interaction decoder | 0 / 0 | 1 / 0 |
+| L13 (71 / 57), up-to-two-pairs decoder | 11 / 4 | 48 / 0 |
+
+Per distinct failure set (61 and 29 sets):
+
+| suite | textwrap correct / misleading | configparser correct / misleading |
+|---|---|---|
+| L2 | 5 / 3 | 11 / 0 |
+| random | 3 to 5 / 3 to 6 | 7 to 11 / 0 to 1 |
+| L13, up-to-two-pairs decoder | 5 / 4 | 11 / 0 |
+
+**What this shows (it corrects the item 75 and 76 reading).**
+- Most of L2's correct diagnoses come from (a) having enough tests and (b) a decoder that allows two-pair explanations, not from the (2bar, 2) construction itself.
+  - Random suites of the same size, decoded the same way, reached about the same number of correct diagnoses in most seeds.
+  - The (1bar, 3) suite matched L2 once decoded with the two-pair decoder.
+- What the construction adds is consistency. L2 never had the bad draws that random suites had:
+  - configparser: 16 misleading in 3 of 5 seeds against L2's 0;
+  - textwrap: up to 6 misleading against L2's 3, and as few as 5 correct against L2's 11.
+- The construction also carries the item 74 guarantee.
+- The item 75 and 76 statement that "only the two-fault array diagnosed faults" holds against L1 and C, which are smaller and use a one-pair decoder. **It does not hold against equal-size suites with the same decoder.**
+
+**What it does not show.** More than 5 random seeds; other programs; a statistical test.

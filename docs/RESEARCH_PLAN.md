@@ -74,4 +74,5 @@
 - [x] 74. Done 2026-11-07 (PROJECT_NOTES "The item 73 guarantee"). Exhaustive check: 0 violations for (2bar,2) at fault strength 3 and 4 on 7 models; 5 seeds and 3 spins suite pairs agree; core step is Colbourn & McClary Lemma 7.1 (known).
 - [x] 75. Done 2026-11-07 (PROJECT_NOTES "Stage B: a real program"). textwrap, 131 mutants, 83 configuration-dependent: 11 fit <=2 pairs, 48 need 4+ way; misleading C 29%, L1 6%, L2 4%; only L2 correct (11 two-pair bugs).
 - [x] 76. Done 2026-11-07 (PROJECT_NOTES "Stage B, second program: configparser"). 258 mutants, 110 configuration-dependent (29 distinct sets); misleading C 51%, L1 2%, L2 0%; L2 correct 48, L1 1.
+- [x] 77. Done 2026-11-07 (PROJECT_NOTES "Equal-budget controls for RQ5"). Random suites of L2 size with the two-pair decoder nearly match L2 (correct 5-11 vs 11; 39-48 vs 48) but mislead more in some seeds (up to 6 vs 3; 16 vs 0); (1bar,3) suite matches L2 only with the two-pair decoder.
 
