@@ -2725,3 +2725,11 @@ Sandbox (cloud) runs, 2026-11-08, with `scripts/stageb/controls.py --padded 200`
 - L2 always reached the best case, which most equal-size suites did not.
 
 **What it does not show.** Other padding schemes, such as greedy separation without a guarantee; other programs.
+
+## Reproduction tier for the RQ5 simulations (research plan item 82)
+
+New tier `scripts/reproduce.py sim`. It re-runs `item73_robust.py` (seed 0, 2,000 samples) on the 8 models with the committed suites, and `item74_check_claim.py` on the 7 small models. It compares every output row with `docs/item73/*.jsonl` and `docs/item74/claim_small.jsonl`, and writes `results/reproduce_sim.md`.
+
+**Sandbox run** (2026-11-08, about 25 s; not "reproduced locally"):
+- item 73: 18 of 18 rows identical on each of the 8 models;
+- item 74: all 28 violation counts identical (L2: 0 everywhere).

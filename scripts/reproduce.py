@@ -5,6 +5,7 @@ Usage (PowerShell, repo root):
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py spins            # about 45 minutes, needs ..\\external\\CCAG
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py long             # about 1.6 hours (apache + gcc locating, seed 0)
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py rq5              # RQ5, about 30 to 60 minutes, needs python-sat
+  .\\.venv\\Scripts\\python.exe scripts\\reproduce.py sim              # RQ5 simulations (items 73, 74), needs python-sat
   add  --ccag PATH  if the CCAG benchmark folder is not ..\\external\\CCAG\\benchmark
 
 Needs z3-solver (pip install z3-solver); tier rq5 also needs python-sat (pip install python-sat).
@@ -108,9 +109,41 @@ def rq5(env, note):
                  "/".join(str(x["value"]) for x in st0["metrics"][m]["l2"]), sec78, None)
 
 
+def d2_suite(m):
+    return "docs/item70/model_8param_t2_d2_size26.json" if m == "model_8param" else f"docs/item65_suites/{m}_t2_d2.json"
+
+
+def sim(env, note):
+    """Items 73 and 74: re-run the robustness simulation (seed 0, 2000 samples) and the exhaustive claim check, and
+    compare every output line with the committed one (fixed seeds, so they should be identical)."""
+    d = os.path.join(ROOT, "results", "reproduce_sim")
+    os.makedirs(d, exist_ok=True)
+    key = lambda r: (r["model"], r["suite"], r.get("scenario", r.get("fault_strength")))
+    for m in SMALL + ["model_spins_core"]:
+        if m == "model_spins_core":
+            extra = ["--d1", "docs/item65_suites/search_spins_core_t2_d1_s0.json",
+                     "--d2", "docs/item65_suites/search_spins_core_t2_d2_s0.json", "--cover-k", "18"]
+        else:
+            extra = ["--d2", d2_suite(m)]
+        new = run(["scripts/item73_robust.py", f"examples/{m}.json"] + extra, env)
+        old = [json.loads(l) for l in open(os.path.join(ROOT, "docs", "item73", f"{m}.jsonl"), encoding="utf-8")]
+        oldk = {key(r): r for r in old}
+        same = sum(oldk.get(key(r)) == r for r in new)
+        note(f"item 73 simulation, {m}: identical output rows", f"{same} of {len(new)}", f"{len(old)} of {len(old)}",
+             "When faults break the assumptions (item 73)", None)
+    old = {key(r): r for r in map(json.loads, open(os.path.join(ROOT, "docs", "item74", "claim_small.jsonl"),
+                                                   encoding="utf-8"))}
+    for m in SMALL:
+        new = run(["scripts/item74_check_claim.py", f"examples/{m}.json", f"docs/item74/{m}_L1.json", d2_suite(m)], env)
+        for r in new:
+            o = old[key(r)]
+            note(f"item 74 claim check, {m}, {r['suite']}, fault strength {r['fault_strength']}: violations",
+                 r["violations"], o["violations"], "The item 73 guarantee (item 74)", None)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("tier", choices=["quick", "spins", "long", "rq5"])
+    ap.add_argument("tier", choices=["quick", "spins", "long", "rq5", "sim"])
     ap.add_argument("--ccag", default=os.path.join(ROOT, "..", "external", "CCAG", "benchmark"))
     a = ap.parse_args()
     env = dict(os.environ, PYTHONPATH=ROOT)
@@ -123,6 +156,8 @@ def main():
 
     if a.tier == "rq5":
         rq5(env, note)
+    elif a.tier == "sim":
+        sim(env, note)
     elif a.tier == "quick":
         for (t, mode), sizes in EXACT.items():
             for name, cloud in zip(SMALL, sizes):

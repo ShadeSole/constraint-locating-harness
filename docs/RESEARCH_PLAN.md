@@ -79,4 +79,5 @@
 - [x] 79. Done 2026-11-08 (PROJECT_NOTES "RQ5 reproduction tier"). reproduce.py rq5 added, mutant runners made portable; a fresh sandbox re-run matched every committed RQ5 value.
 - [x] 80. Done 2026-11-08 (PROJECT_NOTES "Reproduced locally: tiers quick and rq5"). Author ran quick (48/48 rows match) and rq5 (40/40) on Windows 11, Python 3.13.1.
 - [x] 81. Done 2026-11-08 (PROJECT_NOTES "A stronger random baseline"). Covering suite padded with random tests behaves like plain random (correct mean 9.97 and 43.98; p 0.43 and 0.18); coverage is not what the construction adds.
+- [x] 82. Done 2026-11-08 (PROJECT_NOTES "Reproduction tier for the RQ5 simulations"). reproduce.py sim added; sandbox run identical on all rows.
 
