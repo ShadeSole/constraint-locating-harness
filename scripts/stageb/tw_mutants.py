@@ -88,35 +88,59 @@ def run(i):
         mod = load(src, f"tw_m{i}")
     except Exception as e:
         return {"id": i, "status": "compile_error", "error": type(e).__name__}
-    signal.signal(signal.SIGALRM, handler)
-    signal.alarm(120)
+    if hasattr(signal, "SIGALRM"):  # POSIX only; the watchdog in one() covers Windows
+        signal.signal(signal.SIGALRM, handler)
+        signal.alarm(120)
     try:
         failing = [k for k, c in enumerate(CONFIGS) if tw_model.behaviour(mod, c) != BASE[k]]
         status = "ok"
     except Timeout:
         failing, status = [], "timeout"
     finally:
-        signal.alarm(0)
+        if hasattr(signal, "SIGALRM"):
+            signal.alarm(0)
     return {"id": i, "operator": op, "line": line, "status": status, "n_fail": len(failing), "failing": failing}
+
+TIMEOUT = int(os.environ.get("STAGEB_TIMEOUT", "180"))
+EXTRA_BLOCKS = int(os.environ.get("STAGEB_EXTRA_BLOCKS", "10000000"))
+
+def watchdog():
+    """Portable guard (any OS): end this process with exit code 3 after TIMEOUT seconds, or 4 if the number of
+    allocated memory blocks grows by more than EXTRA_BLOCKS (some mutants loop forever and grow lists)."""
+    import threading, time
+    base, start = sys.getallocatedblocks(), time.time()
+    def loop():
+        while True:
+            time.sleep(0.5)
+            if time.time() - start > TIMEOUT:
+                os._exit(3)
+            if sys.getallocatedblocks() - base > EXTRA_BLOCKS:
+                os._exit(4)
+    threading.Thread(target=loop, daemon=True).start()
 
 def one(i):
     """Run a single mutant in this process (used by the isolated runner below)."""
     init()
+    watchdog()
     print(json.dumps(run(i)), flush=True)
 
 def isolated(out, n, done):
     """Each mutant in its own process with a 1 GB address-space cap and a 180 s wall-clock limit, 4 at a time.
     A mutant that exceeds either is recorded as status timeout or memory (some mutants loop forever and grow lists)."""
-    import subprocess, resource
+    import subprocess
     from concurrent.futures import ThreadPoolExecutor
-    def limit():
+    def limit():  # extra POSIX safeguard; the watchdog in one() is the portable one
+        import resource
         resource.setrlimit(resource.RLIMIT_AS, (1 << 30, 1 << 30))
     def go(i):
         try:
             r = subprocess.run([sys.executable, "-I", os.path.abspath(__file__), "--one", str(i)], capture_output=True,
-                               text=True, timeout=180, preexec_fn=limit)
+                               text=True, timeout=TIMEOUT + 60, preexec_fn=limit if os.name == "posix" else None)
             line = r.stdout.strip().splitlines()[-1] if r.stdout.strip() else ""
-            return json.loads(line) if line else {"id": i, "status": "memory" if "MemoryError" in r.stderr else "crashed"}
+            if line:
+                return json.loads(line)
+            status = {3: "timeout", 4: "memory"}.get(r.returncode, "memory" if "MemoryError" in r.stderr else "crashed")
+            return {"id": i, "status": status, "n_fail": 0, "failing": []}
         except subprocess.TimeoutExpired:
             return {"id": i, "status": "timeout", "n_fail": 0, "failing": []}
     with ThreadPoolExecutor(4) as ex, open(out, "a") as f:

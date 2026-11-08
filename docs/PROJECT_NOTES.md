@@ -2658,3 +2658,25 @@ Per distinct failure set the picture is the same (`stats.json`).
 - **On misleading, L2 is typical, not better.** Its misleading counts (2 to 4 on textwrap, 0 on configparser) sit near the random median. Item 77's "fewer bad draws" therefore means *L2 is never in the bad tail*. It does not mean L2 beats the typical random suite.
 
 **What it does not show.** Other programs; other random-suite designs (for example a random suite repaired to cover all pairs); a test of L2's three seeds as a group, since three values are too few for a separate test.
+
+## RQ5 reproduction tier and a fresh sandbox re-run (research plan item 79)
+
+The new tier `scripts/reproduce.py rq5` covers items 75 to 78:
+- It re-runs all mutants of both programs, re-verifies the 10 committed suites, and re-runs `tw_evaluate.py`, `controls.py` (200 random draws plus L2 seeds 1 and 2) and `stats.py`.
+- It writes `results/reproduce_rq5.md`, with each value next to the committed cloud value.
+- It does not re-search the suites.
+
+**Portability.** `tw_mutants.py` and `cp_mutants.py` no longer depend on Linux:
+- SIGALRM is used only where it exists.
+- The RLIMIT_AS memory cap is applied only on POSIX.
+- A new portable watchdog in each mutant process exits after `STAGEB_TIMEOUT` seconds (default 180), or when the allocated-block count grows by more than `STAGEB_EXTRA_BLOCKS` (default 10 million).
+
+Checked in the sandbox: the first 12 mutants match the committed rows exactly, and a looping mutant (textwrap id 18) is stopped after 21 s with `STAGEB_TIMEOUT=20`.
+
+**Fresh sandbox re-run of the whole tier** (2026-11-08, commit 28e731f, Python 3.13.16, 4 cores). This is a sandbox re-run, not "reproduced locally". Every row matched the committed values:
+- 131 of 131 textwrap mutants and 258 of 258 configparser mutants have the same failing configurations.
+- All 10 suites verified, at the same sizes.
+- The C, L1 and L2 counts of correct, misleading and flagged are identical.
+- The random-suite means (10.19 / 3.86 and 43.16 / 3.9) and the L2 seed values are identical.
+
+This shows that the pipeline is deterministic given the committed suites. It does not show behaviour on another OS or Python version; that is what the author's local run is for.

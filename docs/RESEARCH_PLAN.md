@@ -76,4 +76,5 @@
 - [x] 76. Done 2026-11-07 (PROJECT_NOTES "Stage B, second program: configparser"). 258 mutants, 110 configuration-dependent (29 distinct sets); misleading C 51%, L1 2%, L2 0%; L2 correct 48, L1 1.
 - [x] 77. Done 2026-11-07 (PROJECT_NOTES "Equal-budget controls for RQ5"). Random suites of L2 size with the two-pair decoder nearly match L2 (correct 5-11 vs 11; 39-48 vs 48) but mislead more in some seeds (up to 6 vs 3; 16 vs 0); (1bar,3) suite matches L2 only with the two-pair decoder.
 - [x] 78. Done 2026-11-08 (PROJECT_NOTES "RQ5 controls with 200 random draws"). 200 random draws, 3 L2 seeds per program: L2 not significantly better than a typical random suite (p >= 0.16), but always at the best-case correct count (random falls short in 50% and 84% of draws) and never in the misleading tail.
+- [x] 79. Done 2026-11-08 (PROJECT_NOTES "RQ5 reproduction tier"). reproduce.py rq5 added, mutant runners made portable; a fresh sandbox re-run matched every committed RQ5 value.
 
