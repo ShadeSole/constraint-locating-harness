@@ -2734,3 +2734,37 @@ New tier `scripts/reproduce.py sim`. It re-runs `item73_robust.py` (seed 0, 2,00
 **Sandbox run** (2026-11-08, about 25 s; not "reproduced locally"):
 - item 73: 18 of 18 rows identical on each of the 8 models;
 - item 74: all 28 violation counts identical (L2: 0 everywhere).
+
+## Reproduced locally: tiers sim, spins and long (research plan item 83)
+
+**Reproduced locally.** The author ran these tiers on their own machine, 2026-11-08: Windows 11, Python 3.13.1, z3 5.1.0. The cloud runs used Linux, Python 3.13.16 and z3 5.3.2. One seed (0) per row; output pasted into the session.
+
+**`sim`.** Every row identical:
+- item 73: 18 of 18 rows on each of 8 models;
+- item 74: all 28 violation counts, including 0 for every L2 suite.
+
+**`spins`** (item 61, cap 600 s per run):
+
+| run | local | cloud | note |
+|---|---|---|---|
+| spins cover | 20 | 20 | finished |
+| bugzilla cover | 16 | 16 | finished |
+| bugzilla locate | 32 | 32 | capped |
+| spins locate | **39** | 38 | finished in 200 s |
+
+The spins locate difference is in a *finished* run. A different Z3 version (5.1.0 against 5.3.2) can return different valid configurations from the same query, so the same seed follows a different path. 39 is inside the cloud's 3-seed range (38 / 39 / 39, item 61). This explanation is a hypothesis: no run with matching Z3 versions was made.
+
+**`long`** (item 60, cap = the published average time):
+
+| run | local | cloud (10 seeds) | published heuristic, min to max |
+|---|---|---|---|
+| apache locate | **73** (capped, 3,309 s) | 67 to 69 | 85 to 89 |
+| gcc locate | **60** (capped, 2,497 s) | 54 to 55 | 61 to 68 |
+
+Both runs were capped, and both are still below the published minimum (85 and 61), but by much less on gcc (1 test). Capped search sizes depend on how many moves fit in the cap: machine speed, OS, the Python build and the Z3 version all matter. The move counts of the local run were not collected, so the cause is not established.
+
+**Consequence for the paper.** RQ3's apache and gcc numbers are machine-dependent:
+- the "below the published minimum within their average time" claim held on both machines;
+- the size of the margin did not (cloud 16 to 18 tests on apache and 6 to 7 on gcc; local 12 and 1).
+
+The paper now reports both.

@@ -7,8 +7,9 @@
 >   for this draft. Every number is a sandbox (cloud) result.
 > - **Reproduced locally** (author's machine, 2026-11-08, Windows 11, Python 3.13.1; PROJECT_NOTES item 80): the
 >   small-model exact minima and t = 3 searches (RQ1 small models, RQ4), and all of RQ5 except the suite searches.
->   Every row matched. **Not yet reproduced locally:** RQ1 on the CCAG models, RQ2, RQ3, and the RQ5 simulation rows
->   (items 73 and 74).
+>   Every row matched. Also re-run there (item 83): the RQ5 simulations (identical), RQ1 on spins and bugzilla (3 of 4
+>   equal; spins locating 39 against 38), and RQ3 apache and gcc (73 and 60 against 67 to 69 and 54 to 55: still
+>   below the published minima). **Not yet reproduced locally:** RQ2, and RQ3's literature benchmarks and Insurance.
 > - Before submission:
 >   - Re-run the headline rows locally (`scripts/reproduce.py quick`).
 >   - Check every Jin & Tsuchiya Table 1 figure against the journal PDF.
@@ -35,8 +36,9 @@ machine at equal time. A move that redraws a whole test lost by 8 to 17 tests. A
 values of the target interaction matched SA4LA, at most one test worse.
 
 **How does it compare with the published CLA heuristic?** With the local move, apache and gcc reached 67 to 69 and 54
-to 55 tests within the published heuristic's average time, below its minima of 85 and 61 (10 seeds). The hardware
-differs, so this is not a same-machine comparison. On 18 literature benchmarks, at ten times the larger of 5 s and the
+to 55 tests within the published heuristic's average time, below its minima of 85 and 61 (10 seeds). On a second
+machine, seed 0 reached 73 and 60: still below, but by much less on gcc. Results at a time cap depend on the machine,
+and the hardware differs from the published runs, so this is not a same-machine comparison. On 18 literature benchmarks, at ten times the larger of 5 s and the
 heuristic's time, the median over 3 seeds was below the published minimum on 12.
 
 **What does locating two faults cost?** On seven small models with exact minima, locating up to two faults at strength
@@ -281,7 +283,14 @@ minimum on 12 and inside the published range on 6. On 13 of those models their t
 cap gives our search 5 to 50 times their time.
 
 **Answer.** On the two largest constrained systems the search found smaller arrays than the published heuristic's best
-within the heuristic's average time: apache 67 to 69 against 85, gcc 54 to 55 against 61. On small
+within the heuristic's average time: apache 67 to 69 against 85, gcc 54 to 55 against 61.
+
+**The margin depends on the machine.** The author re-ran seed 0 on a second machine (Windows, Python 3.13.1, z3 5.1.0,
+against Linux and z3 5.3.2; PROJECT_NOTES item 83). It reached 73 on apache and 60 on gcc, both again stopped by the
+cap. Both are still below the published minimum, but by 1 test on gcc. Sizes at a time cap depend on how many moves fit
+in the budget, so we report the claim as "below the published minimum on both machines", not as a fixed margin.
+
+On small
 models it is **not faster**: it reaches smaller arrays given seconds to minutes, against their sub-second times.
 
 ### 5.4 RQ4: What does locating two faults cost?
@@ -463,9 +472,13 @@ All remaining faults were flagged (no explanation matched) or missed (no test fa
   - Three seeds per configuration (ten for apache, gcc and Insurance) is a small sample.
   - Minimality is proven only on the small models. On the CCAG models no lower bound is known; on model_spins_core
     the proven bound (16) is far below the search size (30).
-- **Reproduction.** All numbers come from cloud runs. The author re-ran the small-model rows of RQ1 and RQ4 and all
-  of RQ5 except the suite searches on their own machine (Windows, against the Linux cloud), and every row matched.
-  RQ1 on the CCAG models, RQ2, RQ3 and the RQ5 simulation rows have not been reproduced locally.
+- **Reproduction.** All numbers come from cloud runs. The author re-ran the following on their own machine (Windows,
+  against the Linux cloud):
+  - the small-model rows of RQ1 and RQ4, and all of RQ5 except the suite searches: every row matched;
+  - RQ1 on spins and bugzilla: 3 of 4 rows equal, spins locating 39 against 38 in a finished run, probably from a
+    different z3 version;
+  - RQ3 apache and gcc, seed 0: 73 and 60 against 67 to 69 and 54 to 55, both capped.
+  RQ2 (the SA4LA race) and RQ3's literature benchmarks and Insurance runs have not been reproduced locally.
 
 ## 7. Related work
 
