@@ -2627,3 +2627,33 @@ Per distinct failure set (61 and 29 sets):
 - The item 75 and 76 statement that "only the two-fault array diagnosed faults" holds against L1 and C, which are smaller and use a one-pair decoder. **It does not hold against equal-size suites with the same decoder.**
 
 **What it does not show.** More than 5 random seeds; other programs; a statistical test.
+
+## RQ5 controls with 200 random draws and 3 two-fault suites (research plan item 78)
+
+Sandbox (cloud) runs, 2026-11-08, branch `auto/research`, using `scripts/stageb/controls.py --seeds 200` and the new `scripts/stageb/stats.py`. Output is in `docs/item7{5,6}/controls200.json`, `controls_L2_s{1,2}.json` and `stats.json`.
+- **Two-fault suites.** Two more were searched (item65_search, seeds 1 and 2, capped at 900 s): textwrap 59 and 58 tests, configparser 48 and 49. All pass `item65_verify.py`.
+- **Random suites.** 200 per program, drawn uniformly without replacement, at the seed-0 L2 size (58 and 49), with the same up-to-two-pairs decoder.
+- **Test.** For each L2 suite, an empirical one-sided p-value: the share of random draws that do at least as well, with +1 smoothing.
+
+**Results, per mutant:**
+
+| | textwrap (83 faults) | configparser (110 faults) |
+|---|---|---|
+| L2 correct, seeds 0 / 1 / 2 | 11 / 11 / 11 | 48 / 48 / 48 |
+| random correct: mean, 5th to 95th percentile, range | 10.2; 8 to 11; 4 to 11 | 43.2; 18 to 48; 11 to 48 |
+| random draws below L2's correct count | 100 of 200 | 168 of 200 |
+| p-value for correct | 0.50 | 0.16 |
+| L2 misleading, seeds 0 / 1 / 2 | 3 / 2 / 4 | 0 / 0 / 0 |
+| random misleading: mean, median, 95th percentile, range | 3.9; 4; 7; 1 to 9 | 3.9; 0; 17; 0 to 20 |
+| random draws with misleading >= 6 (textwrap) or >= 10 (configparser) | 32 of 200 | 37 of 200 |
+| p-value for misleading | 0.19 to 0.72 | 0.59 |
+
+Per distinct failure set the picture is the same (`stats.json`).
+
+**What this shows.**
+- **No significant difference by this test.** The L2 suites are not significantly better than a typical random suite of the same size with the same decoder: every p-value is at least 0.16.
+- **L2 is consistently at the best case.** All three L2 suites on each program reached the maximum correct count that any random draw reached (11 and 48). Random draws fell short in 50% (textwrap) and 84% (configparser) of cases.
+- **Random suites have a tail.** 14 and 17 of 200 draws got at most 80% of the maximum correct. 32 and 37 of 200 had many misleading diagnoses: at least 6, and at least 10.
+- **On misleading, L2 is typical, not better.** Its misleading counts (2 to 4 on textwrap, 0 on configparser) sit near the random median. Item 77's "fewer bad draws" therefore means *L2 is never in the bad tail*. It does not mean L2 beats the typical random suite.
+
+**What it does not show.** Other programs; other random-suite designs (for example a random suite repaired to cover all pairs); a test of L2's three seeds as a group, since three values are too few for a separate test.

@@ -50,9 +50,11 @@ equality is not a general rule.
   - The standard one-fault array correctly diagnosed 0 and 1 faults.
   - The two-fault array, at 2.6 to 2.8 times the size, correctly diagnosed 11 and 48: every fault that fit its model.
     It named a wrong cause in 3 and 0 cases.
-  - **Equal-budget controls.** Random suites of the same size, with the same two-pair decoder, came close: 5 to 11 and
-    39 to 48 correct over 5 seeds. In some seeds they misled more: up to 6 against 3, and 16 against 0. So most of the
-    gain comes from test budget and decoder; the construction mainly adds consistency.
+  - **Equal-budget controls.** We compared 200 random suites of the same size, with the same two-pair decoder.
+    - They averaged 10.2 and 43.2 correct diagnoses, against 11 and 48 for each of three two-fault suites.
+    - They are not significantly worse on average (empirical p >= 0.16), but 50% and 84% of them fell short of the
+      two-fault suites, and about one in six misled on many faults.
+    - So most of the gain comes from test budget and decoder; the construction makes the best case dependable.
 
 ## 1. Introduction
 
@@ -411,18 +413,25 @@ All remaining faults were flagged (no explanation matched) or missed (no test fa
 
 - **Budget and decoder explain most of the effect.** Random suites of the same size reach about the same number of
   correct diagnoses in most seeds. So does the (1bar, 3) suite once it is decoded with two-pair explanations.
-- **The construction removes the bad draws.** In 3 of 5 seeds, random suites misled on 16 configparser faults, against
-  0 for L2. On textwrap they misled on up to 6, against 3, and got as few as 5 correct, against 11. L2 also carries
-  the guarantee above.
+- **The construction gives the best case consistently, not a significantly better average (item 78).**
+  - Setup: 200 random draws per program, compared with 3 independently searched L2 suites per program.
+  - Correct diagnoses: every L2 suite reached the maximum that any random draw reached (11 and 48). Random draws fell
+    short of it in 100 and 168 of 200 cases.
+  - Misleading diagnoses: L2's counts (2 to 4, and 0) sit near the random median, not below it.
+  - Significance: with an empirical one-sided test (share of random draws at least as good), no L2 suite is
+    significantly better than a typical random suite (all p >= 0.16).
+  - The random tail is real: 32 and 37 of 200 draws misled on at least 6 and at least 10 faults.
+  - L2 also carries the guarantee above.
 
 **Answer.**
 - On these two programs, configuration-dependent faults rarely have the single-pair form the standard (1bar, 2)
   construction targets.
 - That construction rarely misleads (2 to 6% of faults), but it almost never diagnoses either.
 - A (2bar, 2) CLA costs 2.6 to 2.8 times as many tests and diagnosed every fault that fit its model (11 and 48).
-- Equal-size random suites with the same decoder came close in most seeds. So the main lever is a test budget large
-  enough, plus a decoder that allows two-pair explanations. The (2bar, 2) construction mainly makes the outcome
-  reliable: no bad draws, and the guarantee for single higher-strength faults.
+- Equal-size random suites with the same decoder are not significantly worse on average. So the main lever is a test
+  budget large enough, plus a decoder that allows two-pair explanations.
+- The (2bar, 2) construction makes the outcome dependable: it reached the best case in all 6 suites built, which half
+  or more of random suites did not, and it carries the guarantee for single higher-strength faults.
 - For practice: if a test budget allows only a one-fault locating array, its main value on these programs is to signal
   that a failure does not fit the model; it rarely names the cause.
 
@@ -478,8 +487,9 @@ locating one fault at strength 3. A (1bar, 3) array does not guarantee two-fault
 When faults break the model, the standard one-fault array seldom names a wrong cause, but on two real programs it
 almost never named the right one either. A two-fault array, at about 2.6 to 2.8 times the tests, diagnosed every
 mutation fault that fit its model, and by a known property it never names a cause unrelated to a single
-higher-strength fault. Equal-size random suites with the same decoder came close in most seeds but misled more in
-some. The budget and the decoder drive most of the gain; the construction makes it dependable.
+higher-strength fault. Equal-size random suites with the same decoder were not significantly worse on average, but half
+or more fell short of the construction's result. The budget and the decoder drive most of the gain; the construction
+makes it dependable.
 
 Open questions:
 - Lower bounds that make the search's sizes on mid-sized models such as model_spins_core interpretable.
