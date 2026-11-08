@@ -78,4 +78,5 @@
 - [x] 78. Done 2026-11-08 (PROJECT_NOTES "RQ5 controls with 200 random draws"). 200 random draws, 3 L2 seeds per program: L2 not significantly better than a typical random suite (p >= 0.16), but always at the best-case correct count (random falls short in 50% and 84% of draws) and never in the misleading tail.
 - [x] 79. Done 2026-11-08 (PROJECT_NOTES "RQ5 reproduction tier"). reproduce.py rq5 added, mutant runners made portable; a fresh sandbox re-run matched every committed RQ5 value.
 - [x] 80. Done 2026-11-08 (PROJECT_NOTES "Reproduced locally: tiers quick and rq5"). Author ran quick (48/48 rows match) and rq5 (40/40) on Windows 11, Python 3.13.1.
+- [x] 81. Done 2026-11-08 (PROJECT_NOTES "A stronger random baseline"). Covering suite padded with random tests behaves like plain random (correct mean 9.97 and 43.98; p 0.43 and 0.18); coverage is not what the construction adds.
 

@@ -6,6 +6,9 @@ Suites and decoders:
   R<s>        |L2| valid configurations drawn uniformly at random (seed s, without replacement), decoder: up to two pairs
   L13         a (1bar, 3) suite, decoder: one interaction of strength 2 or 3
   L13/2pairs  the same L13 suite, decoder: up to two pairs
+  P<s>        (with --padded N) a minimum 2-way covering suite (SAT) padded with |L2| - |cover| further valid
+              configurations drawn at random (seed s), decoder: up to two pairs; a stronger random baseline that is
+              guaranteed to cover every pair (plan item 80)
 For each suite: counts of correct / ambiguous / safe / misleading / flagged / missed over configuration-dependent
 mutants, and the same counted once per distinct failure set."""
 import json, sys, random
@@ -27,6 +30,22 @@ l2, l13 = load_idx(arg("--l2")), load_idx(arg("--l13"))
 suites = {"L2": (l2, pairs, 2)}
 for s in range(int(arg("--seeds", 5))):
     suites[f"R{s}"] = (random.Random(s).sample(range(n), len(l2)), pairs, 2)
+if arg("--padded"):
+    from pysat.card import CardEnc, EncType
+    from pysat.solvers import Solver
+    k = int(arg("--cover-k", 1))
+    while True:
+        card = CardEnc.atmost(list(range(1, n + 1)), bound=k, top_id=n, encoding=EncType.seqcounter)
+        sat = Solver(name="cadical195", bootstrap_with=card.clauses)
+        for i in pairs:
+            sat.add_clause([b + 1 for b in range(n) if G[i] >> b & 1])
+        if sat.solve():
+            cover = [b for b in range(n) if sat.get_model()[b] > 0]
+            break
+        k += 1
+    rest = [b for b in range(n) if b not in set(cover)]
+    for s in range(int(arg("--padded"))):
+        suites[f"P{s}"] = (cover + random.Random(1000 + s).sample(rest, len(l2) - len(cover)), pairs, 2)
 suites["L13"] = (l13, pairs + triples, 1)
 suites["L13/2pairs"] = (l13, pairs, 2)
 

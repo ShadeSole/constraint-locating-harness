@@ -425,6 +425,9 @@ All remaining faults were flagged (no explanation matched) or missed (no test fa
   - Significance: with an empirical one-sided test (share of random draws at least as good), no L2 suite is
     significantly better than a typical random suite (all p >= 0.16).
   - The random tail is real: 32 and 37 of 200 draws misled on at least 6 and at least 10 faults.
+  - Guaranteed pair coverage does not close the gap. We padded a minimum covering suite with random tests to the same
+    size (200 draws, item 81). It averaged 9.97 and 43.98 correct; 114 and 164 of 200 fell short of L2 (p = 0.43 and
+    0.18). What the construction adds is the separation of two-pair explanations, not coverage.
   - L2 also carries the guarantee above.
 
 **Answer.**

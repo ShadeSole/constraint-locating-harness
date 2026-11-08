@@ -2704,3 +2704,24 @@ This shows that the pipeline is deterministic given the committed suites. It doe
 - The item 73 and 74 simulations.
 - Items 66 to 72.
 - The RQ5 suite searches.
+
+## A stronger random baseline: covering suite plus random padding (research plan item 81)
+
+Sandbox (cloud) runs, 2026-11-08, with `scripts/stageb/controls.py --padded 200`. Output is in `docs/item7{5,6}/controls_padded200.json`.
+
+**Setup.** Each baseline suite is the minimum 2-way covering suite (SAT: 12 tests for textwrap, 9 for configparser), padded with random valid configurations (seeds 1000 to 1199) up to the seed-0 L2 size (58 and 49). This answers the objection that plain random suites can miss pairs. Decoder: up to two pairs.
+
+| | textwrap: correct mean (range); misleading mean (median, range) | configparser: correct mean (range); misleading mean (median, range) |
+|---|---|---|
+| L2 seed 0 | 11; 3 | 48; 0 |
+| plain random, 200 draws (item 78) | 10.19 (4 to 11); 3.86 (4, 1 to 9) | 43.16 (11 to 48); 3.90 (0, 0 to 20) |
+| cover plus random, 200 draws | 9.97 (4 to 11); 3.75 (4, 0 to 12) | 43.98 (14 to 48); 4.65 (0, 0 to 22) |
+
+- Padded draws below L2's correct count: 114 of 200 (textwrap) and 164 of 200 (configparser).
+- Empirical p for correct: 0.43 and 0.18.
+
+**What this shows.** Guaranteeing 2-way coverage does not change the random-suite result: the means, spreads and tails are about the same. What the (2bar, 2) construction adds over an equal-size suite is the separation of two-pair explanations, not coverage. The item 78 conclusion stands:
+- L2 is not significantly better than a typical equal-size suite on average.
+- L2 always reached the best case, which most equal-size suites did not.
+
+**What it does not show.** Other padding schemes, such as greedy separation without a guarantee; other programs.
