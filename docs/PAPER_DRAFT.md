@@ -4,7 +4,11 @@
 
 > **Status of this draft (read first).**
 > - Every number comes from `docs/PAPER_RESULTS.md` or a named `docs/PROJECT_NOTES.md` section. None was re-measured
->   for this draft. Every number is a **sandbox (cloud) result that the author has not reproduced locally**.
+>   for this draft. Every number is a sandbox (cloud) result.
+> - **Reproduced locally** (author's machine, 2026-11-08, Windows 11, Python 3.13.1; PROJECT_NOTES item 80): the
+>   small-model exact minima and t = 3 searches (RQ1 small models, RQ4), and all of RQ5 except the suite searches.
+>   Every row matched. **Not yet reproduced locally:** RQ1 on the CCAG models, RQ2, RQ3, and the RQ5 simulation rows
+>   (items 73 and 74).
 > - Before submission:
 >   - Re-run the headline rows locally (`scripts/reproduce.py quick`).
 >   - Check every Jin & Tsuchiya Table 1 figure against the journal PDF.
@@ -456,7 +460,9 @@ All remaining faults were flagged (no explanation matched) or missed (no test fa
   - Three seeds per configuration (ten for apache, gcc and Insurance) is a small sample.
   - Minimality is proven only on the small models. On the CCAG models no lower bound is known; on model_spins_core
     the proven bound (16) is far below the search size (30).
-- **Reproduction.** All numbers come from cloud runs that the author has not yet reproduced locally.
+- **Reproduction.** All numbers come from cloud runs. The author re-ran the small-model rows of RQ1 and RQ4 and all
+  of RQ5 except the suite searches on their own machine (Windows, against the Linux cloud), and every row matched.
+  RQ1 on the CCAG models, RQ2, RQ3 and the RQ5 simulation rows have not been reproduced locally.
 
 ## 7. Related work
 
@@ -538,7 +544,8 @@ authors and venues were checked, not the papers' contents. Each source is also l
 
 ## Author checklist before submission
 
-- [ ] Reproduce headline rows locally and relabel them "reproduced locally".
+- [x] Reproduce the small-model and RQ5 rows locally (done 2026-11-08, item 80; all rows matched).
+- [ ] Reproduce RQ1 CCAG rows, RQ2 and RQ3 locally (tiers `spins` and `long`; needs the CCAG folder).
 - [ ] Check Table 1 numbers against the journal PDF.
 - [ ] Confirm the origin of the 18 literature models (the last [verify]).
 - [ ] Read Colbourn & McClary (2008) in full before keeping the "not found" sentence in RQ4.

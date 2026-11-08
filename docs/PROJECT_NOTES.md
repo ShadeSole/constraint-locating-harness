@@ -2680,3 +2680,27 @@ Checked in the sandbox: the first 12 mutants match the committed rows exactly, a
 - The random-suite means (10.19 / 3.86 and 43.16 / 3.9) and the L2 seed values are identical.
 
 This shows that the pipeline is deterministic given the committed suites. It does not show behaviour on another OS or Python version; that is what the author's local run is for.
+
+## Reproduced locally: tiers quick and rq5 (research plan item 80)
+
+**Reproduced locally.** The author ran both tiers on their own machine, 2026-11-08, commit 54423f1: Windows 11 (10.0.26300), Intel 16 logical cores, Python 3.13.1, z3 5.1.0, python-sat 1.9.dev21. The sandbox runs used Linux, Python 3.13.16 and z3 5.3.2. The output was pasted into the session.
+
+- **`reproduce.py quick`**: 48 of 48 rows equal the cloud values, and every suite was verified.
+  - Item 63, exact minima on 7 models at t = 2 and 3, cover and locate: 28 rows.
+  - Item 65, exact (2bar, 2) minima on 6 models: 6 rows.
+  - Item 62, t = 3 searches, seed 0, 60 s cap: 14 rows.
+- **`reproduce.py rq5`**: 40 of 40 rows equal the cloud values.
+  - Every mutant has the same failing configurations: 131 of 131 for textwrap and 258 of 258 for configparser.
+  - All 10 committed suites verified, at the same sizes.
+  - C, L1 and L2 correct, misleading and flagged counts are identical.
+  - The 200-draw random means and the L2 seed values are identical.
+
+**What this covers.** Items 62, 63 and 65 (the RQ1 small-model rows and the RQ4 exact minima), and items 75 to 78 (RQ5 on real programs). The suites themselves were not re-searched in rq5.
+
+**Not yet reproduced locally.**
+- RQ1 on the CCAG models (item 61; tier `spins` needs the CCAG folder).
+- RQ2, the SA4LA race (items 52 to 55).
+- RQ3 (items 56, 59, 60; tier `long` for apache and gcc).
+- The item 73 and 74 simulations.
+- Items 66 to 72.
+- The RQ5 suite searches.
