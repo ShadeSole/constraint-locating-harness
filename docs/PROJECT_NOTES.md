@@ -2657,3 +2657,4 @@ Per distinct failure set the picture is the same (`stats.json`).
 - **On misleading, L2 is typical, not better.** Its misleading counts (2 to 4 on textwrap, 0 on configparser) sit near the random median. Item 77's "fewer bad draws" therefore means *L2 is never in the bad tail*. It does not mean L2 beats the typical random suite.
 
 **What it does not show.** Other programs; other random-suite designs (for example a random suite repaired to cover all pairs); a test of L2's three seeds as a group, since three values are too few for a separate test.
+- Every item in docs/RESEARCH_PLAN.md (1 to 78) is ticked (item 78, RQ5 controls with 200 random draws, was done in the live session; the line above that says 1 to 77 is superseded). The scheduled run (2026-11-08, cloud run, no numbers produced) did nothing else; add new items or say what to do next.
