@@ -475,8 +475,9 @@ All remaining faults were flagged (no explanation matched) or missed (no test fa
 - **Reproduction.** All numbers come from cloud runs. The author re-ran the following on their own machine (Windows,
   against the Linux cloud):
   - the small-model rows of RQ1 and RQ4, and all of RQ5 except the suite searches: every row matched;
-  - RQ1 on spins and bugzilla: 3 of 4 rows equal, spins locating 39 against 38 in a finished run, probably from a
-    different z3 version;
+  - RQ1 on spins and bugzilla: 3 of 4 rows equal, spins locating 39 against 38 in a finished run. This is run-to-run
+    variation: Python's string-hash randomization changes the search path even for the same seed, and a fixed
+    PYTHONHASHSEED makes runs identical (item 84). Each reported seed is therefore one draw, not a fixed outcome;
   - RQ3 apache and gcc, seed 0: 73 and 60 against 67 to 69 and 54 to 55, both capped.
   RQ2 (the SA4LA race) and RQ3's literature benchmarks and Insurance runs have not been reproduced locally.
 
