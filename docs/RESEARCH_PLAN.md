@@ -81,4 +81,5 @@
 - [x] 81. Done 2026-11-08 (PROJECT_NOTES "A stronger random baseline"). Covering suite padded with random tests behaves like plain random (correct mean 9.97 and 43.98; p 0.43 and 0.18); coverage is not what the construction adds.
 - [x] 82. Done 2026-11-08 (PROJECT_NOTES "Reproduction tier for the RQ5 simulations"). reproduce.py sim added; sandbox run identical on all rows.
 - [x] 83. Done 2026-11-08 (PROJECT_NOTES "Reproduced locally: tiers sim, spins and long"). sim identical; spins 3 of 4 equal (spins locate 39 vs 38, finished); long apache 73 vs 67-69, gcc 60 vs 54-55 (capped), still below published 85 and 61.
+- [x] 84. Done 2026-11-09 (PROJECT_NOTES "Why the local spins and long runs differ"). Not z3 version: Python hash randomization makes same-seed searches differ (fixed PYTHONHASHSEED gives identical runs); reproduce.py now fixes it; speed tier added (sandbox 1.3 moves/s on gcc).
 

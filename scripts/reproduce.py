@@ -6,6 +6,7 @@ Usage (PowerShell, repo root):
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py long             # about 1.6 hours (apache + gcc locating, seed 0)
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py rq5              # RQ5, about 30 to 60 minutes, needs python-sat
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py sim              # RQ5 simulations (items 73, 74), needs python-sat
+  .\\.venv\\Scripts\\python.exe scripts\\reproduce.py speed            # 5 minutes: search throughput (moves per second), gcc
   add  --ccag PATH  if the CCAG benchmark folder is not ..\\external\\CCAG\\benchmark
 
 Needs z3-solver (pip install z3-solver); tier rq5 also needs python-sat (pip install python-sat).
@@ -34,6 +35,9 @@ EXACT = {  # item 63, "Exact minimum sizes on the small models": (t, mode) -> si
 T3_START = [17, 22, 29, 11, 15, 22, 17]  # item 62 start sizes
 D2_T2 = [17, 22, None, 11, 15, 22, 17]  # item 65 exact (2bar, 2) minima; model_8param (26, item 70 by SAT) skipped: Z3 does not finish
 T3_SEED0 = {"cover": [12, 12, 14, 9, 10, 15, 10], "locate": [17, 22, 27, 11, 15, 22, 17]}  # item 62, seed 0
+
+
+SPEED_CLOUD = "66 (sandbox 2026-11-09: 400 moves in 300 s, 1.3 moves/s)"  # PROJECT_NOTES item 84
 
 
 def run(args, env):
@@ -143,10 +147,13 @@ def sim(env, note):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("tier", choices=["quick", "spins", "long", "rq5", "sim"])
+    ap.add_argument("tier", choices=["quick", "spins", "long", "rq5", "sim", "speed"])
     ap.add_argument("--ccag", default=os.path.join(ROOT, "..", "external", "CCAG", "benchmark"))
     a = ap.parse_args()
-    env = dict(os.environ, PYTHONPATH=ROOT)
+    # PYTHONHASHSEED=0 makes searches repeatable run to run: without it, Python's per-process string-hash randomization
+    # changes set iteration order and so the search path, even with the same seed (item 84). Cloud runs before item 84
+    # used random hash seeds, so a finished search can legitimately differ from its cloud value by run-to-run variation.
+    env = dict(os.environ, PYTHONPATH=ROOT, PYTHONHASHSEED="0")
     os.makedirs(OUT, exist_ok=True)
     rows = []  # (what, measured, cloud, source, verified)
 
@@ -187,7 +194,10 @@ def main():
                           ("bugzilla", "cover", 48, 600, 16, "Covering versus locating with the local move (item 61)"),
                           ("bugzilla", "locate", 48, 600, 32, "Covering versus locating with the local move (item 61)")],
                 "long": [("apache", "locate", 89, 3263, "67 to 69", "Ten seeds on apache, gcc and Insurance (item 60)"),
-                         ("gcc", "locate", 68, 2495, "54 to 55", "Ten seeds on apache, gcc and Insurance (item 60)")]}[a.tier]
+                         ("gcc", "locate", 68, 2495, "54 to 55", "Ten seeds on apache, gcc and Insurance (item 60)")],
+                # item 84: same search as the long tier, gcc seed 0, but capped at 300 s; compare total moves (and moves
+                # per second) with the cloud value to tell machine throughput apart from search behaviour
+                "speed": [("gcc", "locate", 68, 300, SPEED_CLOUD, "Search throughput on two machines (item 84)")]}[a.tier]
         if not os.path.exists(os.path.join(a.ccag, "spins.model")):
             sys.exit(f"CCAG benchmark folder not found at {a.ccag}; pass --ccag PATH")
         for name, mode, start, cap, cloud, source in jobs:
@@ -199,7 +209,9 @@ def main():
             else:
                 ok = run(["scripts/item62_verify.py", a.ccag, out, "2"], env)[-1]["ok"]
             status = "capped" if r.get("timed_out") else "finished"
-            note(f"search t=2, {name}, {mode}, seed 0, cap {cap} s ({status}, {r['elapsed_s']} s)", r["size"], cloud,
+            moves = r.get("total_moves")
+            rate = f", {moves} moves, {moves / max(r['elapsed_s'], 1e-9):.1f} moves/s" if moves is not None else ""
+            note(f"search t=2, {name}, {mode}, seed 0, cap {cap} s ({status}, {r['elapsed_s']} s{rate})", r["size"], cloud,
                  source, ok)
 
     git = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True).stdout.strip()

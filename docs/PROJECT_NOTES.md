@@ -2769,3 +2769,39 @@ Both runs were capped, and both are still below the published minimum (85 and 61
 - the size of the margin did not (cloud 16 to 18 tests on apache and 6 to 7 on gcc; local 12 and 1).
 
 The paper now reports both.
+
+## Why the local spins and long runs differ: run-to-run variation, and a throughput tier (research plan item 84)
+
+Sandbox (cloud) runs, 2026-11-09, branch `auto/research`, CCAG cloned to `/home/user/gist-nju/ccag`. Logs are in `docs/item84/`. Each run is `item61_run.py spins locate local 0 53 ... 6000 5 600`, the same as the `spins` tier.
+
+**z3 version is not the cause.**
+
+| z3 | size | moves | seconds |
+|---|---|---|---|
+| 5.1.0 (the author's version), separate venv | 38 | 69,220 | 288 |
+| 5.3.2 | 39 | 65,860 | 194 |
+
+The cloud value from item 61, with z3 5.3.2, was 38. So the same z3 version gave both 38 and 39. This fits the code: every Z3 draw fixes every parameter, so its result cannot depend on the solver version.
+
+**Python's hash randomization is the cause.**
+
+| PYTHONHASHSEED | size | moves | suite |
+|---|---|---|---|
+| 0, run a | 39 | 54,261 | identical to run b |
+| 0, run b | 39 | 54,261 | identical to run a |
+| 1 | 39 | 64,257 | different path |
+
+With a fixed hash seed, two runs give identical suites and move counts. Without one, Python's per-process string-hash randomization changes set iteration order, and with it the search path, even for the same seed. Every cloud search so far ran with a random hash seed. So the "seed 0" result of a finished search is one draw from this run-to-run variation; 38 and 39 are both legitimate seed-0 outcomes on spins.
+
+**Changes.**
+- `reproduce.py` now sets `PYTHONHASHSEED=0` for every tier, so its searches are repeatable.
+- The `spins` and `long` rows now report total moves and moves per second.
+- New tier `speed`: gcc locate, seed 0, cap 300 s. With the hash seed fixed, both machines follow the same search path, so the move count reached in 300 s measures machine throughput directly.
+
+**Sandbox reference** (`docs/item84/reproduce_speed.md`): **400 moves in 300.1 s (1.3 moves/s), size 66.** The local value is pending.
+
+**What this means for RQ3.** The capped apache and gcc results (local 73 and 60, cloud 67 to 69 and 54 to 55) mix two effects:
+- run-to-run variation, shown here on spins;
+- throughput, which the speed tier will measure.
+
+The paper already reports both machines and states the claim as "below the published minimum on both".
