@@ -65,5 +65,5 @@ Lemma 7.1 in the constrained setting, so do not present it as new.
    safe under any CRC rule.
 2. After the mentor answers question 1: add a short "Progress since submission" paragraph (Stage 1 done; first
    Stage 2 and 3 results; the real-program finding), with numbers from PROJECT_NOTES and their reproduction labels.
-3. December: poster and a 5 to 6 minute talk built around one message. Candidate: "on real programs the standard
+3. December: poster and a 5 to 6 minute talk built around one message (outline: `docs/aaai27/poster_outline.md`). Candidate: "on real programs the standard
    one-fault design almost never names the cause; more tests plus a two-pair decoder do".
