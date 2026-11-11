@@ -2806,3 +2806,41 @@ With a fixed hash seed, two runs give identical suites and move counts. Without 
 - throughput, which the speed tier will measure.
 
 The paper already reports both machines and states the claim as "below the published minimum on both".
+
+## Two real historical CPython bugs through the Stage B pipeline (research plan item 85)
+
+Sandbox (cloud) runs, 2026-11-11, branch `auto/research`, with the new `scripts/stageb/realbug.py`. Output is in `docs/item85/`.
+
+**Method.**
+- **Bugs.** Two real bugs, each fixed by a one- or two-line change in CPython, from a blobless clone of python/cpython. For each fix commit, the parent version is the program under test (buggy) and the commit itself is the reference (fixed).
+  - **configparser gh-130941** (commit c35c7353eb, 2025-04-16): "Fix `configparser` parsing values with `allow_no_value` and `interpolation` set". With ExtendedInterpolation, a `${...}` reference to a key with no value crashed.
+  - **textwrap gh-139065** (commit 1c598e0436, 2025-10-10): "Fix trailing space before long word in textwrap". The fix changes `if self.break_long_words:` to `if self.break_long_words and space_left > 0:`.
+- **Ground truth.** The set of valid configurations on which buggy and fixed behave differently, computed with the same `behaviour()` as items 75 and 76.
+- **Portability edit.** The textwrap sources use the regex escape `\z`, which Python 3.14 introduced and 3.13 rejects. `\z` was replaced by `\Z` (same meaning in 3.13: end of string) identically in both copies (`*_py313.py`). The two copies still differ only in the one-line fix.
+- **Two input conditions.**
+  - "corpus": the item 75 and 76 inputs, fixed in advance.
+  - "regression": the corpus plus the input of the regression test added in the fix commit. This input was chosen knowing the bug.
+
+**Results.** Suites are those of items 75 to 78.
+
+| bug, inputs | configurations failing | covering (C) | one-fault (L1) | two-fault (L2, 3 seeds) | (1bar, 3) suite | random, same size as L2 (200) |
+|---|---|---|---|---|---|---|
+| configparser, corpus | 0 of 3,456 | not triggered | not triggered | not triggered | not triggered | not triggered |
+| configparser, regression | 384 of 3,456 | missed | **detected; named allow_no_value=T + interpolation=extended** (scored "misleading") | detected, flagged | detected, flagged | 185 flagged, 14 misleading, 1 missed |
+| textwrap, corpus | 224 of 4,352 | missed | missed | detected, flagged | detected, flagged | 194 flagged, 1 misleading, 5 missed |
+| textwrap, regression | 304 of 4,352 | missed | missed | detected, flagged | detected, flagged | 198 flagged, 1 misleading, 1 missed |
+
+**What each bug needs, in this model.**
+- **configparser.** The failing configurations are exactly allow_no_value=T, interpolation=extended, and delimiters containing "=" (eq or eq_colon): 384 configurations. L1's named pair covers 576 configurations, of which 384 fail. The other 192 use the colon-only delimiter, under which the regression input `b = ${a}` is not a key-value line in either version.
+  - So the third condition comes from the test input, not from the bug.
+  - The pair L1 named is exactly the pair in the official bug title.
+  - The item 75 metric still scores it "misleading", because it requires the named cause to imply failure on every configuration.
+- **textwrap.** Every failing configuration has drop_whitespace=T and break_long_words=T, and width 5 or 12 (none at 30). Within those, failure depends on max_lines, indent, placeholder and break_on_hyphens, and on where line lengths fall in each text. The bug depends on the input text as much as on the settings, which matches the commit message ("if the line length with a space is exactly width").
+
+**What this shows.**
+- **Real bugs can be configuration interactions.** On the configparser bug, with an input that exercises it, the 19-test one-fault suite pointed to the two settings that CPython's own bug report names.
+- **Small suites can miss real bugs entirely.** The pairwise covering suite and L1 missed the textwrap bug. Only the larger suites (58 to 71 tests) detected it, and none could name a pure settings cause, because none exists.
+- **Inputs matter as much as configurations.** With the original inputs, no suite could detect the configparser bug.
+- **The item 75 metric is strict.** It treats an input-induced extra condition as a wrong diagnosis. A developer-facing reading would count the configparser L1 answer as correct.
+
+**What it does not show.** Two bugs are two anecdotes, not a rate. Both were picked because their fix titles suggest configuration dependence (selection bias). The "regression" rows use inputs written by the bug's fixers.
