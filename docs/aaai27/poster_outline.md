@@ -188,7 +188,7 @@ input, larger suites detect it but cannot name it.
   get the message from those alone.
 - **Figure 5** comes from `docs/item85/cp_regression_evaluation.json` and `docs/item85/cp_regression.jsonl`. The named
   pair is recorded in PROJECT_NOTES item 85.
-- **Before printing:** add the item 85 runs to a `reproduce.py` tier and re-run them locally, so the case study can
+- **Before printing:** re-run `reproduce.py realbug` (item 86) on the author's machine, so the case study can
   carry the "reproduced locally" label too.
 - **Text:** keep it under about 500 words. The tables above are the content, not the final layout; charts replace most
   of them.

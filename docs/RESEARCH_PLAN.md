@@ -83,4 +83,5 @@
 - [x] 83. Done 2026-11-08 (PROJECT_NOTES "Reproduced locally: tiers sim, spins and long"). sim identical; spins 3 of 4 equal (spins locate 39 vs 38, finished); long apache 73 vs 67-69, gcc 60 vs 54-55 (capped), still below published 85 and 61.
 - [x] 84. Done 2026-11-09 (PROJECT_NOTES "Why the local spins and long runs differ"). Not z3 version: Python hash randomization makes same-seed searches differ (fixed PYTHONHASHSEED gives identical runs); reproduce.py now fixes it; speed tier added (sandbox 1.3 moves/s on gcc).
 - [x] 85. Done 2026-11-11 (PROJECT_NOTES "Two real historical CPython bugs"). configparser gh-130941: L1 named allow_no_value + extended interpolation (the official cause) with the regression input; textwrap gh-139065: C and L1 missed it, L2 and L13 detected but flagged.
+- [x] 86. Done 2026-11-12 (PROJECT_NOTES "Reproduction tier for the real-bug case study"). reproduce.py realbug added; sandbox run 18 of 18 rows equal.
 

@@ -7,6 +7,7 @@ Usage (PowerShell, repo root):
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py rq5              # RQ5, about 30 to 60 minutes, needs python-sat
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py sim              # RQ5 simulations (items 73, 74), needs python-sat
   .\\.venv\\Scripts\\python.exe scripts\\reproduce.py speed            # 5 minutes: search throughput (moves per second), gcc
+  .\\.venv\\Scripts\\python.exe scripts\\reproduce.py realbug          # item 85: two real CPython bugs, a few minutes
   add  --ccag PATH  if the CCAG benchmark folder is not ..\\external\\CCAG\\benchmark
 
 Needs z3-solver (pip install z3-solver); tier rq5 also needs python-sat (pip install python-sat).
@@ -117,6 +118,67 @@ def d2_suite(m):
     return "docs/item70/model_8param_t2_d2_size26.json" if m == "model_8param" else f"docs/item65_suites/{m}_t2_d2.json"
 
 
+REALBUG = [  # name, subject, buggy source, fixed source, committed run file, model, committed suites folder, cover start
+    ("configparser gh-130941, original inputs", "cp", "docs/item85/configparser_gh130941_buggy.py",
+     "docs/item85/configparser_gh130941_fixed.py", "cp_corpus", "docs/item76/configparser_model.json", "docs/item76", 9),
+    ("configparser gh-130941, + regression-test input", "cp", "docs/item85/configparser_gh130941_buggy.py",
+     "docs/item85/configparser_gh130941_fixed.py", "cp_regression", "docs/item76/configparser_model.json", "docs/item76", 9),
+    ("textwrap gh-139065, original inputs", "tw", "docs/item85/textwrap_gh139065_buggy_py313.py",
+     "docs/item85/textwrap_gh139065_fixed_py313.py", "tw_corpus", "docs/item75/textwrap_model.json", "docs/item75", 12),
+    ("textwrap gh-139065, + regression-test input", "tw", "docs/item85/textwrap_gh139065_buggy_py313.py",
+     "docs/item85/textwrap_gh139065_fixed_py313.py", "tw_regression", "docs/item75/textwrap_model.json", "docs/item75", 12)]
+
+
+def realbug(env, note):
+    """Item 85: re-run the two real CPython bugs (buggy source = parent of the fix commit, reference = the fix commit)
+    with the committed suites, and compare the failing configurations, each suite's outcome, and the pair the one-fault
+    suite names for the configparser bug with the committed files in docs/item85."""
+    d = os.path.join(ROOT, "results", "reproduce_realbug")
+    os.makedirs(d, exist_ok=True)
+    sec = "Two real historical CPython bugs (item 85)"
+    for label, subject, buggy, fixed, run_name, model, folder, cover_k in REALBUG:
+        committed = json.loads(open(os.path.join(ROOT, "docs", "item85", f"{run_name}.jsonl"), encoding="utf-8").readline())
+        out = os.path.join(d, f"{run_name}.jsonl")
+        args = ["-I", "scripts/stageb/realbug.py", "--subject", subject, "--buggy", buggy, "--fixed", fixed, "--out", out]
+        for text in committed.get("extra_texts", []):  # the same inputs as the committed run
+            args += ["--extra-text", text]
+        run(args, env)
+        new = json.loads(open(out, encoding="utf-8").readline())
+        note(f"{label}: failing configurations", new["n_fail"], committed["n_fail"], sec, None)
+        note(f"{label}: same failing configurations as the cloud run", new["failing"] == committed["failing"], True, sec,
+             None)
+        if not new["n_fail"]:
+            continue
+        ev = run_to_file(["scripts/stageb/tw_evaluate.py", out, os.path.join(folder, "suite_L1.json"),
+                          os.path.join(folder, "suite_L2.json"), "--cover-k", str(cover_k), "--model", model], env,
+                         os.path.join(d, f"{run_name}_evaluation.json"))
+        ev0 = json.load(open(os.path.join(ROOT, "docs", "item85", f"{run_name}_evaluation.json"), encoding="utf-8"))
+        got = {p["suite"]: p["outcome"] for p in ev["per_mutant"]}
+        want = {p["suite"]: p["outcome"] for p in ev0["per_mutant"]}
+        for suite in ("C", "L1", "L2"):
+            note(f"{label}: suite {suite} outcome", got[suite], want[suite], sec, None)
+        if run_name == "cp_regression":
+            note(f"{label}: pair named by the one-fault suite", named_pair(model, folder, set(new["failing"])),
+                 "allow_no_value=T + interpolation=extended", sec, None)
+
+
+def named_pair(model, folder, failing):
+    """The pair(s) whose tests in the one-fault suite are exactly the failing tests (the one-pair decoder)."""
+    sys.path.insert(0, ROOT)
+    from cla_harness.io import load_model
+    from cla_harness.core import valid_configurations, feasible_interactions, contains_interaction
+    configs = valid_configurations(*load_model(os.path.join(ROOT, model)))
+    key = lambda c: tuple(sorted(c.items()))
+    index = {key(c): k for k, c in enumerate(configs)}
+    suite = [index[key(c)] for c in json.load(open(os.path.join(ROOT, folder, "suite_L1.json")))["suite"]]
+    failing_rows = [r for r, k in enumerate(suite) if k in failing]
+    names = []
+    for p in feasible_interactions(configs, 2):
+        if [r for r, k in enumerate(suite) if contains_interaction(configs[k], p)] == failing_rows:
+            names.append(" + ".join(f"{a}={v}" for a, v in sorted(p)))
+    return "; ".join(sorted(names)) or "none"
+
+
 def sim(env, note):
     """Items 73 and 74: re-run the robustness simulation (seed 0, 2000 samples) and the exhaustive claim check, and
     compare every output line with the committed one (fixed seeds, so they should be identical)."""
@@ -147,7 +209,7 @@ def sim(env, note):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("tier", choices=["quick", "spins", "long", "rq5", "sim", "speed"])
+    ap.add_argument("tier", choices=["quick", "spins", "long", "rq5", "sim", "speed", "realbug"])
     ap.add_argument("--ccag", default=os.path.join(ROOT, "..", "external", "CCAG", "benchmark"))
     a = ap.parse_args()
     # PYTHONHASHSEED=0 makes searches repeatable run to run: without it, Python's per-process string-hash randomization
@@ -165,6 +227,8 @@ def main():
         rq5(env, note)
     elif a.tier == "sim":
         sim(env, note)
+    elif a.tier == "realbug":
+        realbug(env, note)
     elif a.tier == "quick":
         for (t, mode), sizes in EXACT.items():
             for name, cloud in zip(SMALL, sizes):

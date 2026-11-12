@@ -2845,3 +2845,18 @@ Sandbox (cloud) runs, 2026-11-11, branch `auto/research`, with the new `scripts/
 - **The item 75 metric is strict.** It treats an input-induced extra condition as a wrong diagnosis. A developer-facing reading would count the configparser L1 answer as correct.
 
 **What it does not show.** Two bugs are two anecdotes, not a rate. Both were picked because their fix titles suggest configuration dependence (selection bias). The "regression" rows use inputs written by the bug's fixers.
+
+## Reproduction tier for the real-bug case study (research plan item 86)
+
+New tier `scripts/reproduce.py realbug` (about 7 minutes in the sandbox). For each of the four item 85 runs it:
+- re-runs `realbug.py` with the committed buggy and fixed sources and the same extra inputs (read from the committed run files);
+- compares the failing configurations with `docs/item85/*.jsonl`;
+- re-runs `tw_evaluate.py` with the committed suites and compares the C, L1 and L2 outcomes;
+- for the configparser regression run, recomputes the pair the one-fault suite names.
+
+Output: `results/reproduce_realbug.md`.
+
+**Sandbox run** (2026-11-12; not "reproduced locally"): 18 of 18 rows equal the committed values.
+- Same failing configurations in all 4 runs: 0, 384, 224 and 304.
+- Same outcomes for every suite.
+- The named pair is again allow_no_value=T + interpolation=extended.
