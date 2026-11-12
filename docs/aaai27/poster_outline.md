@@ -186,6 +186,9 @@ input, larger suites detect it but cannot name it.
 
 - **Visual priority:** banner, then Figure 5 (the real-bug case study), then Figure 4, then Figure 3. A visitor should
   get the message from those alone.
+- **Generated figures** (2026-11-12): `python scripts/aaai27_figures.py` writes `docs/aaai27/figures/fig3_fault_shapes`,
+  `fig4_diagnoses` and `fig5_real_bug`, each as a 300 dpi PNG and a vector PDF. Use the PDFs for printing. Every number
+  is read from the result files; colours were checked with the dataviz palette validator. The script needs matplotlib.
 - **Figure 5** comes from `docs/item85/cp_regression_evaluation.json` and `docs/item85/cp_regression.jsonl`. The named
   pair is recorded in PROJECT_NOTES item 85.
 - **Before printing:** re-run `reproduce.py realbug` (item 86) on the author's machine, so the case study can
