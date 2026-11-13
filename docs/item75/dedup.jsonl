@@ -1,0 +1,3 @@
+{"suite": "C", "distinct_sets": 61, "outcomes": {"flagged": 37, "misleading": 21, "missed": 3}, "types": {"two_pairs": 5, "other": 56}}
+{"suite": "L1", "distinct_sets": 61, "outcomes": {"flagged": 54, "misleading": 4, "missed": 3}, "types": {"two_pairs": 5, "other": 56}}
+{"suite": "L2", "distinct_sets": 61, "outcomes": {"correct": 5, "flagged": 52, "missed": 1, "misleading": 3}, "types": {"two_pairs": 5, "other": 56}}

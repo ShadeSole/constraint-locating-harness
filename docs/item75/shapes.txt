@@ -1,0 +1,34 @@
+shape of 83 failure sets: {'<=2 pairs': 11, 'needs 4+ way': 48, 'union of triples': 16, 'union of 3+ pairs': 8}
+failing configs per mutant: min 64 median 1536 max 4256 of 4352
+misleading: C mutant 4 NEG line 207 fails on 2048 configs; shape: union of triples
+misleading: C mutant 14 NEG line 191 fails on 1824 configs; shape: needs 4+ way
+misleading: C mutant 17 NEG line 217 fails on 544 configs; shape: needs 4+ way
+misleading: C mutant 21 NEG line 255 fails on 128 configs; shape: needs 4+ way
+misleading: C mutant 29 LCR line 191 fails on 1732 configs; shape: needs 4+ way
+misleading: C mutant 35 LCR line 217 fails on 480 configs; shape: needs 4+ way
+misleading: C mutant 40 ROR line 255 fails on 64 configs; shape: needs 4+ way
+misleading: C mutant 41 ROR line 259 fails on 256 configs; shape: union of triples
+misleading: C mutant 53 ROR line 191 fails on 1328 configs; shape: needs 4+ way
+misleading: C mutant 54 CRP+ line 193 fails on 896 configs; shape: union of triples
+misleading: C mutant 63 CRP- line 255 fails on 64 configs; shape: needs 4+ way
+misleading: C mutant 66 ROR line 301 fails on 768 configs; shape: needs 4+ way
+misleading: C mutant 70 CRP+ line 216 fails on 1536 configs; shape: union of triples
+misleading: C mutant 82 CRP+ line 192 fails on 1296 configs; shape: needs 4+ way
+misleading: C mutant 83 CRP- line 192 fails on 1396 configs; shape: needs 4+ way
+misleading: C mutant 93 ROR line 316 fails on 384 configs; shape: needs 4+ way
+misleading: C mutant 97 CRP- line 191 fails on 1112 configs; shape: needs 4+ way
+misleading: C mutant 101 CRP+ line 307 fails on 1104 configs; shape: needs 4+ way
+misleading: C mutant 102 CRP- line 307 fails on 742 configs; shape: needs 4+ way
+misleading: C mutant 107 ROR line 323 fails on 970 configs; shape: needs 4+ way
+misleading: C mutant 112 UOI line 316 fails on 192 configs; shape: needs 4+ way
+misleading: C mutant 127 CRP+ line 331 fails on 728 configs; shape: needs 4+ way
+misleading: C mutant 128 CRP- line 331 fails on 728 configs; shape: needs 4+ way
+misleading: C mutant 129 CRP+ line 316 fails on 192 configs; shape: needs 4+ way
+misleading: L1 mutant 21 NEG line 255 fails on 128 configs; shape: needs 4+ way
+misleading: L1 mutant 40 ROR line 255 fails on 64 configs; shape: needs 4+ way
+misleading: L1 mutant 41 ROR line 259 fails on 256 configs; shape: union of triples
+misleading: L1 mutant 58 CRP+ line 214 fails on 416 configs; shape: needs 4+ way
+misleading: L1 mutant 63 CRP- line 255 fails on 64 configs; shape: needs 4+ way
+misleading: L2 mutant 88 CRP+ line 285 fails on 1444 configs; shape: needs 4+ way
+misleading: L2 mutant 90 CRP+ line 308 fails on 2104 configs; shape: needs 4+ way
+misleading: L2 mutant 118 CRP- line 306 fails on 1464 configs; shape: union of triples

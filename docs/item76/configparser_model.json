@@ -1,0 +1,48 @@
+{
+ "parameters": {
+  "delimiters": [
+   "eq_colon",
+   "eq",
+   "colon"
+  ],
+  "comment_prefixes": [
+   "hash_semi",
+   "hash"
+  ],
+  "inline_comment_prefixes": [
+   "none",
+   "semi",
+   "hash"
+  ],
+  "strict": [
+   "T",
+   "F"
+  ],
+  "empty_lines_in_values": [
+   "T",
+   "F"
+  ],
+  "allow_no_value": [
+   "T",
+   "F"
+  ],
+  "interpolation": [
+   "basic",
+   "extended",
+   "none"
+  ],
+  "default_section": [
+   "DEFAULT",
+   "common"
+  ],
+  "allow_unnamed_section": [
+   "T",
+   "F"
+  ],
+  "optionxform": [
+   "lower",
+   "keep"
+  ]
+ },
+ "forbidden": []
+}

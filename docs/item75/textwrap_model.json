@@ -1,0 +1,74 @@
+{
+ "parameters": {
+  "width": [
+   "5",
+   "12",
+   "30"
+  ],
+  "expand_tabs": [
+   "T",
+   "F"
+  ],
+  "replace_whitespace": [
+   "T",
+   "F"
+  ],
+  "drop_whitespace": [
+   "T",
+   "F"
+  ],
+  "break_long_words": [
+   "T",
+   "F"
+  ],
+  "break_on_hyphens": [
+   "T",
+   "F"
+  ],
+  "fix_sentence_endings": [
+   "T",
+   "F"
+  ],
+  "max_lines": [
+   "none",
+   "1",
+   "3"
+  ],
+  "placeholder": [
+   "long",
+   "short"
+  ],
+  "indent": [
+   "none",
+   "init",
+   "sub",
+   "both"
+  ]
+ },
+ "forbidden": [
+  {
+   "width": "5",
+   "max_lines": "1",
+   "placeholder": "long",
+   "indent": "both"
+  },
+  {
+   "width": "5",
+   "max_lines": "1",
+   "placeholder": "long",
+   "indent": "init"
+  },
+  {
+   "width": "5",
+   "max_lines": "3",
+   "placeholder": "long",
+   "indent": "both"
+  },
+  {
+   "width": "5",
+   "max_lines": "3",
+   "placeholder": "long",
+   "indent": "sub"
+  }
+ ]
+}

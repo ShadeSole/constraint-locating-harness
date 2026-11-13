@@ -110,23 +110,26 @@ def sample_valid_configurations(parameters: Dict[str, List[str]], forbidden: Ite
 
 def feasible_interactions_z3(parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden],
                              strength: int = 2):
-    """Feasible 2-way interactions: value pairs of two parameters that some valid configuration contains.
+    """Feasible t-way interactions: value combinations of `strength` parameters that some valid configuration contains.
 
     Returns a frozenset of frozensets of (parameter, value) terms, the same type as
-    `core.feasible_interactions`. One satisfiability query (solver assumptions) per candidate
-    pair, so the cost is the number of candidate pairs, not the number of valid configurations.
-    Only strength 2 is implemented (ValueError otherwise).
+    `core.feasible_interactions(configs, strength)`. One satisfiability query (solver assumptions)
+    per candidate combination, so the cost is the number of candidates (the sum over parameter
+    subsets of the product of their value counts), not the number of valid configurations.
+    `strength` must be between 1 and the number of parameters (ValueError otherwise); the default,
+    2, is the original behavior.
     """
-    from itertools import combinations
-    if strength != 2:
-        raise ValueError("feasible_interactions_z3 supports strength 2 only")
+    from itertools import combinations, product
+    if not 1 <= strength <= len(parameters):
+        raise ValueError("strength must be between 1 and the number of parameters")
     solver, variables = build_solver(parameters, forbidden)
     feasible = set()
-    for first, second in combinations(parameters, 2):
-        for i, first_value in enumerate(parameters[first]):
-            for j, second_value in enumerate(parameters[second]):
-                if solver.check(variables[first] == i, variables[second] == j) == z3.sat:
-                    feasible.add(frozenset({(first, first_value), (second, second_value)}))
+    names = list(parameters)
+    for subset in combinations(names, strength):
+        for indices in product(*(range(len(parameters[n])) for n in subset)):
+            assumptions = [variables[n] == i for n, i in zip(subset, indices)]
+            if solver.check(*assumptions) == z3.sat:
+                feasible.add(frozenset((n, parameters[n][i]) for n, i in zip(subset, indices)))
     return frozenset(feasible)
 
 
@@ -139,12 +142,21 @@ class Z3CostModel:
     suite could separate it). Answers are cached per unordered pair, so a pair costs at most
     one decision however many suites are scored. `hits`, `misses` and `seconds` count cache
     use and the time spent in Z3 queries, so a slow run is visible.
+
+    With cover_only=True the cost is only the number of uncovered feasible interactions (ordinary
+    t-way coverage): collisions are neither counted nor queried, so no Z3 separability query is made.
+    The default (False) is unchanged. `strength` (default 2) is the interaction strength t.
     """
 
-    def __init__(self, parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden]):
+    def __init__(self, parameters: Dict[str, List[str]], forbidden: Iterable[Forbidden],
+                 cover_only: bool = False, strength: int = 2):
+        forbidden = list(forbidden)
+        self.cover_only = cover_only
+        self.strength = strength
         self.parameters = parameters
+        self.forbidden = forbidden
         self.solver, self.variables = build_solver(parameters, forbidden)
-        self.interactions = sorted(feasible_interactions_z3(parameters, forbidden), key=sorted)
+        self.interactions = sorted(feasible_interactions_z3(parameters, forbidden, strength), key=sorted)
         self._separable: Dict[frozenset, bool] = {}
         self.hits = 0
         self.misses = 0
@@ -183,8 +195,66 @@ class Z3CostModel:
                 groups[signature].append(interaction)
             else:
                 uncovered_list.append(interaction)
-        avoidable = [(a, b) for group in groups.values() if len(group) > 1
-                     for a, b in combinations(group, 2) if self.separable(a, b)]
+        avoidable = [] if self.cover_only else [
+            (a, b) for group in groups.values() if len(group) > 1
+            for a, b in combinations(group, 2) if self.separable(a, b)]
+        result = {
+            "uncovered": len(uncovered_list),
+            "avoidable_collisions": len(avoidable),
+            "cost": weight * len(uncovered_list) + len(avoidable),
+        }
+        if detail:
+            result["uncovered_list"] = sorted(uncovered_list, key=sorted)
+            result["colliding_list"] = sorted({i for pair in avoidable for i in pair}, key=sorted)
+        return result
+
+
+class FastZ3CostModel(Z3CostModel):
+    """Z3CostModel with a faster `suite_cost` (research plan item 33 prerequisite). Same results.
+
+    Instead of testing every interaction against every test, each configuration is mapped once
+    (memoized) to the ids of the interactions it contains: a configuration contains exactly one
+    value combination per parameter subset of size t, so that is C(n, t) dictionary lookups.
+    A suite's cost then groups interaction ids by the set of tests covering them. Collision
+    classification still goes through `separable` (Z3, cached). The cost, the uncovered count and
+    the detail lists are identical to `Z3CostModel.suite_cost`; the parent class is unchanged.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from itertools import combinations
+        self._names = list(self.parameters)
+        self._subsets = list(combinations(range(len(self._names)), self.strength))
+        self._ids = {}
+        for k, interaction in enumerate(self.interactions):
+            terms = {n: v for n, v in interaction}
+            idx = tuple(sorted(self._names.index(n) for n in terms))
+            self._ids[(idx, tuple(terms[self._names[i]] for i in idx))] = k
+        self._covered: Dict[tuple, tuple] = {}
+
+    def _covered_ids(self, config: Config) -> tuple:
+        key = tuple(config[n] for n in self._names)
+        found = self._covered.get(key)
+        if found is None:
+            ids = self._ids
+            found = tuple(k for k in (ids.get((sub, tuple(key[i] for i in sub))) for sub in self._subsets)
+                          if k is not None)
+            self._covered[key] = found
+        return found
+
+    def suite_cost(self, suite: List[Config], weight: float = 1.0, detail: bool = False) -> dict:
+        from itertools import combinations
+        covering: Dict[int, list] = {}
+        for t, config in enumerate(suite):
+            for k in self._covered_ids(config):
+                covering.setdefault(k, []).append(t)
+        groups: Dict[tuple, list] = {}
+        for k, tests in covering.items():
+            groups.setdefault(tuple(tests), []).append(self.interactions[k])
+        uncovered_list = [self.interactions[k] for k in range(len(self.interactions)) if k not in covering]
+        avoidable = [] if self.cover_only else [
+            (a, b) for group in groups.values() if len(group) > 1
+            for a, b in combinations(group, 2) if self.separable(a, b)]
         result = {
             "uncovered": len(uncovered_list),
             "avoidable_collisions": len(avoidable),
@@ -257,6 +327,45 @@ def _z3_move(model: "Z3CostModel", rng, current: List[Config], cost: dict, targe
     return position, neighbor if neighbor is not None else containing(target)
 
 
+def _z3_local_move(model: "Z3CostModel", rng, current: List[Config], cost: dict):
+    """The "local" move: same choices as the targeted move in `_z3_move`, but edits a test in place.
+
+    An interaction goes into a test by overwriting only its t values (as SA4LA does), kept if the
+    result breaks no forbidden rule; otherwise a Z3-drawn valid configuration containing it is used.
+    A test is taken out of a collision by changing one value of the colliding interaction itself,
+    first value that breaks no rule; otherwise `_one_change_neighbor`, then a Z3 draw. Returns
+    (position in the suite to change, the valid configuration to put there).
+    """
+    from .core import contains_interaction, is_valid as breaks_no_rule
+    def containing(target):
+        return _draw(model, rng, {n: model.parameters[n].index(v) for n, v in target})
+    def written_into(base, target):
+        config = {**base, **dict(target)}
+        return config if breaks_no_rule(config, model.forbidden) else containing(target)
+    if cost["uncovered_list"]:
+        target = rng.choice(cost["uncovered_list"])
+        position = rng.randrange(len(current))
+        return position, written_into(current[position], target)
+    target = rng.choice(cost["colliding_list"])
+    having = [p for p, c in enumerate(current) if contains_interaction(c, target)]
+    lacking = [p for p in range(len(current)) if p not in having]
+    if lacking and (not having or rng.random() < 0.5):
+        position = rng.choice(lacking)
+        return position, written_into(current[position], target)
+    position = rng.choice(having)
+    base = current[position]
+    names = [name for name, _ in target]
+    for name in rng.sample(names, len(names)):
+        others = [v for v in model.parameters[name] if v != base[name]]
+        rng.shuffle(others)
+        for value in others:
+            config = {**base, name: value}
+            if breaks_no_rule(config, model.forbidden):
+                return position, config
+    neighbor = _one_change_neighbor(model, rng, base)
+    return position, neighbor if neighbor is not None else containing(target)
+
+
 def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: int = 20000,
                     start_temp: float = 2.0, cooling: float = 0.999, weight: float = 1.0,
                     neighbor: str = "random", deadline: float = None) -> dict:
@@ -272,7 +381,11 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
       "targeted": if an interaction is uncovered, put in a Z3-drawn valid configuration containing it;
                   otherwise pick an interaction in an avoidable collision and either replace a test
                   that lacks it with a valid configuration containing it, or replace a test that has
-                  it with a valid configuration differing in exactly one parameter (Z3 decides).
+                  it with a valid configuration differing in exactly one parameter (Z3 decides);
+      "local":    the same choices as "targeted", but tests are edited in place: an interaction is
+                  written into a test (only its t values change) and a test leaves a collision by
+                  one change to the colliding interaction's own values; Z3 only when that would
+                  break a rule (see `_z3_local_move`).
     Every test in every suite is valid by construction. Reproducible for a given seed unless
     `deadline` (a time.perf_counter() value) is given: the run then stops early, with
     "timed_out": True, when the clock passes it, and where it stops depends on machine speed.
@@ -281,12 +394,12 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
     import math
     import random
     import time
-    if neighbor not in ("random", "targeted"):
-        raise ValueError("neighbor must be 'random' or 'targeted'")
+    if neighbor not in ("random", "targeted", "local"):
+        raise ValueError("neighbor must be 'random', 'targeted' or 'local'")
     if n_tests < 1:
         raise ValueError("n_tests must be at least 1")
     rng = random.Random(seed)
-    targeted = neighbor == "targeted"
+    targeted = neighbor in ("targeted", "local")
     current: List[Config] = []
     for _ in range(n_tests):
         for _try in range(50):
@@ -306,7 +419,10 @@ def anneal_suite_z3(model: "Z3CostModel", n_tests: int, seed: int, max_steps: in
             timed_out = True
             break
         steps += 1
-        position, replacement = _z3_move(model, rng, current, current_cost, targeted)
+        if neighbor == "local":
+            position, replacement = _z3_local_move(model, rng, current, current_cost)
+        else:
+            position, replacement = _z3_move(model, rng, current, current_cost, targeted)
         proposal = list(current)
         proposal[position] = replacement
         proposal_cost = model.suite_cost(proposal, weight, detail=targeted)

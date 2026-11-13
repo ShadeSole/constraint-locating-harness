@@ -1,0 +1,6 @@
+{"model": "model_spins_core.json", "suite": "C", "scenario": "P2", "faults": 2000, "wrong_partial": 155, "wrong_unrelated": 123}
+{"model": "model_spins_core.json", "suite": "C", "scenario": "T1", "faults": 1313, "wrong_partial": 42, "wrong_unrelated": 502}
+{"model": "model_spins_core.json", "suite": "L1", "scenario": "P2", "faults": 2000, "wrong_partial": 73, "wrong_unrelated": 15}
+{"model": "model_spins_core.json", "suite": "L1", "scenario": "T1", "faults": 1313, "wrong_partial": 249, "wrong_unrelated": 279}
+{"model": "model_spins_core.json", "suite": "L2", "scenario": "P2", "faults": 2000, "wrong_partial": 0, "wrong_unrelated": 0}
+{"model": "model_spins_core.json", "suite": "L2", "scenario": "T1", "faults": 1313, "wrong_partial": 0, "wrong_unrelated": 0}
