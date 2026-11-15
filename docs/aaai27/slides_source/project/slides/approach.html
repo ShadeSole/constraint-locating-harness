@@ -1,0 +1,16 @@
+<section id="approach">
+<p class="eyebrow">Question and approach</p>
+<h2>Small suites that locate every locatable cause</h2>
+<p class="lead">Can we build small test suites, using only valid configurations, that point to every cause that <i>can</i> be pointed to?</p>
+<div class="pipe">
+<div class="step"><p class="num">1 · MODEL</p><h3>Options + rules</h3><p>Each option’s values, plus the combinations that are forbidden.</p></div>
+<x-connector head="end" style="width:68px; height:2px"></x-connector>
+<div class="step"><p class="num">2 · SEARCH</p><h3>Simulated annealing</h3><p>Over suites of valid tests only; an SMT solver (Z3) keeps every test valid.</p></div>
+<x-connector head="end" style="width:68px; height:2px"></x-connector>
+<div class="step"><p class="num">3 · COST</p><h3>Gaps + look-alikes</h3><p>Pairs not yet tested, plus causes that still look identical. Zero means done.</p></div>
+<x-connector head="end" style="width:68px; height:2px"></x-connector>
+<div class="step"><p class="num">4 · SHRINK</p><h3>One test fewer</h3><p>Repeat until a size can’t be solved within the budget.</p></div>
+</div>
+<p class="footer">Every suite checked by an independent verifier. Exact minimum sizes by SAT/MaxSAT on small models. Prior work: Colbourn &amp; McClary 2008; Jin &amp; Tsuchiya 2020; Konishi et al. 2020.</p>
+<aside>The method is AI search: simulated annealing, kept inside the valid configurations by constraint reasoning with an SMT solver. The cost counts what isn’t covered yet plus pairs of causes that still look identical, and zero means done. Then I shrink the suite one test at a time. Locating arrays, the constrained version, and annealing for the unconstrained case all exist already. What I didn’t find in my searches is annealing for the constrained case, so that’s where I started. (About 60 seconds.)</aside>
+</section>

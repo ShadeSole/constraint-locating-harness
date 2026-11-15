@@ -1,0 +1,14 @@
+<section id="generated" class="alt">
+<p class="eyebrow">But do most bugs look like that?</p>
+<h2>Hundreds of generated bugs in two Python modules</h2>
+<div class="split">
+<div class="facts">
+<div class="fact"><p class="big">0 of 83</p><p>textwrap bugs were a single faulty pair</p></div>
+<div class="fact"><p class="big">1 of 110</p><p>configparser bugs were a single faulty pair</p></div>
+<div class="fact"><p class="big">11 · 48</p><p>bugs diagnosed by the two-fault suite: every one that fit its model</p></div>
+</div>
+<img class="chart" src="/_blob/827601ad05670e6fdb264953cb5af5a1" alt="Bar chart for textwrap and configparser: bugs diagnosed correctly and wrong causes named by covering, one-fault, two-fault and random same-size suites. Covering named a wrong cause for 24 and 56 bugs; the two-fault suite diagnosed 11 and 48 correctly; random suites of the same size averaged 10.2 and 43.2.">
+</div>
+<p class="footer">Generated bugs may be wider than typical real ones. Source: PROJECT_NOTES items 75–78 (reproduced on my laptop).</p>
+<aside>To test the assumption more broadly I generated hundreds of small bugs automatically in two Python modules. Of the 193 that fail only in some configurations, almost none were a single faulty pair: 0 in one program, 1 in the other. When a bug did fit the model, the suites diagnosed it. When it didn’t, they mostly said “no simple explanation fits”, which is the safe answer, instead of blaming the wrong settings. A two-fault design diagnosed 11 and 48 bugs. Random suites of the same size came close on average, but half or more fell short. So what helps most is a bigger budget and allowing for two culprits, and the construction makes that reliable. These generated bugs may be wider than typical real ones; how often real bugs fit is the open question. (About 60 seconds.)</aside>
+</section>

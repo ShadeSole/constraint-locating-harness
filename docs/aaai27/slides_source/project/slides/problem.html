@@ -1,0 +1,27 @@
+<section id="problem" class="alt">
+<p class="eyebrow">The problem</p>
+<h2>It only breaks when settings meet</h2>
+<div class="toy">
+<div class="toy-left">
+<table>
+<tr><th style="width:16%">Test</th><th style="width:18%">A</th><th style="width:18%">B</th><th style="width:18%">C</th><th style="width:30%">Result</th></tr>
+<tr style="background:#FBE3D9"><td>1</td><td>on</td><td>on</td><td>off</td><td style="color:#B8461A">FAIL</td></tr>
+<tr><td>2</td><td>on</td><td>off</td><td>on</td><td>pass</td></tr>
+<tr><td>3</td><td>off</td><td>on</td><td>on</td><td>pass</td></tr>
+<tr><td>4</td><td>off</td><td>off</td><td>off</td><td>pass</td></tr>
+</table>
+<p class="small">These 4 tests cover every pair of settings: a covering suite.</p>
+</div>
+<div class="toy-right">
+<div class="callout">
+<p><b>Test 1 fails. Which pair caused it?</b></p>
+<p class="mono">A=on + B=on</p>
+<p class="mono">A=on + C=off</p>
+<p class="mono">B=on + C=off</p>
+</div>
+<p>Three pairs fit. Covering finds the failure, not the cause. A <b>locating</b> suite adds tests until only one fits.</p>
+</div>
+</div>
+<p class="footer">Forbidden combinations can make some causes impossible to tell apart (Jin &amp; Tsuchiya 2020).</p>
+<aside>Configurable software, like compilers, web servers and ML training pipelines, often fails only when particular settings meet. Standard combinatorial testing makes sure every pair of settings gets tested, so you’ll see the failure. But a failing test doesn’t tell you which combination caused it: here test 1 fails, and three different pairs could explain it. Locating arrays are test suites designed so that the pattern of passing and failing tests points to the cause. Real systems also forbid some combinations, and that can make two causes impossible to tell apart. (About 45 seconds.)</aside>
+</section>

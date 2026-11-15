@@ -1,0 +1,92 @@
+:root {
+  --navy: #14213D;
+  --paper: #FBFBF8;
+  --mist: #EEF1F6;
+  --ink: #14213D;
+  --soft: #4A5568;
+  --blue: #2A78D6;
+  --blue-dark: #1F5FAE;
+  --orange: #EB6834;
+  --orange-dark: #B8461A;
+  --tint: #E3EDFA;
+  --line: #D5DAE3;
+  --head: 'Space Grotesk', Arial, sans-serif;
+  --text: 'Inter', Arial, sans-serif;
+  --mono: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+body { font-family: var(--text); color: var(--ink); }
+
+section { background: var(--paper); padding: 128px 128px 160px; display: flex; flex-direction: column; gap: 40px;
+  counter-increment: page; }
+section.alt { background: var(--mist); }
+section.dark { background: var(--navy); color: var(--paper); }
+
+h1 { font-family: var(--head); font-size: 96px; font-weight: 700; line-height: 1.05; letter-spacing: -1px; }
+h2 { font-family: var(--head); font-size: 64px; font-weight: 700; line-height: 1.1; color: var(--ink); }
+h3 { font-family: var(--head); font-size: 40px; font-weight: 700; line-height: 1.2; }
+p { font-size: 32px; line-height: 1.4; color: var(--soft); }
+
+.eyebrow { font-family: var(--head); font-size: 24px; font-weight: 700; letter-spacing: 3px; color: var(--blue);
+  text-transform: uppercase; }
+.lead { font-size: 40px; line-height: 1.35; color: var(--ink); }
+.small { font-size: 24px; color: var(--soft); }
+.mono { font-family: var(--mono); font-weight: 700; color: var(--ink); }
+
+.footer { position: absolute; left: 128px; bottom: 64px; width: 1664px; font-size: 24px; color: var(--soft); }
+
+/* cover */
+section.cover { background: var(--navy); justify-content: center; gap: 32px; padding: 128px; }
+.cover h1 { color: var(--paper); width: 1500px; }
+.cover .sub { font-size: 40px; color: #BFD0EA; width: 1400px; }
+.cover .who { font-size: 32px; color: #E6EAF2; }
+.cover .rule { width: 160px; height: 8px; background: var(--orange); }
+
+/* problem: toy example */
+.toy { display: flex; gap: 64px; align-items: flex-start; }
+.toy-left { width: 980px; display: flex; flex-direction: column; gap: 24px; }
+.toy-right { width: 620px; display: flex; flex-direction: column; gap: 24px; }
+.toy table { font-size: 32px; color: var(--ink); }
+.callout { background: var(--paper); border-left: 8px solid var(--orange); padding: 24px 32px; }
+.callout p { color: var(--ink); }
+.callout .mono { font-size: 30px; }
+
+/* approach: pipeline */
+.pipe { display: flex; gap: 0; align-items: stretch; }
+.step { width: 340px; background: var(--paper); border: 2px solid var(--line); border-radius: 16px; padding: 32px;
+  display: flex; flex-direction: column; gap: 16px; }
+.step .num { font-family: var(--head); font-size: 24px; font-weight: 700; color: var(--blue); }
+.step h3 { font-size: 32px; }
+.step p { font-size: 24px; line-height: 1.4; }
+.pipe x-connector { width: 68px; color: var(--soft); align-self: center; }
+
+/* search: numbers table */
+.result-table { font-size: 36px; color: var(--ink); width: 1500px; }
+
+/* real bug */
+.bug-quote { font-size: 32px; color: var(--soft); }
+.rows { display: flex; flex-direction: column; gap: 0; }
+.row { display: flex; align-items: center; gap: 32px; padding: 28px 32px; border-top: 2px solid var(--line); }
+.row .suite { width: 520px; font-size: 36px; color: var(--ink); }
+.row .tests { width: 140px; font-size: 36px; color: var(--ink); }
+.row .verdict { width: 900px; font-size: 32px; color: var(--soft); }
+.row.win { background: var(--tint); border: 4px solid var(--blue); border-radius: 16px; }
+.row.win .suite, .row.win .tests { font-weight: 600; }
+.row.win .verdict { color: var(--ink); }
+.win .mono { font-size: 30px; }
+
+/* generated bugs */
+.split { display: flex; gap: 56px; align-items: center; }
+.facts { width: 420px; display: flex; flex-direction: column; gap: 32px; }
+.fact .big { font-family: var(--head); font-size: 72px; font-weight: 700; color: var(--ink); line-height: 1; }
+.fact p { font-size: 24px; }
+.chart { width: 1188px; height: 553px; object-fit: contain; }
+
+/* next */
+.takeaways { display: flex; gap: 32px; }
+.card { width: 520px; background: var(--paper); border-radius: 16px; padding: 40px; display: flex; flex-direction: column;
+  gap: 16px; border-top: 8px solid var(--blue); }
+.card .n { font-family: var(--head); font-size: 24px; font-weight: 700; color: var(--blue); }
+.card h3 { font-size: 36px; color: var(--ink); }
+.card p { font-size: 24px; }
+.thanks { font-family: var(--head); font-size: 44px; font-weight: 700; color: var(--ink); }

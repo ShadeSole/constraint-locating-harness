@@ -1,0 +1,12 @@
+<section id="realbug">
+<p class="eyebrow">A real bug</p>
+<h2>A 19-test suite named the exact two settings</h2>
+<p class="bug-quote">CPython gh-130941, fixed April 2025: “Fix configparser parsing values with allow_no_value and interpolation set.” 384 of 3,456 configurations fail.</p>
+<div class="rows">
+<div class="row"><p class="suite">Covering only</p><p class="tests">9</p><p class="verdict">Missed: no test failed</p></div>
+<div class="row win"><p class="suite">One-fault locating</p><p class="tests">19</p><div class="verdict"><p><b>Caught it and named the cause:</b></p><p class="mono">allow_no_value = True + interpolation = extended</p></div></div>
+<div class="row"><p class="suite">Two-fault locating</p><p class="tests">49</p><p class="verdict">Caught it: “no single explanation fits”</p></div>
+</div>
+<p class="footer">Input: the fix’s own regression test (our original inputs never triggered this bug). Source: PROJECT_NOTES item 85.</p>
+<aside>Does this find real bugs? Here’s one from Python itself, fixed in April 2025. The bug report’s title says it all: configparser broke when allow_no_value and interpolation were set together. I took the code from just before the fix and from just after, and tested every one of 3,456 configurations: 384 fail. A covering suite of 9 tests missed it completely. My one-fault locating suite, 19 tests, caught it and named exactly those two settings, the same two the Python developers named. One honest detail: my original test inputs never triggered this bug. I used the input from the fix’s own regression test. A test suite can only find bugs its inputs exercise. (About 75 seconds; this is the key slide.)</aside>
+</section>
