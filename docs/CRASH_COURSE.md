@@ -243,3 +243,143 @@ their origin label, what to be skeptical of, anything left under "Open questions
   configurations, covered all 979 possible pairs, and identified 969 of them uniquely; the search always stopped one size below
   its answer with a single pair left unseparated. Cloud run, not reproduced by the author. Be skeptical: "failed at 41 or 42" means
   not found with this effort, not impossible; ten seeds on one model is a small sample; no comparison with published sizes was made.
+
+- 2026-10-14, plan item 25 (the research question measured directly): the question is how many more tests it takes to be able to tell
+  interactions apart than to merely cover them all. On the seven small models I ran the same search twice, once scoring only coverage
+  and once scoring coverage plus separation. Locating needed 2 to 5 more tests (for example 9 versus 5 on model.json, 8 versus 6 on
+  low_constraints), the same on every seed apart from one model. Cloud run, not reproduced by the author. Be skeptical: tiny models,
+  three seeds, and neither size is proven smallest. Larger models are items 26 and 27.
+
+- 2026-10-14, plan item 26: on the smaller SPIN-derived model the smallest covering suite the search found had 18 tests for every one
+  of ten seeds, while the locating suite needed 30 to 32 (median 31). So being able to tell interactions apart cost about 13 extra
+  tests (12 to 14) over merely covering them, roughly 1.7 times the size. A simple counting argument says at least 16 tests are
+  needed to cover this model, so 18 is close to that floor. Cloud run, not reproduced by the author. Be skeptical: one derived
+  model, 18 is a found size not a proven smallest, and the two sets of runs used different code paths.
+
+- 2026-10-14, plan items 27-28 (summary of the covering-versus-locating comparison): The research question asks how many more tests it takes
+  to be able to tell interactions apart than just to cover them. Across the three kinds of model the answer was always "more, but
+  within a factor of about 1.3 to 1.9". Small hand-built models: 2 to 5 more tests. The SPIN-derived model: about 13 more (18 to cover,
+  30 to 32 to distinguish). The full SPIN model: about 18 to 20 more (23 to 25 to cover, 42 to 44 to distinguish). The covering suites
+  by themselves told apart only about half of the interactions (457 to 566 of 979 on the full model, against 969 for the locating
+  suites). Cloud run, not reproduced by the author. Be skeptical: every size is what a fixed-effort search found, not a proven smallest;
+  one real benchmark; no comparison with published sizes; strengths above 2 were not tried here.
+
+- 2026-10-15, plan item 29 (plain language): Everything measured so far was about pairs of settings. I extended the Z3 part of the code so it
+  can handle triples (and any size): which triples of settings can occur together, and how to score a suite. It matched the old
+  way of listing everything on all 8 example models for sizes 1, 2 and 3, and it scored 1,600 random suites at triples exactly like
+  the old scorer. No search has been run on triples yet (items 30 and 31). Cloud run, not reproduced by the author. The test suite
+  now takes about 6.5 minutes, mostly because of these triple checks.
+
+- 2026-10-15, plan item 30: repeated the covering-versus-locating comparison for triples of settings on the seven small models. Cloud run, not
+  reproduced by the author. Telling triples apart needed 2 to 15 more tests than merely covering them (a factor of 1.2 to 2.1), against 2 to 5
+  more (1.3 to 1.8) for pairs, and both sizes grew a lot going from pairs to triples (for example 5 to 12 to cover and 9 to 17 to locate on
+  model.json). The new Z3-based search agreed with the old one in 20 of 21 runs. Be skeptical: tiny models, three seeds, sizes are
+  found-not-proven, and the biggest ratio comes from a model where one seed differs.
+
+- 2026-10-15, plan item 31 (plain language): I repeated the covering-versus-telling-apart comparison for triples of settings on the
+  smaller SPIN-derived model. Cloud run, not reproduced by the author. Covering all possible triples took 71 tests on every one of five
+  seeds; making the triples distinguishable took 110 to 112, about 39 to 41 more (1.55 to 1.58 times). For pairs the same model needed
+  18 and 30 to 32. Four of the five locating searches stopped because of the 2-hour time cap, so those sizes could probably be pushed
+  a little lower with more time. Be skeptical: five seeds, one derived model (not the real benchmark), found sizes are not proven smallest.
+
+- 2026-10-15, plan item 32 (summary of pairs versus triples): Going from pairs to triples of settings made every suite bigger. On the seven
+  small models, covering took 9 to 15 tests instead of 5 to 7, and telling triples apart took 11 to 29 instead of 8 to 12. On the
+  SPIN-derived model covering took 71 tests (18 for pairs) and telling apart took 110 to 112 (30 to 32 for pairs), so the extra
+  tests grew from about 13 to about 39 while the ratio stayed near 1.5 to 1.8. On the small models the ratio went up for some and
+  down for others, so no trend is shown. The real SPIN model was not run at triples (that needs a code change you must approve, item 33).
+  Cloud run, not reproduced by the author. Be skeptical: few seeds (3 and 5), found sizes are not proven smallest, four of five
+  derived-model locating runs were stopped by the time cap.
+
+## Faster cost evaluation (plan items 34 and 35)
+The search repeatedly scores a suite by checking which tests contain which interactions. The new FastZ3CostModel remembers, for each test, which interactions it contains, so scoring a suite no longer rescans every interaction. It gives the same scores as the old code (checked on all 8 example models at pairs and triples). On the derived spins model at triples, a repeat scoring took 0.0040 s instead of 0.0184 s in locating mode (one suite size, one seed). Scoring a suite for the first time is still dominated by Z3 questions about whether two interactions can be told apart, and the new class does not change that. Nothing yet says whether the original spins model at triples is feasible.
+
+## Does the faster scoring help a real search? (plan item 36)
+Yes, on the one case measured. In a 600-move search on the derived spins model at triples, the faster scoring took 0.007 to 0.009 seconds per move against 0.049 to 0.077 with the old code, and both found exactly the same suite. Most of the old time was the scoring loop, not Z3. This is one seed and 600 moves, and it says nothing yet about the original spins model.
+
+## Can we run triples on the real spins model? (plan item 37)
+Timing says yes, if you accept slow runs. With the faster scoring, one 6000-move search at 100 tests took 275 s checking only coverage and 545 s checking coverage plus distinguishability, both under the 15-minute limit we set. The model has 12,835 feasible 3-way interactions. At 100 tests neither search got to a perfect suite (38 interactions still uncovered, and 197 uncovered plus 3,857 indistinguishable pairs), so 100 is too small and we don't know the right size yet. The next step would be a size sweep, then a shrinking search, which is item 33 and still needs your go-ahead.
+
+## Original SPIN at triples: how big a suite is enough? (plan item 39)
+I tried eight suite sizes with one 6000-move search each. All of them worked: covering every triple at 120, 140, 160 and 200 tests, and also telling every triple apart at 200, 260, 320 and 400 tests. So these sizes are comfortably large for this search; the smallest working ones, 120 and 200, are only upper bounds. The earlier size-100 try did not finish covering. Cloud run, not reproduced by the author. Be skeptical: one seed, one run per size, and the sizes were my guesses. The next step (item 40) shrinks from 120 and 200 to find the real limit.
+
+## Original SPIN at triples: how many tests? (plan item 40)
+I shrank the suite one test at a time, five times with different random seeds. Covering every triple of settings ended at 114 to 116 tests (median 115). Telling every triple apart ended at 197 to 200 tests (median 199), which is 82 to 86 more tests, about 1.7 times as many. For pairs on the same model the earlier numbers were far smaller (see items 23 and 27), so triples cost much more. Cloud run, not reproduced by the author. Be skeptical: five seeds, one model, sizes are what the search found (not proven smallest), and the telling-apart searches started at 200 and barely moved from it, so those sizes may be limited by where I started.
+
+## A second big benchmark (plan item 41)
+The CCAG collection has four more named models besides SPIN (apache, bugzilla, gcc, spinv). I loaded all four and built the Z3 setup for pairs; each took under 20 seconds, so loading is not the obstacle. I then tried spinv, the one with many rules, at suite sizes 15 to 60 with one search each, and none reached a perfect suite: the guessed sizes were too small. So there is no covering-versus-locating result for a second model yet; the next step is a bigger size sweep. Cloud run, not reproduced by the author. One seed, one run per size.
+
+## How many pairs of settings can never be told apart? (plan item 42)
+Some pairs of settings in SPIN cannot be separated by any test suite, because the rules force them to appear together. I asked Z3 to count them directly instead of relying on a search. Of 979 possible pairs of settings, 10 are stuck in nine inseparable couples, so at most 969 can be told apart. The suites from the earlier ten-seed runs (42 to 44 tests) already told apart exactly 969, so for single faults on pairs they leave nothing on the table. The method also matched a brute-force count on all 8 small example models. This is one model, pairs only, one fault at a time.
+
+## A second big model, and how many interactions can never be told apart (plan items 41 and 42)
+On a second real benchmark (spinv, pairs), covering took 48 to 49 tests and telling pairs apart took 78 to 79 (about 1.6 times, 30 to 31 more). That matches the direction seen on the first benchmark. Separately I counted, using Z3, how many pairs of settings no test can ever tell apart because of the constraints: 10 of 979 on spins, 1,084 of 8,741 on spinv, none on bugzilla, 1,354 of 23,876 on benchmark_1 and 2,931 of 64,620 on benchmark_20. The count matches the old method on all 8 small models. Cloud run, not reproduced by the author. Be skeptical: three seeds, search sizes are not proven smallest, and the earlier scheduled note about missing constraint files was wrong for this clone.
+
+## Do our suites beat the published sizes? (plan item 44)
+The Jin and Tsuchiya paper reports how many tests their heuristic needed on three of the same benchmarks: Spins 49 to 53, Bugzilla 41 to 48, Spinv 91 to 97. First I checked that we are solving the same problem: the counts of interactions and of un-separable pairs in their table match ours exactly, and their "every pair covered and every separable pair told apart" condition is what our cost measures. Then I re-ran our search and saved the suites, and checked each one with a separate script. We reached 42 to 43 on Spins, 37 on Bugzilla and 79 on Spinv, all passing the check. So on these three models our suites are smaller. That does not mean our method is better: ours ran for minutes to about an hour and a half per run, theirs for seconds, and the machines differ. The fair next step is a run with matched time, and checking their numbers against the PDF itself.
+
+## More seeds, bigger models, and the time question (plan item 45)
+I checked the published table a second way (the web version) and the numbers agree. I then ran Bugzilla on four seeds (36 or 37 tests, against the published 41 to 48), Spinv on three (78 or 79, against 91 to 97), and the two biggest models, Apache (82, against 85 to 89) and GCC (61 or 63, against 61 to 68; these two stopped at the 2-hour limit while still shrinking). Every suite passed the separate check. The honest catch is time: when I limited our search to about ten times what the authors report (60 s on Bugzilla, 10 s on Spins) it landed inside their range, not below it. So the fair summary is: given far more time than their heuristic uses, our search finds smaller suites; given similar time, it ties. A real speed comparison needs their tool run on the same machine.
+
+## Checking the paper's table, and what "faster" really means (plan items 46 and 47)
+We read the published table straight from the PDF. The sizes match what we had. The new part is the times: the published method took about 3,263 seconds on apache and 2,495 on gcc, so our two-hour runs were only about 2 to 3 times longer there, not hundreds of times longer as on the small models. On apache that is close to a fair fight, and our search still ended below their smallest size, but on different hardware and with only two runs, so it is a hint, not a result. We also found SA4LA, the other group's annealing tool, but it cannot handle constraints, and we found where 20 of the 25 benchmarks used in the paper live; both need your OK before we use them.
+
+## What if two interactions fail at once? (plan item 48)
+Our suites are built so that any single failing pair of settings can be told apart from any other single one. I asked how far that is from handling two failures at the same time. On six small example models I took the suite the search found (seed 0) and counted every group of one or two pairs of settings, then checked which groups of this kind give exactly the same pass/fail pattern across the suite. Between 1,013 and 4,912 couples of groups collide per model (one model was too big and was skipped under the 5-million rule). Some of those collisions can never be fixed, because no valid test separates the two groups (60 to 1,297 per model); the rest, 456 to 4,264 per model, could be fixed by a better suite. So a suite built for one failure is clearly not enough for two. This does not say how many extra tests two failures need; nobody searched for such a suite yet. Cloud run, not reproduced by the author. One seed, six small models.
+
+## What if tests fail only some of the time? (plan item 49)
+Real failures are sometimes flaky: a test that should fail passes now and then. I simulated this on the seven small example models: for every possible failing pair of settings, a test containing it fails only with some chance p (1.0, 0.9, 0.7 or 0.5), and I allowed 1, 2 or 3 reruns per test (counted as failing if any run failed). Then I asked the exact-match localizer to name the culprit. With p = 1.0 it is always right, except on one model where 20% of the pairs can never be told apart anyway. With p = 0.9 and one run it is right only about 62% to 81% of the time; with three runs about 80% on that same hard model and 99% to 100% on the others. At p = 0.5 even three runs leave it right only 58% to 78% of the time. The exact-match localizer has no tolerance for noise, so reruns help a lot. One seed (20 random trials per pair), small models, suite sizes from the earlier search; the noise-ranking function in the code was not used. Cloud run, not reproduced by the author.
+
+## Has anyone used AI to build these test suites? (plan item 50)
+I searched the web and opened five papers. Two use language models or genetic-style search around combinatorial testing (one drafts the list of parameters and values, one tunes a genetic algorithm for covering arrays), one tests neural networks with combinatorial ideas, one uses an LLM to guess risky option combinations before fuzzing, and one older paper uses a classification tree to isolate failing combinations. None of them builds locating arrays with a learned model or localizes failure-inducing interactions with one. Two further leads (neural-network and reinforcement-learning covering-array work) appeared only in search excerpts and were not opened. This is "we did not find", from three queries; it is not proof that nothing exists. No code was run for this item.
+
+## Summary of items 47 to 50 (plan item 51)
+Two small experiments were repeated from scratch in this session and gave exactly the same numbers as before (all six rows of the two-failures table, all 84 rows of the flaky-failure table). They say: a suite that can tell any single failing pair of settings apart still confuses many groups of two failing pairs, and when tests fail only some of the time the exact-match localizer needs reruns to stay right. The paper-table check and the AI-literature search were not repeated, because they are web reading, not code. Everything is one seed, small models, pairs only, and nothing here is compared with published sizes beyond the earlier items. The two remaining plan items need your permission (building third-party Java code; downloading the Zenodo benchmarks).
+
+## The paper's other benchmarks (plan item 53)
+We downloaded 20 of the paper's 25 smaller benchmarks and checked they are the same models (18 of 20 match the paper's counts exactly; the 2 that do not were left out). On those 18, our search ended below the paper's smallest size on 14, tied on 3 and was above on 1, and an independent checker confirmed every suite. The catch is time: our runs took roughly 10 to 1,800 times longer than theirs, and on the two models where the time gap was smallest we did not beat them. So this says our search finds smaller arrays when given much more time, not that it is a better method.
+
+## A fair race against the other group's tool (plan item 52)
+We finally ran SA4LA, the other group's annealing tool, on the same computer and gave our search exactly the same time it took. SA4LA cannot handle constraints, so both ran on the four big models with the constraints switched off. SA4LA won every race clearly: for example 35 tests against our 43 to 45 on spins, and 51 to 52 against our 66 to 68 on spinv. So our earlier "smaller than published" results come from running much longer, not from a faster method. The honest paper story is about handling constraints and what extra time buys, not speed.
+
+## Why we lost the race, and the fix (plan items 54 and 55)
+We gave our search a head start (beginning right at the size SA4LA had reached) and it still could not get there. So the problem was how it changes a test, not how it picks sizes. Our old move threw a whole test away and drew a new one; SA4LA only changes the two values it cares about. We added that kind of move (keeping every test valid under the constraints) and re-ran the race: now our search ties SA4LA at equal time on all three models, and with more time it goes one test lower on two of them.
+
+## The new move on the real (constrained) benchmarks (plan item 56)
+We gave the improved search exactly as much time as the published method reported, on the five big benchmarks with their constraints. On the two biggest, apache and gcc, it found arrays of 69 and 54 to 55 tests, against 85 to 89 and 61 to 68 published, and much smaller than our old move managed in over twice that time. On the three smaller ones it lands inside the published range at their time and below it with ten times their time. Their computer and language were different from ours, so this is suggestive, not a head-to-head race.
+
+## The paper's other benchmarks, with the new move (plan item 57)
+This step was not done. It needs the 18 benchmark models from the Zenodo archive, and the cloud container is blocked from zenodo.org (the proxy answers 403) and has no copy. So there are no new numbers. The earlier results (item 53, old move; item 56, new move on the five constrained models) are unchanged. To finish it, allow zenodo.org for the environment, then rerun item 57.
+
+## Putting items 54 to 57 together (plan item 58)
+Short version of the last stretch: our first search lost a fair race to SA4LA because of how it changed a test (it replaced a whole test; SA4LA edits only the two values that matter). With the new "local" move, the race is a tie on the unconstrained models, and on the real constrained benchmarks, given the time the published method reported, we land inside its range on three models and below it on the two biggest (69 against 85 to 89 on apache, 54 to 55 against 61 to 68 on gcc). With ten times their time we go below the range on the three smaller ones too. Cautions: three seeds, our computer and language differ from theirs, these are search results rather than proven minimums, and the extra 18 benchmarks (item 57) could not be run because the cloud container cannot reach zenodo.org. No new runs were done for this summary; the numbers are copied from the earlier sections.
+
+## The new move on the 18 smaller benchmarks (plan item 59)
+Most of these the published method solved in under a second, and our search needs a few seconds just to get going, so at our 5-second minimum we land inside their range on most models. With ten times that (still under a minute for most) we go below their smallest size on 12 of 18, and on the biggest one, Insurance, below both their result and our old move's. The honest summary: we are not faster on tiny models; we find smaller arrays when given seconds to minutes.
+
+## Ten tries instead of three (plan item 60)
+Three runs can be lucky, so we ran the three headline models ten times each with different random seeds. Every one of the thirty runs beat the published smallest size: apache 67 to 69 (published 85 or more), gcc 54 to 55 (published 61 or more) and Insurance 775 to 782 (published 789 or more). The results barely change between seeds, so the earlier numbers were not a fluke. The usual caveat stays: different computers, so not a head-to-head race.
+
+## The price of pinpointing, re-measured (plan item 61)
+A suite that only checks every pair of settings is cheaper than one that can also tell you which pair broke. With the new move and the same time for both, the "tell me which" suite needed about 1.6 to 2.1 times as many tests on the five big benchmarks (for example 16 against 32 on bugzilla, 36 against 69 on apache). That is the cost of localization in tests, and it is now measured with the same search for both.
+
+## The price of pinpointing, at triples (plan item 62)
+Same question, but now every combination of three settings has to be checked instead of every pair. On the big spins model the "tell me which" suite needed about 1.8 times as many tests (for example 108 against 193), and on the seven small practice models between 1.2 and 2 times. The new move found the same sizes as the old one on the small models, and smaller ones on spins in less time. Spins runs were stopped by the time limit, so its sizes could probably go lower.
+
+## Is the search finding the best possible answer? (plan item 63)
+On the seven small practice models there are few enough valid tests that a solver can try every combination in effect and prove the smallest size that works. The search found that smallest size in 27 of 28 cases. The one miss: on model_8param at triples, the best possible locating suite has 26 tests and the search stopped at 27 or 28 because of its 60-second limit. This doesn't tell us how close the search gets on the big models, where proving the minimum is out of reach.
+
+## Two broken things at once (plan item 65)
+So far every suite assumed only one pair of settings is broken. If two can be broken at the same time, the suite has to tell apart "A is broken", "B is broken", "A and B are both broken", and so on. On the small practice models the smallest such suite is about twice the size of the one-fault suite (for example 9 tests become 17), and on the 978-configuration spins-derived model the search needed 82 to 84 tests instead of 30. A curiosity: on the practice models, "two faults among pairs" needs exactly as many tests as "one fault among triples", but random models show that is not a rule.
+
+## A pattern we can't prove yet (plan item 66)
+A suite that pinpoints one broken triple of settings seems to always also pinpoint up to two broken pairs. We tried hard to break this: hundreds of random models, thousands of random suites, and a search designed to find an exception. Never failed. The reverse is often false. Until someone proves it (or finds a counterexample), it is a conjecture, and the paper should say so.
+
+## ...and the pattern was wrong (plan item 67)
+Instead of more random tries, I wrote a check that answers the question exactly for a given model. It found models where the pattern breaks, and two separate checkers confirmed them. The smallest clean example: five settings with three options each; a suite that pinpoints any one broken triple still can't tell "setting 0 is 0 together with setting 1 or 2 being 0" from the same thing with settings 3 and 4. The lesson: hundreds of random tests found nothing because the counterexamples are unusual, nearly-complete suites. Random testing can't prove a rule for every case.
+
+
+## Does two-at-pairs ever cost more than one-at-triples? (plan item 68)
+Item 67 showed a suite for "one broken triple" doesn't automatically handle "two broken pairs". But how big do the smallest suites need to be? On the 15 models where the pattern broke, the two-broken-pairs suite was smaller on 12 (sometimes by a lot) and we couldn't decide 3. The closest call is seven yes/no settings with no rules, where both kinds of suite come out at 22 tests in our searches. So far, handling two broken pairs never needed more tests than one broken triple, but that is an observation, not a proof.
+
+## A faster exact checker, and a tie on yes/no models (plan item 69)
+I added a second exact checker that asks a yes/no question ("can it be done with K tests?") using a SAT solver. On one model it answered in seconds where the old one needed almost 14 minutes. For models without rules it also uses symmetry: for example, any good suite can be relabelled so that it contains the all-zeros test, so the solver only has to look at those. I checked these shortcuts against answers found without them. Result: on models with 3 to 6 yes/no settings, "two broken pairs" and "one broken triple" need exactly the same number of tests. With three-valued settings the two-broken-pairs suite is much smaller. Seven yes/no settings is still too hard for the solver in two hours.

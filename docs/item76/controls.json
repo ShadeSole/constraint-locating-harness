@@ -1,0 +1,158 @@
+{
+ "model": "docs/item76/configparser_model.json",
+ "config_dependent": 110,
+ "suites": {
+  "L2": {
+   "size": 49,
+   "per_mutant": {
+    "correct": 48,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 62,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 11,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 18,
+    "missed": 0
+   }
+  },
+  "R0": {
+   "size": 49,
+   "per_mutant": {
+    "correct": 46,
+    "ambiguous": 2,
+    "safe": 4,
+    "misleading": 16,
+    "flagged": 42,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 10,
+    "ambiguous": 1,
+    "safe": 1,
+    "misleading": 1,
+    "flagged": 16,
+    "missed": 0
+   }
+  },
+  "R1": {
+   "size": 49,
+   "per_mutant": {
+    "correct": 48,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 4,
+    "flagged": 58,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 11,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 1,
+    "flagged": 17,
+    "missed": 0
+   }
+  },
+  "R2": {
+   "size": 49,
+   "per_mutant": {
+    "correct": 48,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 62,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 11,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 18,
+    "missed": 0
+   }
+  },
+  "R3": {
+   "size": 49,
+   "per_mutant": {
+    "correct": 39,
+    "ambiguous": 9,
+    "safe": 0,
+    "misleading": 16,
+    "flagged": 46,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 7,
+    "ambiguous": 4,
+    "safe": 0,
+    "misleading": 1,
+    "flagged": 17,
+    "missed": 0
+   }
+  },
+  "R4": {
+   "size": 49,
+   "per_mutant": {
+    "correct": 43,
+    "ambiguous": 5,
+    "safe": 0,
+    "misleading": 16,
+    "flagged": 46,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 10,
+    "ambiguous": 1,
+    "safe": 0,
+    "misleading": 1,
+    "flagged": 17,
+    "missed": 0
+   }
+  },
+  "L13": {
+   "size": 57,
+   "per_mutant": {
+    "correct": 1,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 109,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 1,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 28,
+    "missed": 0
+   }
+  },
+  "L13/2pairs": {
+   "size": 57,
+   "per_mutant": {
+    "correct": 48,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 62,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 11,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 18,
+    "missed": 0
+   }
+  }
+ }
+}

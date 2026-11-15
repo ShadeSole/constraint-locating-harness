@@ -1,0 +1,97 @@
+{
+ "valid_configs": 3456,
+ "mutants_total": 1,
+ "status": {
+  "ok": 1,
+  "timeout": 0,
+  "compile_error": 0
+ },
+ "never_fail": 0,
+ "always_fail": 0,
+ "config_dependent": 1,
+ "suite_sizes": {
+  "C": 9,
+  "L1": 19,
+  "L2": 49
+ },
+ "distinct_failure_sets": 1,
+ "ground_truth_types": {
+  "other": 1
+ },
+ "summary": {
+  "C/all": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 0,
+   "missed": 1,
+   "n": 1
+  },
+  "C/other": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 0,
+   "missed": 1,
+   "n": 1
+  },
+  "L1/all": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 1,
+   "flagged": 0,
+   "missed": 0,
+   "n": 1
+  },
+  "L1/other": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 1,
+   "flagged": 0,
+   "missed": 0,
+   "n": 1
+  },
+  "L2/all": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 1,
+   "missed": 0,
+   "n": 1
+  },
+  "L2/other": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 1,
+   "missed": 0,
+   "n": 1
+  }
+ },
+ "per_mutant": [
+  {
+   "suite": "C",
+   "mutant": 0,
+   "type": "other",
+   "outcome": "missed"
+  },
+  {
+   "suite": "L1",
+   "mutant": 0,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "L2",
+   "mutant": 0,
+   "type": "other",
+   "outcome": "flagged"
+  }
+ ]
+}

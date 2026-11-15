@@ -1,0 +1,2 @@
+shape of 1 failure sets: {'needs 4+ way': 1}
+failing configs per mutant: min 304 median 304 max 304 of 4352

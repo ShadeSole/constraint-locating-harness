@@ -1,0 +1,63 @@
+{
+ "model": "docs/item75/textwrap_model.json",
+ "config_dependent": 83,
+ "suites": {
+  "L2": {
+   "size": 59,
+   "per_mutant": {
+    "correct": 11,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 2,
+    "flagged": 65,
+    "missed": 5
+   },
+   "per_distinct_set": {
+    "correct": 5,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 2,
+    "flagged": 53,
+    "missed": 1
+   }
+  },
+  "L13": {
+   "size": 71,
+   "per_mutant": {
+    "correct": 0,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 83,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 0,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 0,
+    "flagged": 61,
+    "missed": 0
+   }
+  },
+  "L13/2pairs": {
+   "size": 71,
+   "per_mutant": {
+    "correct": 11,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 4,
+    "flagged": 68,
+    "missed": 0
+   },
+   "per_distinct_set": {
+    "correct": 5,
+    "ambiguous": 0,
+    "safe": 0,
+    "misleading": 4,
+    "flagged": 52,
+    "missed": 0
+   }
+  }
+ }
+}

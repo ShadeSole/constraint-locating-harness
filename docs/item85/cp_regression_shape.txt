@@ -1,0 +1,3 @@
+shape of 1 failure sets: {'union of triples': 1}
+failing configs per mutant: min 384 median 384 max 384 of 3456
+misleading: L1 mutant 0 real line None fails on 384 configs; shape: union of triples

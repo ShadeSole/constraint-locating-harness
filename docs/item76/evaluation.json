@@ -1,0 +1,2115 @@
+{
+ "valid_configs": 3456,
+ "mutants_total": 258,
+ "status": {
+  "ok": 258,
+  "timeout": 0,
+  "compile_error": 0
+ },
+ "never_fail": 128,
+ "always_fail": 20,
+ "config_dependent": 110,
+ "suite_sizes": {
+  "C": 9,
+  "L1": 19,
+  "L2": 49
+ },
+ "distinct_failure_sets": 29,
+ "ground_truth_types": {
+  "other": 62,
+  "two_pairs": 47,
+  "pair": 1
+ },
+ "summary": {
+  "C/all": {
+   "correct": 0,
+   "ambiguous": 1,
+   "safe": 0,
+   "misleading": 56,
+   "flagged": 53,
+   "missed": 0,
+   "n": 110
+  },
+  "C/pair": {
+   "correct": 0,
+   "ambiguous": 1,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 0,
+   "missed": 0,
+   "n": 1
+  },
+  "C/two_pairs": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 37,
+   "flagged": 10,
+   "missed": 0,
+   "n": 47
+  },
+  "C/other": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 19,
+   "flagged": 43,
+   "missed": 0,
+   "n": 62
+  },
+  "L1/all": {
+   "correct": 1,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 2,
+   "flagged": 107,
+   "missed": 0,
+   "n": 110
+  },
+  "L1/pair": {
+   "correct": 1,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 0,
+   "missed": 0,
+   "n": 1
+  },
+  "L1/two_pairs": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 47,
+   "missed": 0,
+   "n": 47
+  },
+  "L1/other": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 2,
+   "flagged": 60,
+   "missed": 0,
+   "n": 62
+  },
+  "L2/all": {
+   "correct": 48,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 62,
+   "missed": 0,
+   "n": 110
+  },
+  "L2/pair": {
+   "correct": 1,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 0,
+   "missed": 0,
+   "n": 1
+  },
+  "L2/two_pairs": {
+   "correct": 47,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 0,
+   "missed": 0,
+   "n": 47
+  },
+  "L2/other": {
+   "correct": 0,
+   "ambiguous": 0,
+   "safe": 0,
+   "misleading": 0,
+   "flagged": 62,
+   "missed": 0,
+   "n": 62
+  }
+ },
+ "per_mutant": [
+  {
+   "suite": "C",
+   "mutant": 1,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 2,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 5,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 6,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 7,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 10,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 12,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 13,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 14,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 15,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 18,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 19,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 21,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 22,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 23,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 24,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 25,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 27,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 28,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 29,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 30,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 34,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 35,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 38,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 40,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 43,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 45,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 46,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 47,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 48,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 51,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 52,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 53,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 55,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 56,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 57,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 58,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 59,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 60,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 61,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 65,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 66,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 67,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 68,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 69,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 70,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 71,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 72,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 73,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 76,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 78,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 79,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 80,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 81,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 82,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 83,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 84,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 92,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 99,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 100,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 101,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 102,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 116,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 118,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 119,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 124,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 125,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 126,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 127,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 135,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 140,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 141,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 142,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 143,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 157,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 158,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 162,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 163,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 165,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 166,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 167,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 173,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 178,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 187,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 188,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 200,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 201,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 202,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 203,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 204,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 205,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 206,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 208,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 209,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 210,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 211,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 212,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 226,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 227,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 230,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 233,
+   "type": "pair",
+   "outcome": "ambiguous"
+  },
+  {
+   "suite": "C",
+   "mutant": 234,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 236,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 237,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 242,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 243,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "C",
+   "mutant": 244,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 246,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 247,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "C",
+   "mutant": 248,
+   "type": "two_pairs",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "L1",
+   "mutant": 1,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 2,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 5,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 6,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 7,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 10,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 12,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 13,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 14,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 15,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 18,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 19,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 21,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 22,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 23,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 24,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 25,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 27,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 28,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 29,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 30,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 34,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 35,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 38,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 40,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 43,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 45,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 46,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 47,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 48,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 51,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 52,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 53,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 55,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 56,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 57,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 58,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 59,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 60,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 61,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 65,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 66,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 67,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 68,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 69,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 70,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 71,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 72,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 73,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 76,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 78,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 79,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 80,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 81,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 82,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 83,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 84,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 92,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 99,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 100,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 101,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 102,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 116,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 118,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 119,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 124,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 125,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 126,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 127,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 135,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 140,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 141,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 142,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 143,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 157,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 158,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 162,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 163,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 165,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 166,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 167,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 173,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 178,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 187,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 188,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 200,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 201,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 202,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 203,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 204,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 205,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 206,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 208,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 209,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 210,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 211,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 212,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "L1",
+   "mutant": 226,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 227,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 230,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 233,
+   "type": "pair",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L1",
+   "mutant": 234,
+   "type": "other",
+   "outcome": "misleading"
+  },
+  {
+   "suite": "L1",
+   "mutant": 236,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 237,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 242,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 243,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 244,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 246,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 247,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L1",
+   "mutant": 248,
+   "type": "two_pairs",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 1,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 2,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 5,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 6,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 7,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 10,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 12,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 13,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 14,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 15,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 18,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 19,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 21,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 22,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 23,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 24,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 25,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 27,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 28,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 29,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 30,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 34,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 35,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 38,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 40,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 43,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 45,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 46,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 47,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 48,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 51,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 52,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 53,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 55,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 56,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 57,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 58,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 59,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 60,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 61,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 65,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 66,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 67,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 68,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 69,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 70,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 71,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 72,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 73,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 76,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 78,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 79,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 80,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 81,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 82,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 83,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 84,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 92,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 99,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 100,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 101,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 102,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 116,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 118,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 119,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 124,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 125,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 126,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 127,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 135,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 140,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 141,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 142,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 143,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 157,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 158,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 162,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 163,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 165,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 166,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 167,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 173,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 178,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 187,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 188,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 200,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 201,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 202,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 203,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 204,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 205,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 206,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 208,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 209,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 210,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 211,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 212,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 226,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 227,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 230,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 233,
+   "type": "pair",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 234,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 236,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 237,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 242,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 243,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 244,
+   "type": "other",
+   "outcome": "flagged"
+  },
+  {
+   "suite": "L2",
+   "mutant": 246,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 247,
+   "type": "two_pairs",
+   "outcome": "correct"
+  },
+  {
+   "suite": "L2",
+   "mutant": 248,
+   "type": "two_pairs",
+   "outcome": "correct"
+  }
+ ]
+}

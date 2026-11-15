@@ -1,0 +1,6 @@
+{"model": "model_8param.json", "suite": "C", "scenario": "P2", "faults": 2000, "wrong_partial": 148, "wrong_unrelated": 886}
+{"model": "model_8param.json", "suite": "C", "scenario": "T1", "faults": 424, "wrong_partial": 4, "wrong_unrelated": 252}
+{"model": "model_8param.json", "suite": "L1", "scenario": "P2", "faults": 2000, "wrong_partial": 109, "wrong_unrelated": 99}
+{"model": "model_8param.json", "suite": "L1", "scenario": "T1", "faults": 424, "wrong_partial": 90, "wrong_unrelated": 178}
+{"model": "model_8param.json", "suite": "L2", "scenario": "P2", "faults": 2000, "wrong_partial": 0, "wrong_unrelated": 0}
+{"model": "model_8param.json", "suite": "L2", "scenario": "T1", "faults": 424, "wrong_partial": 0, "wrong_unrelated": 0}

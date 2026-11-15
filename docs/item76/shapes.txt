@@ -1,0 +1,60 @@
+shape of 110 failure sets: {'union of 3+ pairs': 59, '<=2 pairs': 48, 'union of triples': 2, 'needs 4+ way': 1}
+failing configs per mutant: min 384 median 960 max 3312 of 3456
+misleading: C mutant 1 NEG line 432 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 2 NEG line 434 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 5 NEG line 436 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 6 NEG line 439 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 7 NEG line 444 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 10 ROR line 436 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 12 ROR line 444 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 13 NEG line 447 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 14 CRP+ line 436 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 15 CRP- line 436 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 18 ROR line 447 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 19 NEG line 449 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 21 CRP+ line 443 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 22 CRP- line 443 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 23 CRP+ line 443 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 24 CRP- line 443 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 25 ROR line 449 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 27 CRP+ line 446 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 28 CRP- line 446 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 29 CRP+ line 452 fails on 960 configs; shape: union of 3+ pairs
+misleading: C mutant 30 CRP- line 452 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 40 NEG line 505 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 43 ROR line 497 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 45 ROR line 505 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 46 NEG line 508 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 47 CRP+ line 497 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 51 ROR line 508 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 52 NEG line 510 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 53 NEG line 532 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 55 CRP+ line 504 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 56 CRP- line 504 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 57 CRP+ line 504 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 58 CRP- line 504 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 59 ROR line 510 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 60 NEG line 518 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 61 ROR line 532 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 65 ROR line 518 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 66 NEG line 521 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 67 CRP+ line 518 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 68 CRP- line 518 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 69 ROR line 521 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 70 CRP+ line 513 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 71 CRP- line 513 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 72 CRP+ line 521 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 73 CRP- line 521 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 76 CRP+ line 519 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 78 CRP+ line 522 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 79 CRP- line 522 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 80 CRP+ line 523 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 81 CRP- line 523 fails on 768 configs; shape: <=2 pairs
+misleading: C mutant 212 NEG line 1196 fails on 384 configs; shape: union of triples
+misleading: C mutant 234 ROR line 1196 fails on 384 configs; shape: union of triples
+misleading: C mutant 244 LCR line 1076 fails on 960 configs; shape: needs 4+ way
+misleading: C mutant 246 UOI line 1076 fails on 1152 configs; shape: <=2 pairs
+misleading: C mutant 247 ROR line 1077 fails on 1152 configs; shape: <=2 pairs
+misleading: C mutant 248 ROR line 1079 fails on 1152 configs; shape: <=2 pairs
+misleading: L1 mutant 212 NEG line 1196 fails on 384 configs; shape: union of triples
+misleading: L1 mutant 234 ROR line 1196 fails on 384 configs; shape: union of triples

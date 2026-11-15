@@ -1,0 +1,2 @@
+{"model": "model_spins_core.json", "strength": 2, "K": 19, "configs": 978, "interactions": 239, "result": "sat", "seconds": 1.4, "size": 19}
+exit 0

@@ -1,0 +1,183 @@
+{
+ "model": "model_6param.json",
+ "strength": 2,
+ "d": 2,
+ "suite": [
+  {
+   "Auth": "Password",
+   "Network": "WiFi",
+   "Encryption": "On",
+   "Logging": "On",
+   "Database": "Local",
+   "Compression": "On"
+  },
+  {
+   "Auth": "Password",
+   "Network": "WiFi",
+   "Encryption": "On",
+   "Logging": "Off",
+   "Database": "Local",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "Password",
+   "Network": "WiFi",
+   "Encryption": "Off",
+   "Logging": "On",
+   "Database": "Local",
+   "Compression": "On"
+  },
+  {
+   "Auth": "Password",
+   "Network": "WiFi",
+   "Encryption": "Off",
+   "Logging": "Off",
+   "Database": "Local",
+   "Compression": "On"
+  },
+  {
+   "Auth": "Password",
+   "Network": "WiFi",
+   "Encryption": "Off",
+   "Logging": "Off",
+   "Database": "Local",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "Password",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "On",
+   "Database": "Remote",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "Password",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "Off",
+   "Database": "Local",
+   "Compression": "On"
+  },
+  {
+   "Auth": "Password",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "Off",
+   "Database": "Remote",
+   "Compression": "On"
+  },
+  {
+   "Auth": "Password",
+   "Network": "Ethernet",
+   "Encryption": "Off",
+   "Logging": "On",
+   "Database": "Local",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "Password",
+   "Network": "Ethernet",
+   "Encryption": "Off",
+   "Logging": "On",
+   "Database": "Remote",
+   "Compression": "On"
+  },
+  {
+   "Auth": "Password",
+   "Network": "Ethernet",
+   "Encryption": "Off",
+   "Logging": "On",
+   "Database": "Remote",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "Password",
+   "Network": "Ethernet",
+   "Encryption": "Off",
+   "Logging": "Off",
+   "Database": "Local",
+   "Compression": "On"
+  },
+  {
+   "Auth": "Password",
+   "Network": "Ethernet",
+   "Encryption": "Off",
+   "Logging": "Off",
+   "Database": "Remote",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "WiFi",
+   "Encryption": "On",
+   "Logging": "On",
+   "Database": "Local",
+   "Compression": "On"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "WiFi",
+   "Encryption": "On",
+   "Logging": "On",
+   "Database": "Local",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "WiFi",
+   "Encryption": "On",
+   "Logging": "Off",
+   "Database": "Local",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "On",
+   "Database": "Local",
+   "Compression": "On"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "On",
+   "Database": "Remote",
+   "Compression": "On"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "On",
+   "Database": "Remote",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "Off",
+   "Database": "Local",
+   "Compression": "Off"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "Off",
+   "Database": "Remote",
+   "Compression": "On"
+  },
+  {
+   "Auth": "CAC",
+   "Network": "Ethernet",
+   "Encryption": "On",
+   "Logging": "Off",
+   "Database": "Remote",
+   "Compression": "Off"
+  }
+ ]
+}

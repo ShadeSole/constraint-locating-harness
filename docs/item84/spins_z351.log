@@ -1,0 +1,19 @@
+{"event": "built", "model": "spins", "interactions": 979, "build_s": 0.2}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 2.1, "n": 53, "solved": true, "restarts_used": 1, "moves": 360, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 3.5, "n": 52, "solved": true, "restarts_used": 1, "moves": 197, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 5.6, "n": 51, "solved": true, "restarts_used": 1, "moves": 341, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 8.1, "n": 50, "solved": true, "restarts_used": 1, "moves": 601, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 12.7, "n": 49, "solved": true, "restarts_used": 1, "moves": 1110, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 16.5, "n": 48, "solved": true, "restarts_used": 1, "moves": 967, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 21.6, "n": 47, "solved": true, "restarts_used": 1, "moves": 1245, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 26.9, "n": 46, "solved": true, "restarts_used": 1, "moves": 1082, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 33.0, "n": 45, "solved": true, "restarts_used": 1, "moves": 1545, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 41.7, "n": 44, "solved": true, "restarts_used": 1, "moves": 2427, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 51.8, "n": 43, "solved": true, "restarts_used": 1, "moves": 2713, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 58.5, "n": 42, "solved": true, "restarts_used": 1, "moves": 1717, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 70.7, "n": 41, "solved": true, "restarts_used": 1, "moves": 3004, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 81.2, "n": 40, "solved": true, "restarts_used": 1, "moves": 3355, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 90.7, "n": 39, "solved": true, "restarts_used": 1, "moves": 2927, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 164.7, "n": 38, "solved": true, "restarts_used": 3, "moves": 15629, "best_cost": {"uncovered": 0, "avoidable_collisions": 0, "cost": 0.0}}
+{"event": "size", "mode": "locate", "neighbor": "local", "seed": 0, "elapsed_s": 288.2, "n": 37, "solved": false, "restarts_used": 5, "moves": 30000, "best_cost": {"uncovered": 0, "avoidable_collisions": 3, "cost": 3.0}}
+{"event": "final", "model": "spins", "mode": "locate", "neighbor": "local", "seed": 0, "start": 53, "size": 38, "total_moves": 69220, "timed_out": false, "elapsed_s": 288.2}

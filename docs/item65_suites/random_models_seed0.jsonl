@@ -1,0 +1,53 @@
+{"k": 0, "skipped": 486}
+{"k": 1, "params": [2, 3, 2, 3], "forbidden": 3, "configs": 20, "t2d2": 20, "t3d1": 20, "equal": true}
+{"k": 2, "params": [2, 2, 3], "forbidden": 1, "configs": 10, "t2d2": 10, "t3d1": 10, "equal": true}
+{"k": 3, "params": [2, 3, 3, 2], "forbidden": 4, "configs": 20, "t2d2": 19, "t3d1": 19, "equal": true}
+{"k": 4, "params": [3, 2, 3, 3], "forbidden": 1, "configs": 48, "t2d2": 28, "t3d1": 34, "equal": false}
+{"k": 5, "params": [3, 2, 3, 2, 2], "forbidden": 1, "configs": 64, "t2d2": 24, "t3d1": 27, "equal": false}
+{"k": 6, "params": [3, 3, 2], "forbidden": 0, "configs": 18, "t2d2": 18, "t3d1": 18, "equal": true}
+{"k": 7, "params": [2, 3, 2, 2, 2], "forbidden": 2, "configs": 24, "t2d2": 24, "t3d1": 24, "equal": true}
+{"k": 8, "params": [3, 3, 2, 2], "forbidden": 0, "configs": 36, "t2d2": 24, "t3d1": 27, "equal": false}
+{"k": 9, "skipped": 216}
+{"k": 10, "params": [3, 3, 2], "forbidden": 1, "configs": 15, "t2d2": 15, "t3d1": 15, "equal": true}
+{"k": 11, "skipped": 216}
+{"k": 12, "skipped": 324}
+{"k": 13, "params": [3, 2, 2, 2, 2], "forbidden": 1, "configs": 40, "t2d2": 20, "t3d1": 20, "equal": true}
+{"k": 14, "params": [2, 3, 3], "forbidden": 2, "configs": 13, "t2d2": 13, "t3d1": 13, "equal": true}
+{"k": 15, "params": [2, 2, 2, 2], "forbidden": 0, "configs": 16, "t2d2": 14, "t3d1": 14, "equal": true}
+{"k": 16, "skipped": 162}
+{"k": 17, "skipped": 324}
+{"k": 18, "params": [2, 3, 3, 2], "forbidden": 1, "configs": 30, "t2d2": 24, "t3d1": 24, "equal": true}
+{"k": 19, "params": [2, 2, 3], "forbidden": 2, "configs": 8, "t2d2": 8, "t3d1": 8, "equal": true}
+{"k": 20, "params": [3, 2, 3, 2], "forbidden": 0, "configs": 36, "t2d2": 24, "t3d1": 27, "equal": false}
+{"k": 21, "params": [3, 3, 3, 3], "forbidden": 1, "configs": 72, "t2d2": "unknown", "t3d1": 44, "equal": false}
+{"k": 22, "params": [2, 2, 3, 2], "forbidden": 0, "configs": 24, "t2d2": 18, "t3d1": 18, "equal": true}
+{"k": 23, "skipped": 108}
+{"k": 24, "params": [2, 2, 2, 2, 2, 2], "forbidden": 1, "configs": 48, "t2d2": 19, "t3d1": 19, "equal": true}
+{"k": 25, "skipped": 216}
+{"k": 26, "params": [2, 3, 2, 2], "forbidden": 3, "configs": 10, "t2d2": 10, "t3d1": 10, "equal": true}
+{"k": 27, "skipped": 216}
+{"k": 28, "params": [2, 2, 2], "forbidden": 1, "configs": 6, "t2d2": 6, "t3d1": 6, "equal": true}
+{"k": 29, "params": [3, 3, 2], "forbidden": 4, "configs": 12, "t2d2": 12, "t3d1": 12, "equal": true}
+{"k": 30, "params": [2, 2, 3, 2, 3], "forbidden": 3, "configs": 33, "t2d2": 27, "t3d1": 27, "equal": true}
+{"k": 31, "params": [3, 2, 3], "forbidden": 1, "configs": 16, "t2d2": 16, "t3d1": 16, "equal": true}
+{"k": 32, "params": [2, 2, 3], "forbidden": 1, "configs": 9, "t2d2": 9, "t3d1": 9, "equal": true}
+{"k": 33, "params": [2, 3, 3, 2], "forbidden": 4, "configs": 16, "t2d2": 16, "t3d1": 16, "equal": true}
+{"k": 34, "params": [2, 2, 2, 3, 3], "forbidden": 0, "configs": 72, "t2d2": "unknown", "t3d1": "unknown", "equal": false}
+{"k": 35, "skipped": 108}
+{"k": 36, "params": [2, 2, 3, 2, 2], "forbidden": 4, "configs": 18, "t2d2": 17, "t3d1": 17, "equal": true}
+{"k": 37, "params": [2, 3, 3], "forbidden": 4, "configs": 9, "t2d2": 9, "t3d1": 9, "equal": true}
+{"k": 38, "skipped": 324}
+{"k": 39, "params": [3, 3, 2, 2], "forbidden": 1, "configs": 27, "t2d2": 24, "t3d1": 27, "equal": false}
+{"k": 40, "skipped": 144}
+{"k": 41, "skipped": 324}
+{"k": 42, "params": [2, 3, 2], "forbidden": 1, "configs": 9, "t2d2": 9, "t3d1": 9, "equal": true}
+{"k": 43, "params": [3, 2, 3], "forbidden": 2, "configs": 14, "t2d2": 14, "t3d1": 14, "equal": true}
+{"k": 44, "skipped": 144}
+{"k": 45, "skipped": 162}
+{"k": 46, "params": [3, 2, 2], "forbidden": 4, "configs": 5, "t2d2": 5, "t3d1": 5, "equal": true}
+{"k": 47, "skipped": 162}
+{"k": 48, "params": [2, 3, 2, 3, 2], "forbidden": 1, "configs": 60, "t2d2": 26, "t3d1": 30, "equal": false}
+{"k": 49, "params": [3, 3, 2], "forbidden": 2, "configs": 14, "t2d2": 14, "t3d1": 14, "equal": true}
+{"k": 50, "skipped": 324}
+{"k": 51, "params": [2, 2, 2, 3], "forbidden": 3, "configs": 14, "t2d2": 14, "t3d1": 14, "equal": true}
+{"k": 52, "skipped": 108}
